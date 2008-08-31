@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>What to include when asking for help</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="FreeTDS User Guide"
+HREF="index.htm"><LINK
+REL="UP"
+TITLE="Getting Help"
+HREF="help.htm"><LINK
+REL="PREVIOUS"
+TITLE="The Mailing List"
+HREF="mailinglist.htm"><LINK
+REL="NEXT"
+TITLE="Helping"
+HREF="contrib.htm"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="userguide.css"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+><SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> User Guide: A Guide to Installing, Configuring, and Running <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+></TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="mailinglist.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 9. Getting Help</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="contrib.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="ASKINGFORHELP"
+>What to include when asking for help</A
+></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="WADDYAGOT"
+>Waddya got?</A
+></H2
+><P
+>It's important to convey your setup and configuration.  
+<P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+><SPAN
+CLASS="PRODUCTNAME"
+>SQL Server</SPAN
+> version</TD
+></TR
+><TR
+><TD
+><SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> version (or snapshot date, if not a release)</TD
+></TR
+><TR
+><TD
+>which client library you are using</TD
+></TR
+><TR
+><TD
+>what language or Perl module, as appropriate, you're using</TD
+></TR
+><TR
+><TD
+>your client OS and hardware architecture</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+			</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="HELP.LOG"
+>Attach a logfile</A
+></H2
+><P
+>If you're puzzled by some interaction with the server (often the case), it's a very good idea to set <CODE
+CLASS="ENVAR"
+>TDSDUMP</CODE
+> and attach the log to your message.  Messages are currently limited to 75 KB attachments, and the logs are quite detailed, so make your query as short as possible.  If necessary, trim the log; <B
+CLASS="COMMAND"
+>gzip</B
+> is also your friend here.  It's always a good idea to post it on a website where people can fetch it if they're so inclined.  
+			</P
+><P
+>Think about it this way: If you attach a log no one reads, you wasted some bandwidth.  If you don't attach one and someone asks you for it, you wasted a day.  Like that.  			</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="HELPTHEHELP"
+>Help the Help</A
+></H2
+><P
+>If you've found an error, weakness, misbehavior, discrepancy, call-it-what-you-will in one of the published <ACRONYM
+CLASS="ACRONYM"
+>API</ACRONYM
+>s, it's very helpful if you write a unit test for it, and tell us what the Microsoft or Sybase behavior is.  Those problems get <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>fixed</I
+></SPAN
+>.  Oftentimes, right away.  Everyone who's sent us a unit test has gotten their feature in the next release.  If you don't, you'll at least get an explanation.  
+			</P
+><P
+>Moving down, Perl or PHP code provided it creates all the tables it needs and populates them will generally result in a quick fix.  A stand-alone query that will run in <SPAN
+CLASS="APPLICATION"
+>SQSH</SPAN
+> also works well.  Here again, it helps to attach a log.  
+			<DIV
+CLASS="TIP"
+><P
+></P
+><TABLE
+CLASS="TIP"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/tip.gif"
+HSPACE="5"
+ALT="Tip"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>If you provide an SQL query in your question to the list, provide a table definition, too.  Problems are often related to specific datatypes, so a table definition is an absolute must.  You can run <B
+CLASS="COMMAND"
+>sp_help <CODE
+CLASS="PARAMETER"
+>table</CODE
+></B
+> to generate one.  </P
+></TD
+></TR
+></TABLE
+></DIV
+>
+			</P
+><P
+>It is very helpful if you can show an example of the problem using <B
+CLASS="COMMAND"
+>sqsh</B
+> or an appropriate <A
+HREF="usefreetds.htm#UTILITIES"
+>utility</A
+>.  Using those programs limits the scope of question to <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> itself.  
+			</P
+><P
+>If the problem is a segmentation fault or bus error, that's bad.  Please obtain a
+backtrace and include it in your mail.  See the <A
+HREF="pagenodata.htm"
+>"Page contains no data"</A
+> section for how to
+do this.</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="mailinglist.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.htm"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="contrib.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>The Mailing List</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="help.htm"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Helping</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

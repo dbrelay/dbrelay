@@ -1,0 +1,34 @@
+#!/bin/sh
+
+if [ "$1" = "--help" ]
+then
+	echo ""
+	echo "--help           this message"
+	echo "--prefix=PATH    set the installation prefix"
+	echo ""
+	exit
+fi
+
+OPTION=`echo $1 | cut -f1 -d=`
+
+if [ "$OPTION" = "--prefix" ]
+then
+	PREFIX=`echo $1 | cut -f2 -d=`
+else
+	PREFIX=/usr/local
+fi
+
+HERE=`pwd`
+cd src/freetds-0.82
+./configure --prefix=$HERE/freetds-0.82 --with-tdsver=8.0; make
+
+cd $HERE
+cd src/ngx_http_viaduct
+cat config.in | sed -e "s#FREETDS#$HERE/src/freetds-0.82#g" > config
+
+cd $HERE
+cd src/nginx-0.7.11
+./configure --prefix=$PREFIX --with-pcre=$HERE/src/pcre-7.7/ --add-module=$HERE/src/ngx_http_viaduct
+make
+make install
+

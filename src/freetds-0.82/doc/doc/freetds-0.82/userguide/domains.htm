@@ -1,0 +1,355 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Domain Logins</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="FreeTDS User Guide"
+HREF="index.htm"><LINK
+REL="UP"
+TITLE="Advanced Configurations"
+HREF="configs.htm"><LINK
+REL="PREVIOUS"
+TITLE="Localization and TDS 7.0"
+HREF="localization.htm"><LINK
+REL="NEXT"
+TITLE="Appending Dump Files"
+HREF="appendmode.htm"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="userguide.css"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+><SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> User Guide: A Guide to Installing, Configuring, and Running <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+></TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="localization.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 5. Advanced Configurations</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="appendmode.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="DOMAINS"
+>Domain Logins</A
+></H1
+><DIV
+CLASS="NOTE"
+><P
+></P
+><TABLE
+CLASS="NOTE"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>Domain logins can be used only with TDS protocol versions 7.0 and 8.0.</P
+></TD
+></TR
+></TABLE
+></DIV
+><P
+>As mentioned in the installation chapter, <SPAN
+CLASS="PRODUCTNAME"
+>Microsoft SQL Server</SPAN
+> includes the ability to use domain logins instead of standard server logins.  The advantage of doing this is that the passwords are encrypted on the wire using a challenge-response protocol.
+<SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> began supporting domain logins in version 0.60.
+			</P
+><P
+>To use domain logins, use the <TT
+CLASS="LITERAL"
+>'DOMAIN\username'</TT
+> syntax for the username and use the domain password.  
+			</P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="E.G.DOMAINLOGIN"
+></A
+><P
+><B
+>Example 5-4. Logging in with a domain login</B
+></P
+><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>tsql -S camelot -U 'NOTTINGHAM\lancelot' -P roundtable</KBD
+>
+locale is "C"
+locale charset is "646"
+Msg 5703, Level 0, State 1, Server CPRO200, Line 0
+Changed language setting to middle_english.
+1&#62; </PRE
+></DIV
+><P
+>When <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> sees the <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>\</TT
+>"</SPAN
+> character, it automatically chooses a domain login.
+  			</P
+><DIV
+CLASS="NOTE"
+><P
+></P
+><TABLE
+CLASS="NOTE"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>The term <I
+CLASS="FIRSTTERM"
+>domain</I
+> in this context is a Microsoft term.  It refers to what's sometimes called an <I
+CLASS="FIRSTTERM"
+>NT domain</I
+>.  It's unrelated to the DNS domain.  DNS domains are used for name resolution.  NT domains are used for authentication.  Authentication is done by the domain controller, often the <I
+CLASS="FIRSTTERM"
+>Primary Domain Controller</I
+> (PDC).  
+  			</P
+><P
+>The SQL Server machine may belong to an NT domain.  <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> provides an encrypted password &mdash; a domain password, known to the domain controller &mdash; that the server will ask the domain controller to verify.  </P
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="DOMAINDETAILS"
+>Implementation details</A
+></H2
+><P
+>Support for domain logins in <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> is limited to the TCP/IP network protocol stack.   <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> does not currently implement support for Named Pipe-based SQL connections &mdash; that is, connections transported over the DCE/RPC interface, which uses TCP port 139, 445, or 135 on Win32 machines depending on the type of encapsulation used for DCE/RPC itself. Supporting this would require a fairly extensive DCE/RPC library for Unix.   <SPAN
+CLASS="PRODUCTNAME"
+>Samba</SPAN
+> has one that is licensed under the GPL and therefore not usable by LGPL-licensed projects such as <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> . 
+			</P
+><P
+>Your domain controller must allow authentication over TCP/IP, or you will be unable to log in.  One symptom of a server that requires Named Pipes for authentication is an error message such as:
+			</P
+><P
+><DIV
+CLASS="INFORMALEXAMPLE"
+><P
+></P
+><A
+NAME="AEN1948"
+></A
+><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>Login failed for user '(null)'. 
+Reason: Not associated with a trusted SQL Server connection.</SAMP
+></PRE
+><P
+></P
+></DIV
+>
+			</P
+><P
+>The telltale sign being <TT
+CLASS="LITERAL"
+>user '(null)'</TT
+>.  
+			</P
+><P
+>If you suspect a problem along these lines, you could ask your friendly system administrator to check the following setting:
+
+<PRE
+CLASS="PROGRAMLISTING"
+>Computer Configuration
+ 	\Windows Settings
+		\Security Settings
+			\Local Policies
+				\Security Options
+					\LAN Manager Authentication Level</PRE
+>
+The setting should be <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>Send LM &#38; NTLM responses</TT
+>"</SPAN
+>.  
+  			</P
+><P
+>For a technical description of the protocol used for domain logins, see 
+<A
+HREF="http://davenport.sourceforge.net/ntlm.html"
+TARGET="_top"
+>http://davenport.sourceforge.net/ntlm.html</A
+></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="localization.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.htm"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="appendmode.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Localization and <ACRONYM
+CLASS="ACRONYM"
+>TDS</ACRONYM
+> 7.0</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="configs.htm"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Appending Dump Files</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

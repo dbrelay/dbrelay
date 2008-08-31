@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>SybSQL</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="FreeTDS User Guide"
+HREF="index.htm"><LINK
+REL="UP"
+TITLE="How to get what works with it working"
+HREF="software.htm"><LINK
+REL="PREVIOUS"
+TITLE="PHP"
+HREF="php.htm"><LINK
+REL="NEXT"
+TITLE="Python"
+HREF="python.htm"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="userguide.css"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+><SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> User Guide: A Guide to Installing, Configuring, and Running <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+></TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="php.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 7. How to get what works with it working</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="python.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="SYBSQL"
+>SybSQL</A
+></H1
+><P
+><SPAN
+CLASS="PRODUCTNAME"
+>SybSQL</SPAN
+> is a <SPAN
+CLASS="PRODUCTNAME"
+>Qt</SPAN
+>-based <ACRONYM
+CLASS="ACRONYM"
+>GUI</ACRONYM
+> interface to <SPAN
+CLASS="PRODUCTNAME"
+>Sybase</SPAN
+> databases that uses the <SPAN
+CLASS="SYSTEMITEM"
+>db-lib</SPAN
+> <ACRONYM
+CLASS="ACRONYM"
+>API</ACRONYM
+>.
+			</P
+><P
+><SPAN
+CLASS="PRODUCTNAME"
+>SybSQL</SPAN
+> has a fairly basic build process that simply uses a Makefile.  In order for <SPAN
+CLASS="PRODUCTNAME"
+>SybSQL</SPAN
+> to find <SPAN
+CLASS="PRODUCTNAME"
+>Qt</SPAN
+> and <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> you need to define <CODE
+CLASS="ENVAR"
+>QTDIR</CODE
+> and <CODE
+CLASS="ENVAR"
+>SYBASE</CODE
+> environment variables.  If you have <SPAN
+CLASS="PRODUCTNAME"
+>Qt</SPAN
+> installed, you may have <CODE
+CLASS="ENVAR"
+>QTDIR</CODE
+> defined already.  To verify, type <B
+CLASS="COMMAND"
+>echo $QTDIR</B
+> at the shell prompt.  This example uses my own installation path of <TT
+CLASS="FILENAME"
+>qt-2.3.1</TT
+> (from RedHat 7.2), YMMV.
+<PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>export QTDIR=/usr/lib/qt-2.3.1</KBD
+>
+<SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>export SYBASE=/usr/local</KBD
+>
+<SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>make</KBD
+></PRE
+>
+When finished you'll have an executable named <TT
+CLASS="FILENAME"
+>sybsql</TT
+> that you can run.  
+			</P
+><P
+>One caveat to the way in which <SPAN
+CLASS="PRODUCTNAME"
+>SybSQL</SPAN
+> and <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> interact is that <SPAN
+CLASS="PRODUCTNAME"
+>SybSQL</SPAN
+> expects to be running under <SPAN
+CLASS="PRODUCTNAME"
+>OpenClient</SPAN
+>, and makes the assumption that a valid <CODE
+CLASS="ENVAR"
+>$SYBASE</CODE
+><TT
+CLASS="FILENAME"
+>/interfaces</TT
+> file exists.  Since <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> has deprecated use of the <TT
+CLASS="FILENAME"
+>interfaces</TT
+> file in favor of the <TT
+CLASS="FILENAME"
+>freetds.conf</TT
+> config file, you may have to create a <TT
+CLASS="FILENAME"
+>interfaces</TT
+> file just to satisfy <SPAN
+CLASS="PRODUCTNAME"
+>SybSQL</SPAN
+>.
+			</P
+><P
+>By defining <CODE
+CLASS="ENVAR"
+>SYBASE</CODE
+> to the parent directory of the <TT
+CLASS="FILENAME"
+>interfaces</TT
+> file, you may put it wherever you like; it does not have to be in <TT
+CLASS="FILENAME"
+>/usr/local</TT
+>.  When using <TT
+CLASS="FILENAME"
+>freetds.conf</TT
+>, <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> does not rely on the <CODE
+CLASS="ENVAR"
+>SYBASE</CODE
+> variable for finding its own components, so it is safe to point it elsewhere.
+			</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="php.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.htm"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="python.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>PHP</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="software.htm"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Python</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

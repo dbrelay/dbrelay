@@ -1,0 +1,568 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Confirm the installation</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="FreeTDS User Guide"
+HREF="index.htm"><LINK
+REL="UP"
+TITLE="Install FreeTDS"
+HREF="install.htm"><LINK
+REL="PREVIOUS"
+TITLE="Port override syntax"
+HREF="portoverride.htm"><LINK
+REL="NEXT"
+TITLE="Preparing ODBC"
+HREF="prepodbc.htm"><LINK
+REL="STYLESHEET"
+TYPE="text/css"
+HREF="userguide.css"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+><SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> User Guide: A Guide to Installing, Configuring, and Running <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+></TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="portoverride.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. Install <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="prepodbc.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="CONFIRMINSTALL"
+>Confirm the installation</A
+></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="TSQL"
+><SPAN
+CLASS="APPLICATION"
+>tsql</SPAN
+></A
+></H2
+><P
+>The <I
+CLASS="FIRSTTERM"
+>tsql</I
+> utility is provided as part of FreeTDS expressly for troubleshooting.  <B
+CLASS="COMMAND"
+>tsql</B
+> is superficially similar to an <B
+CLASS="COMMAND"
+>isql</B
+>, but uses <TT
+CLASS="FILENAME"
+>libtds</TT
+> directly, bypassing the client libraries (e.g., <SPAN
+CLASS="SYSTEMITEM"
+>db-lib</SPAN
+>).  </P
+><P
+><B
+CLASS="COMMAND"
+>tsql</B
+> can either use or bypass the configuration files.  By trying both options, you can usually determine if it's your dataserver that's not responding, or your configuration files that are messed up. </P
+><H3
+CLASS="BRIDGEHEAD"
+><A
+NAME="AEN1359"
+></A
+>Using <TT
+CLASS="FILENAME"
+>freetds.conf</TT
+>:</H3
+><P
+><P
+><B
+CLASS="COMMAND"
+>tsql</B
+>  {-S<TT
+CLASS="REPLACEABLE"
+><I
+>server</I
+></TT
+>} {-U<TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>} [-P<TT
+CLASS="REPLACEABLE"
+><I
+>password</I
+></TT
+>] [-C]</P
+>
+			</P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="E.G.TSQLFAIL"
+></A
+><P
+><B
+>Example 3-2. Failing to connect with tsql</B
+></P
+><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>tsql -S <TT
+CLASS="REPLACEABLE"
+><I
+>emforester</I
+></TT
+> -U <TT
+CLASS="REPLACEABLE"
+><I
+>sa</I
+></TT
+>   #only connect?</KBD
+>
+<SAMP
+CLASS="PROMPT"
+>Password: </SAMP
+>
+<SAMP
+CLASS="COMPUTEROUTPUT"
+>src/tds/login.c: tds_connect: 192.168.1.12:4100: Connection refused
+Msg 20009, Level 9, State 0, Server OpenClient, Line 0
+Server is unavailable or does not exist.
+There was a problem connecting to the server</SAMP
+></PRE
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="E.G.TSQLSERVERNAME"
+></A
+><P
+><B
+>Example 3-3. Connect with <B
+CLASS="COMMAND"
+>tsql</B
+> using a servername in <TT
+CLASS="FILENAME"
+>freetds.conf</TT
+></B
+></P
+><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>tsql -S <TT
+CLASS="REPLACEABLE"
+><I
+>sandbox</I
+></TT
+> -U <TT
+CLASS="REPLACEABLE"
+><I
+>sa</I
+></TT
+></KBD
+>
+<SAMP
+CLASS="PROMPT"
+>Password: </SAMP
+>
+<SAMP
+CLASS="COMPUTEROUTPUT"
+>1&#62; </SAMP
+></PRE
+></DIV
+><H3
+CLASS="BRIDGEHEAD"
+><A
+NAME="AEN1391"
+></A
+>Bypassing <TT
+CLASS="FILENAME"
+>freetds.conf</TT
+>:</H3
+><P
+><P
+><B
+CLASS="COMMAND"
+>tsql</B
+>  {-H <TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
+>} {-p <TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
+>} {-U <TT
+CLASS="REPLACEABLE"
+><I
+>username</I
+></TT
+>} [-P<TT
+CLASS="REPLACEABLE"
+><I
+>password</I
+></TT
+>] [-C]</P
+>
+
+			Keep in mind that the TDS protocol version normally comes from <TT
+CLASS="FILENAME"
+>freetds.conf</TT
+>.  When using <B
+CLASS="COMMAND"
+>tsql</B
+> this way, the library uses the compiled-in default (set by the <TT
+CLASS="FILENAME"
+>configure</TT
+> script).  If that's not what you want, override it using the <CODE
+CLASS="ENVAR"
+>TDSVER</CODE
+> environment variable.  
+			</P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="E.G.TSQLHOSTNAME"
+></A
+><P
+><B
+>Example 3-4. Connect with <B
+CLASS="COMMAND"
+>tsql</B
+> using a hostname and port number</B
+></P
+><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>TDSVER=7.0 tsql -H <TT
+CLASS="REPLACEABLE"
+><I
+>hillary</I
+></TT
+> -p <TT
+CLASS="REPLACEABLE"
+><I
+>4100</I
+></TT
+> -U <TT
+CLASS="REPLACEABLE"
+><I
+>sa</I
+></TT
+></KBD
+>
+<SAMP
+CLASS="PROMPT"
+>Password: </SAMP
+>
+<SAMP
+CLASS="COMPUTEROUTPUT"
+>1&#62; </SAMP
+></PRE
+></DIV
+><P
+>Another handy diagnostic feature of <B
+CLASS="COMMAND"
+>tsql</B
+> is that it can show you the compile-time settings of the installed version of <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+>:  </P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="E.G.TSQLSHOWSETTINGS"
+></A
+><P
+><B
+>Example 3-5. Show compile-time settings with <B
+CLASS="COMMAND"
+>tsql</B
+></B
+></P
+><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>tsql -C </KBD
+>
+<SAMP
+CLASS="PROMPT"
+>Password: </SAMP
+>
+<SAMP
+CLASS="COMPUTEROUTPUT"
+>locale is "C"
+locale charset is "646"
+Compile-time settings (established with the "configure" script):
+                           Version: freetds v0.62.dev.20030804
+    MS db-lib source compatibility: no
+       Sybase binary compatibility: unknown
+                     Thread safety: no
+                     iconv library: no
+                       TDS version: 7.0
+                             iODBC: no
+                          unixodbc: no</SAMP
+></PRE
+></DIV
+><P
+>For details on <B
+CLASS="COMMAND"
+>tsql</B
+>, see the its man page.  
+			</P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="TESTS"
+><SPAN
+CLASS="APPLICATION"
+>Unit Tests</SPAN
+></A
+></H2
+><P
+>The source code directory of each <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> library includes a <TT
+CLASS="FILENAME"
+>unittests</TT
+> directory.  
+
+<PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$ </SAMP
+><KBD
+CLASS="USERINPUT"
+>ls -d -1 src/*/unittests</KBD
+>
+<SAMP
+CLASS="COMPUTEROUTPUT"
+>src/ctlib/unittests
+src/dblib/unittests
+src/odbc/unittests
+src/tds/unittests</SAMP
+></PRE
+>
+
+The unit tests rely on the <TT
+CLASS="FILENAME"
+>PWD</TT
+> file in root of the FreeTDS source tree.  
+<TT
+CLASS="FILENAME"
+>PWD</TT
+> holds a username, password, servername, and database to be used for the unit tests.  We try to make sure to leave nothing behind: any data and objects created are either temporary or removed at the end of the test.  The tests should all work, subject to disclaimers in the directory's <TT
+CLASS="FILENAME"
+>README</TT
+>.  			</P
+><P
+>To invoke the tests, edit the <TT
+CLASS="FILENAME"
+>PWD</TT
+> file and issue the command <B
+CLASS="COMMAND"
+>make check</B
+>.  In order to execute all tests successfully, you must indicate a working, available dataserver in <TT
+CLASS="FILENAME"
+>PWD</TT
+>.
+Some tests require permission to create stored procedures on server.
+			</P
+><P
+>To complete successfully, the ODBC tests require some additional setup.  In your <TT
+CLASS="FILENAME"
+>PWD</TT
+> file, add a <TT
+CLASS="LITERAL"
+>SRV</TT
+> entry specifying the DSN entry for your <TT
+CLASS="FILENAME"
+>odbc.ini</TT
+>.  The ODBC tests all build their own <TT
+CLASS="FILENAME"
+>odbc.ini</TT
+> and try to redirect the Driver Manager to it, however this functionality is very DM dependent and may well fail unless you have either iODBC or unixODBC.
+			</P
+><P
+><DIV
+CLASS="TIP"
+><P
+></P
+><TABLE
+CLASS="TIP"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/tip.gif"
+HSPACE="5"
+ALT="Tip"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>The <TT
+CLASS="FILENAME"
+>PWD</TT
+> provided by <SPAN
+CLASS="PRODUCTNAME"
+>FreeTDS</SPAN
+> includes usernames and passwords that probably don't exist on your server.  </P
+></TD
+></TR
+></TABLE
+></DIV
+>
+			</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="portoverride.htm"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.htm"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="prepodbc.htm"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Port override syntax</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="install.htm"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Preparing ODBC</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
