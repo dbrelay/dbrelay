@@ -114,7 +114,9 @@ void json_add_key(json_t *json, char *key)
       }
       node->num_items++;
    }
+   sb_append(json->sb, "\"");
    sb_append(json->sb, key);
+   sb_append(json->sb, "\"");
    sb_append(json->sb, " : ");
    json->pending = 1;
 }

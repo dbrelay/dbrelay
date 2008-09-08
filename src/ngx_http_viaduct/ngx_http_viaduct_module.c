@@ -31,6 +31,10 @@ u_char *run_query(server_info_t *server_info);
 static char *ngx_http_viaduct_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_viaduct_create_request(ngx_http_request_t *r);
 static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
+static int fill_data(json_t *json, DBPROCESS *dbproc);
+int viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
+
+static char *db_error;
 
 static ngx_command_t  ngx_http_viaduct_commands[] = {
 
@@ -342,12 +346,9 @@ u_char *run_query(server_info_t *server_info)
 {
    LOGINREC *login;
    DBPROCESS *dbproc;
-   int numcols, colnum;
    /* FIX ME */
-   char colval[256][31];
-   char tmp[100];
    RETCODE rc;
-   char error_string[100];
+   char error_string[500];
    json_t *json = json_new();
    u_char *ret;
 
@@ -370,8 +371,11 @@ u_char *run_query(server_info_t *server_info)
 
    json_end_object(json);
    
+   dberrhandle(viaduct_db_err_handler);
+
    login = dblogin();
-   DBSETLPWD(login, ""); 
+   if (server_info->sql_password!=NULL && strlen(server_info->sql_password)>0) 
+   	DBSETLPWD(login, server_info->sql_password); 
    DBSETLUSER(login, server_info->sql_user);
    DBSETLAPP(login, "viaduct");
    DBSETLHOST(login, server_info->sql_server);
@@ -379,14 +383,39 @@ u_char *run_query(server_info_t *server_info)
    dbproc = dbopen(login, server_info->sql_server);
    if (dbproc==NULL) {
 	strcpy(error_string, "Failed to login");
+   } else {
+   	rc = dbuse(dbproc, server_info->sql_database);
+   	rc = dbcmd(dbproc, server_info->sql);
+   	rc = dbsqlexec(dbproc);
+   	if (rc==SUCCEED) {
+	   fill_data(json, dbproc);
+	} else {
+	   strcpy(error_string, db_error);
+	}
    }
-   rc = dbuse(dbproc, server_info->sql_database);
-   /* sprintf(error_string, "rc = %d %s", rc, server_info->sql_database); */
+   json_add_key(json, "log");
+   json_new_object(json);
+   json_add_string(json, "sql", server_info->sql);
+   if (strlen(error_string)) {
+      json_add_string(json, "error", error_string);
+   }
+   json_end_object(json);
+
+   json_end_object(json);
+
+   ret = (u_char *) json_to_string(json);
+   json_free(json);
+   return ret;
+}
+static int fill_data(json_t *json, DBPROCESS *dbproc)
+{
+   int numcols, colnum;
+   RETCODE rc;
+   char tmp[100];
+   char colval[256][31];
 
    json_add_key(json, "data");
    json_new_array(json);
-   rc = dbcmd(dbproc, server_info->sql);
-   rc = dbsqlexec(dbproc);
    while ((rc = dbresults(dbproc)) != NO_MORE_RESULTS) 
    {
 	json_new_object(json);
@@ -425,19 +454,8 @@ u_char *run_query(server_info_t *server_info)
    }
    /* sprintf(error_string, "rc = %d", rc); */
    json_end_array(json);
-   json_add_key(json, "log");
-   json_new_object(json);
-   json_add_string(json, "sql", server_info->sql);
-   if (strlen(error_string)) {
-      json_add_string(json, "error", error_string);
-   }
-   json_end_object(json);
 
-   json_end_object(json);
-
-   ret = (u_char *) json_to_string(json);
-   json_free(json);
-   return ret;
+   return 0;
 }
 
 static char *
@@ -466,7 +484,13 @@ ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf)
 }
 void write_value(server_info_t *server_info, char *key, char *value)
 {
+   u_char *dst, *src;
    unsigned int i;
+
+   dst = (u_char *) value; src = (u_char *) value;
+   ngx_unescape_uri(&dst, &src, strlen(value), 0);
+   *dst = '\0';
+
    /* simple unescape of '+' for now, replace with ngx_unescape_uri */
    for (i=0;i<strlen(value);i++) {
       if (value[i]=='+') value[i]=' ';
@@ -488,33 +512,41 @@ void write_value(server_info_t *server_info, char *key, char *value)
 }
 void parse_query_string(u_char *query_string, server_info_t *server_info)
 {
-   char key[100];
-   char value[1000];
-   char *s, *k = key, *v = value;
-   int target = 0;
+	   char key[100];
+	   char value[1000];
+	   char *s, *k = key, *v = value;
+	   int target = 0;
 
-   memset(server_info, 0, sizeof(server_info_t));
-   for (s=(char *)query_string; *s; s++)
-   { 
-      if (*s=='&') {
-	  *k='\0';
-	  *v='\0';
-          write_value(server_info, key, value);
-          target=0;
-          k=key;
-      } else if (*s=='=') {
-          target=1;
-          v=value;
-      } else if (target==0) {
-          *k++=*s;
-      } else {
-          *v++=*s;
-      }
-   }
-   *k='\0';
-   while (v>=value && (*v=='\n' || *v=='\r')) *v--='\0';
-   *v='\0';
-   write_value(server_info, key, value);
+	   memset(server_info, 0, sizeof(server_info_t));
+	   for (s=(char *)query_string; *s; s++)
+	   { 
+	      if (*s=='&') {
+		  *k='\0';
+		  *v='\0';
+		  write_value(server_info, key, value);
+		  target=0;
+		  k=key;
+	      } else if (*s=='=') {
+		  target=1;
+		  v=value;
+	      } else if (target==0) {
+		  *k++=*s;
+	      } else {
+		  *v++=*s;
+	      }
+	   }
+	   *k='\0';
+	   while (v>=value && (*v=='\n' || *v=='\r')) *v--='\0';
+	   *v='\0';
+	   write_value(server_info, key, value);
 
-}
+	}
+
+	int
+	viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr)
+	{
+		db_error = strdup(dberrstr);
+
+		return INT_CANCEL;
+	}
 
