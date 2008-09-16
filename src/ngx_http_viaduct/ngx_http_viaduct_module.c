@@ -360,14 +360,17 @@ u_char *run_query(server_info_t *server_info)
    json_new_object(json);
    json_add_string(json, "query_tag", server_info->query_tag);
    json_add_string(json, "sql_server", server_info->sql_server);
+   json_add_string(json, "sql_user", server_info->sql_user);
 
    if (server_info->sql_port!=NULL && strlen(server_info->sql_port)>0) 
       json_add_string(json, "sql_port", server_info->sql_port);
 
    json_add_string(json, "sql_database", server_info->sql_database);
 
+/*
    if (server_info->sql_password!=NULL && strlen(server_info->sql_password)>0) 
       json_add_string(json, "sql_password", server_info->sql_password);
+*/
 
    json_end_object(json);
    
