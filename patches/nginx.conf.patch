@@ -1,0 +1,22 @@
+--- conf/nginx.conf.orig	2008-02-28 14:44:16.000000000 -0600
++++ conf/nginx.conf		2008-09-16 10:20:06.000000000 -0500
+@@ -33,7 +33,7 @@
+     #gzip  on;
+ 
+     server {
+-        listen       80;
++        listen       8080;
+         server_name  localhost;
+ 
+         #charset koi8-r;
+@@ -45,6 +45,10 @@
+             index  index.html index.htm;
+         }
+ 
++        location /sql {
++            viaduct;
++	}
++
+         #error_page  404              /404.html;
+ 
+         # redirect server error pages to the static page /50x.html
