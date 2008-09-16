@@ -25,6 +25,7 @@
             '/sql',
             {
               'sql_server'   : $('#sql_server')[0].value,
+              'sql_port'     : $('#sql_port')[0].value,
               'sql_database' : $('#sql_database')[0].value,
               'sql_user'     : $('#sql_user')[0].value,
               'sql_password' : $('#sql_password')[0].value
@@ -37,6 +38,9 @@
       });
       
       function processRowSets( response ) {
+        if (response.log.error) {
+          alert(response.log.error);
+        };
         for ( rs_id in response.data ) {
           rowset = response.data[ rs_id ];
           if ( rowset.count ){
@@ -69,21 +73,26 @@
       
     </script>
     <style type="text/css" media="screen">
-      table { border-collapse: collapse;
-              margin-bottom: 0.5em; }
-      td { border: 1px solid gray;
-           padding: 0.5em; }
-      hr { border: 1px dotted navy;
-           margin: 2em; }
-      label { width: 6em;
-              text-align: right;
-              float: left;
-              padding-right: 1em; }
+      table {
+        border-collapse: collapse;
+        margin-bottom: 0.5em; }
+      td {
+        border: 1px solid gray;
+        padding: 0.5em; }
+      hr {
+        border: 1px dotted navy;
+        margin: 2em; }
+      label {
+        width: 6em;
+        text-align: right;
+        float: left;
+        padding-right: 1em; }
     </style>
   </head>
   <body>
     <form id=accept-charset="utf-8">
       <label for="sql_server">Server</label><input type="text" name="sql_server" value="" id="sql_server"><br />
+      <label for="sql_port">Port</label><input type="text" name="sql_port" value="" id="sql_port"><br />
       <label for="sql_database">Database</label><input type="text" name="sql_database" value="" id="sql_database"><br />
       <label for="sql_user">User</label><input type="text" name="sql_user" value="" id="sql_user"><br />
       <label for="sql_password">Password</label><input type="password" name="sql_password" value="" id="sql_password"><br />
