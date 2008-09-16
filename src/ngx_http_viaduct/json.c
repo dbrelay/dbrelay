@@ -126,11 +126,47 @@ void json_add_number(json_t *json, char *key, char *value)
    sb_append(json->sb, value);
    json->pending = 0;
 }
+static int is_printable(char c)
+{
+   if (c<' ' || c=='\"' || c=='\\') return 0;
+   else return 1;
+}
+static void append_nonprintable(stringbuf_t *sb, char c)
+{
+   char buf[7]; /* '\u1234' and null */
+
+   switch (c) {
+      case '\"': sb_append(sb, "\\\""); break;
+      case '\\': sb_append(sb, "\\\\"); break;
+      case '/': sb_append(sb, "\\/"); break;
+      case '\b': sb_append(sb, "\\b"); break;
+      case '\f': sb_append(sb, "\\f"); break;
+      case '\n': sb_append(sb, "\\n"); break;
+      case '\r': sb_append(sb, "\\r"); break;
+      case '\t': sb_append(sb, "\\t"); break;
+      default: 
+         sprintf(buf, "\\u%x%x", 0, c);
+         sb_append(sb, buf); 
+      break;
+   }
+}
 void json_add_string(json_t *json, char *key, char *value)
 {
+   char *s, *first;
+   char c;
+
    json_add_key(json, key);
    sb_append(json->sb, "\"");
-   sb_append(json->sb, value);
+   for (s=value, first=value; *s; s++) {
+      if (!is_printable(*s)) {
+         c = *s;
+         *s='\0';
+         sb_append(json->sb, first);
+         append_nonprintable(json->sb, c);
+         first=s+1;	
+      }
+   }
+   sb_append(json->sb, first);
    sb_append(json->sb, "\"");
    json->pending = 0;
 }
