@@ -150,6 +150,12 @@ static void append_nonprintable(stringbuf_t *sb, char c)
       break;
    }
 }
+void json_add_null(json_t *json, char *key)
+{
+   json_add_key(json, key);
+   sb_append(json->sb, "null");
+   json->pending = 0;
+}
 void json_add_string(json_t *json, char *key, char *value)
 {
    char *s, *first;

@@ -416,6 +416,7 @@ static int fill_data(json_t *json, DBPROCESS *dbproc)
    RETCODE rc;
    char tmp[100];
    char colval[256][31];
+   int colnull[256];
 
    json_add_key(json, "data");
    json_new_array(json);
@@ -439,11 +440,14 @@ static int fill_data(json_t *json, DBPROCESS *dbproc)
 
 	for (colnum=1; colnum<=numcols; colnum++) {
         	dbbind(dbproc, colnum, NTBSTRINGBIND, 0, (BYTE *) &colval[colnum-1]);
+        	dbnullbind(dbproc, colnum, (DBINT *) &colnull[colnum-1]);
 	}
         while (dbnextrow(dbproc)!=NO_MORE_ROWS) { 
 	   json_new_object(json);
 	   for (colnum=1; colnum<=numcols; colnum++) {
-	      if (is_quoted(dbcoltype(dbproc, colnum))) 
+	      if (colnull[colnum-1]==-1) 
+              	json_add_null(json, dbcolname(dbproc, colnum));
+	      else if (is_quoted(dbcoltype(dbproc, colnum))) 
               	json_add_string(json, dbcolname(dbproc, colnum), colval[colnum-1]);
               else
               	json_add_number(json, dbcolname(dbproc, colnum), colval[colnum-1]);
