@@ -36,5 +36,6 @@ make install
 
 cd $PREFIX
 patch -p0 < $HERE/patches/nginx.conf.patch
+[ -d html ] || mkdir html
 cp $HERE/patches/index.html html
 cp $HERE/patches/jquery-1.2.6.pack.js html
