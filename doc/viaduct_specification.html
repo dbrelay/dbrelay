@@ -64,10 +64,8 @@
         clear: left;
       }
       .chapter > ul {
-        max-width: 70em;
         min-width: 30em;
-        width: 70%;
-        margin: auto;
+        margin: 0em auto 0em 5%;
       }
       .chapter > ul > li {
         margin-top: 1.5em;
@@ -91,7 +89,7 @@
       .comments {
         text-align: justify;
       }
-      h1, h2, h3 {
+      h1, h2, h3, h4 {
         margin-top: 1.5em;
         color: #444;
       }
@@ -106,6 +104,12 @@
       h3 {
         text-align: left;
         padding-left: 5%;
+      }
+      h4 {
+        padding-left: 10%;
+        font-weight: normal;
+        font-style: italic;
+        margin-top: 2em;
       }
       todo {
         display: inline;
@@ -141,8 +145,8 @@
         display: block;
         float: left;
         margin: 0em 0.5em 0.2em 0em;
-        padding: 0.3em 0.5em;
-        clear: none;
+        padding: 0.2em 0.5em;
+        clear: left;
       }
       .spec {
         font-family: monospaced;
@@ -218,12 +222,19 @@
           <li><a href="#logic">Interaction logic</a>
             <ol>
               <li><a href="#normal_request">Normal request</a></li>
+              <li><a href="#status_request">Status request</a></li>
               <li><a href="#app_shutdown">Application shutdown</a></li>
             </ol>
           </li>
           <li><a href="#interfaces">Interfaces</a>
             <ol>
-              <li><a href="#http_request">HTTP request</a></li>
+              <li><a href="#http_request">HTTP request</a>
+                <ol>
+                  <li><a href="#http_request_db">Database server</a></li>
+                  <li><a href="#http_request_conn">Connection lifecycle</a></li>
+                  <li><a href="#http_request_query">SQL query</a></li>
+                </ol>
+              </li>
               <li><a href="#http_response">HTTP response (JSON)</a></li>
               <li><a href="#log_files">Log and PID files</a></li>
               <li><a href="#static_files">Static files</a></li>
@@ -240,6 +251,12 @@
       </div>
       <div id="revisions" class="chapter">
         <h2>Revisions</h2>
+        <p>
+          <span class="term" class="date">2008.09.18</span>
+          <span class="term" class="person">Vlad&nbsp;Didenko<br />Richard Glick</span>
+          <div class="comments">Adjusted the <code>log_level_scope</code> description in the <a href="#http_request">HTTP request</a> section, and log levels format and meanings in the <a href="#log_files">Log and PID files</a> section to match the <code>syslog</code> RFC. Also, added the mentioning of the <a href="#status_request"><code>status</code></a> request in the <a href="#logic">Intraction logic</a> section.</div>
+          <div class="float_break"></div>
+        </p>
         <p>
           <span class="term" class="date">2008.09.17</span>
           <span class="term" class="person">Vlad&nbsp;Didenko</span>
@@ -346,6 +363,10 @@
             <li><p><div class="error_note"><todo>error handler</todo></div>There should be a connection &quot;grabage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.</p></li>
           </ol>
         </div>
+        <div id="status_request" class="chapter">
+          <h3>Status request</h3>
+          <p>A status report on open connections, loads, timings, memory, version, etc should be available on a configurable URI, <code>/status</code> by default. The <todo>details of the status response</todo> till be detailed later in the project.</p>
+        </div>
         <div id="app_shutdown" class="chapter">
           <h3>Application shutdown</h3>
           <p>Application behavior when receiving catchable signals:</p>
@@ -364,27 +385,23 @@
           <h3>HTTP request</h3>
           <p>The SQL Bridge module should be configurable to be invoked on one or many URIs. By default it must respond to get and post requests at the <code>/sql</code> path.</p>
           <p>HTTP request carries information in the HTTP header and parameter <code>key=value</code> pairs. The application <span class="em">must not</span> expect request information in HTTP headers. Only request parameters must be used. All defaults are configured in the build header files. The parameters below are grouped for the clarity:</p>
-          <ul>
-            <li>Database server
-              <p><span class="term done">sql_server</span>Hostname on which the SQL server is running.</p>
-              <p><span class="term done">sql_port</span>Optional port number, on which the SQL server is listening. 1433 is the default.</p>
-              <p><span class="term done">sql_database</span>Optional name of the primary database for the connection. User's default database is used, if not specified.</p>
-              <p><span class="term done">sql_user</span>Username string recognised by the SQL server.</p>
-              <p><span class="term done">sql_password</span>Optional password for the sql_user.</p>
-            </li>
-            <li>Connection lifecycle
-              <p><span class="term">connection_name</span>Optional name to persist this connection under.</p>
-              <p><span class="term">connection_timeout</span>Optional number of seconds from the last received query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
-              <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
-              <p><span class="term">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
-              <p><span class="term">log_level_scope</span>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;.</p>
-            </li>
-            <li>SQL query
-              <p><span class="term done">sql</span>Optional TSQL statement batch conformant with MS SQL Server 2005 TSQL. &quot;Sql&quot; and &quot;param[]&quot; parameters may be omitted when, for example, setting the new application log level.</p>
-              <p><span class="term">params</span></p>Optional list of comma-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional parameters to be bound into the SQL query. Output parameters are not supported. <todo>How would we quote and escape values for quotes, commas and colons?</todo></p>
-              <p><span class="term">error_style</span>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</p>
-            </li>
-          </ul>
+          <h4 id="http_request_db">Database server</h4>
+          <p><span class="term done">sql_server</span>Hostname on which the SQL server is running.</p>
+          <p><span class="term done">sql_port</span>Optional port number, on which the SQL server is listening. 1433 is the default.</p>
+          <p><span class="term done">sql_database</span>Optional name of the primary database for the connection. User's default database is used, if not specified.</p>
+          <p><span class="term done">sql_user</span>Username string recognised by the SQL server.</p>
+          <p><span class="term done">sql_password</span>Optional password for the sql_user.</p>
+          <h4 id="http_request_conn">Connection lifecycle</h4>
+          <p><span class="term">connection_name</span>Optional name to persist this connection under.</p>
+          <p><span class="term">connection_timeout</span>Optional number of seconds from the last received query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
+          <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
+          <p><span class="term">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
+          <p><span class="term">log_level_scope</span>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</p>
+          <h4 id="http_request_query">SQL query</h4>
+          <p><span class="term done">sql</span>Optional TSQL statement batch conformant with MS SQL Server 2005 TSQL. &quot;Sql&quot; and &quot;param[]&quot; parameters may be omitted when, for example, setting the new application log level.</p>
+          <p><span class="term">params</span></p>Optional list of comma-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional parameters to be bound into the SQL query. Output parameters are not supported. <todo>How would we quote and escape values for quotes, commas and colons?</todo></p>
+          <p><span class="term">error_style</span>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</p>
+          <h4>Persistense considerations</h4>
           <p>Connections are persistent beyond the HTTP connection disconnect if, and only if, a connection name is provided. Multiple connections may persist under the same name, distinguished by other connection parameters. To be reused, persistent connections are referred to by the whole combination of sql_server, sql_port, sql_database, sql_domain, sql_user, sql_password (crypted), connection_name. Those parameters are referred to as <em>connection hash keys</em>. Connection timeout adjusted by each query which sets it. Error style is specific for the query and is not persistent.</p>
         </div>
         <div id="http_response" class="chapter">
@@ -456,30 +473,28 @@
         <div id="log_files" class="chapter">
           <h3>Log and PID files</h3>
           <p>If no directories specified, logs and PID files are created in system-vendor recommended directory as defined in the application source header files. File names, if configurable in Nginx, should include the executable name, listening HTTP port, date and time stamp and, appropriately, have .log or .pid extension. The PID file should only contain a numeric PID of the application process. Content of the log files at appropriate levels will be decided later in the project.</p>
-          <p>Log files are written according to the &laquo;log_level&raquo; setting. The following are the meanings for it's values:</p>
-
-          <p><span class="term">fatal</span>Log only when Viaduct server can not continue and will shutdown. the following data is reported:</p>
-          <ul class="dense">
-            <li>List of open connections with all their parameters, excluding passwords. Include connection remote IP addresses, time established, requests per hour, data in and data out.</li>
-            <li>Active and pending requests per each connection, with all the requests' parameters and client data: ip address, http headers, excluding passwords.</li>
-            <li>Server process stats - PID, UID, GID, memory sizes, configs, whatever else developer deems reasonable.</li>
-          </ul>
-
-          <p><span class="term">severe</span>Unsolicited database server side disconnects. Provided:</p>
-          <ul class="dense">
-            <li>The affected connection data with all its parameters, excluding password. Include connection remote IP address, time established, requests per hour, data in and data out.</li>
-            <li>Active and pending requests per each connection, with all the requests' parameters and client's data: ip address, http headers, excluding passwords.</li>
-          </ul>
-          <p><span class="term">warning</span>Events, which may indicate misconfiguration or remote error condition, but do not threaten the Viaduct server integrity. Most events, which are likely to inpact single client. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
+          <p>Log files are written according to the &laquo;log_level&raquo; setting in the <code>syslog</code> format as per &sect;4.1 of <a href="http://tools.ietf.org/rfc/rfc3164.txt">RFC 3164</a>. The messages are assigned to &laquo;user-level messages&raquo; facility (value <code>1</code>). The following are the meanings for the &laquo;log_level&raquo; values, mapped to the <code>syslog</code> &laquo;severity&raquo; levels:</p>
+          <p><span class="term">debug</span>The complete http connection, request and database server lifecycle information, including full set of timings on both client and database sides.</p>
+          <p><span class="term">informational</span>Live configuration changes. For now, this is only &laquo;<code>log_level</code>&raquo; for &laquo;<code>server</code>&raquo; and &laquo;<code>connection</code>&raquo; scopes.</p>
+          <p><span class="term">notice</span>All query errors together with related requests' data, parameters, and client's data: ip address, http headers, excluding passwords.</p>
+          <p><span class="term">warning</span>Events, which may indicate misconfiguration or remote error condition, but do not threaten the Viaduct server integrity. Most events, which are likely to impact multiple clients. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
           <ul class="dense">
             <li>Timeouts on database server queries.</li>
             <li>Malformed requests.</li>
             <li>Errors establishing connections.</li>
             <li>Connections re-established more often than once every three seconds.</li>
           </ul>                                                                      
-          <p><span class="term">info</span>All query errors together with request and client IP information. Should include all request information mentioned above.</p>
-          <p><span class="term">config</span>Live configuration changes. For now, this is only &laquo;<code>log_level</code>&raquo; for &laquo;<code>server</code>&raquo; and &laquo;<code>connection</code>&raquo; scopes.</p>
-          <p><span class="term">detail</span>The complete http connection, request and database server lifecycle information.</p>
+          <p><span class="term">error</span>Unsolicited database server side disconnects. Provides:</p>
+          <ul class="dense">
+            <li>The affected connection data with all its parameters, excluding password. Include connection remote IP address, time established, requests per hour, data in and data out.</li>
+            <li>Active and pending requests per each connection, with all the requests' parameters and client's data: ip address, http headers, excluding passwords.</li>
+          </ul>
+          <p><span class="term">critical</span>Log only when Viaduct server can not continue and will shutdown. the following data is reported:</p>
+          <ul class="dense">
+            <li>List of open connections with all their parameters, excluding passwords. Include connection remote IP addresses, time established, requests per hour, data in and data out.</li>
+            <li>Active and pending requests per each connection, with all the requests' parameters and client data: ip address, http headers, excluding passwords.</li>
+            <li>Server process stats - PID, UID, GID, memory sizes, configs, whatever else developer deems reasonable.</li>
+          </ul>
         </div>
         <div id="static_files" class="chapter">
           <h3>Static files</h3>
