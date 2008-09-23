@@ -313,10 +313,10 @@ static char *get_sqltype_string(char *dest, int coltype, int collen)
 {
 	switch (coltype) {
 		case SYBVARCHAR : 
-			sprintf(dest, "varchar(%d)", collen);
+			sprintf(dest, "varchar");
 			break;
 		case SYBCHAR : 
-			sprintf(dest, "char(%d)", collen);
+			sprintf(dest, "char");
 			break;
 		case SYBINT4 : 
 		case SYBINT2 : 
@@ -329,6 +329,29 @@ static char *get_sqltype_string(char *dest, int coltype, int collen)
 			else if (collen==4)
 				sprintf(dest, "int");
 			break;
+		case SYBFLT8 : 
+		case SYBREAL : 
+		case SYBFLTN : 
+			if (collen==4) 
+			    sprintf(dest, "real");
+			else if (collen==8) 
+			    sprintf(dest, "float");
+			break;
+		case SYBMONEY : 
+			    sprintf(dest, "money");
+			break;
+		case SYBMONEY4 : 
+			    sprintf(dest, "smallmoney");
+			break;
+		case SYBIMAGE : 
+			    sprintf(dest, "image");
+			break;
+		case SYBTEXT : 
+			    sprintf(dest, "text");
+			break;
+		case SYBBIT : 
+			    sprintf(dest, "bit");
+			break;
 		case SYBDATETIME4 : 
 		case SYBDATETIME : 
 		case SYBDATETIMN : 
@@ -336,11 +359,32 @@ static char *get_sqltype_string(char *dest, int coltype, int collen)
 				sprintf(dest, "smalldatetime");
 			else if (collen==8)
 				sprintf(dest, "datetime");
+			break;
+		case SYBNUMERIC : 
+			sprintf(dest, "numeric");
+			break;
+		case SYBDECIMAL : 
+			sprintf(dest, "decimal");
+			break;
 		default : 
 			sprintf(dest, "unknown type %d", coltype);
 			break;
 	}
 	return dest;
+}
+static unsigned char has_length(int coltype)
+{
+	if (coltype==SYBVARCHAR || coltype==SYBCHAR)
+		return 1;
+	else
+		return 0;
+}
+static unsigned char has_prec(int coltype)
+{
+	if (coltype==SYBDECIMAL || coltype==SYBNUMERIC)
+		return 1;
+	else
+		return 0;
 }
 u_char *run_query(server_info_t *server_info)
 {
@@ -417,6 +461,7 @@ static int fill_data(json_t *json, DBPROCESS *dbproc)
    char tmp[100];
    char colval[256][31];
    int colnull[256];
+   DBTYPEINFO *typeinfo;
 
    json_add_key(json, "data");
    json_new_array(json);
@@ -432,6 +477,17 @@ static int fill_data(json_t *json, DBPROCESS *dbproc)
 	    json_add_string(json, "name", dbcolname(dbproc, colnum));
             get_sqltype_string(tmp, dbcoltype(dbproc, colnum), dbcollen(dbproc, colnum));
 	    json_add_string(json, "sql_type", tmp);
+            //if (has_length(dbcoltype(dbproc, colnum))) {
+            sprintf(tmp, "%d", dbcollen(dbproc, colnum));
+	    json_add_string(json, "length", tmp);
+            //}
+            if (has_prec(dbcoltype(dbproc, colnum))) {
+               typeinfo = dbcoltypeinfo(dbproc, colnum);
+               sprintf(tmp, "%d", typeinfo->precision);
+	       json_add_string(json, "precision", tmp);
+               sprintf(tmp, "%d", typeinfo->scale);
+	       json_add_string(json, "scale", tmp);
+            }
 	    json_end_object(json);
         }
 	json_end_array(json);
