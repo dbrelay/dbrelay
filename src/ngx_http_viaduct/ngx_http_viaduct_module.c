@@ -423,6 +423,8 @@ u_char *run_query(server_info_t *server_info)
    login = dblogin();
    if (server_info->sql_password!=NULL && strlen(server_info->sql_password)>0) 
    	DBSETLPWD(login, server_info->sql_password); 
+   else
+        DBSETLPWD(login, NULL);
    DBSETLUSER(login, server_info->sql_user);
    DBSETLAPP(login, "viaduct");
    DBSETLHOST(login, server_info->sql_server);
