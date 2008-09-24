@@ -5,7 +5,7 @@
  
      server {
 -        listen       80;
-+        listen       8080;
++        listen       1433;
          server_name  localhost;
  
          #charset koi8-r;
