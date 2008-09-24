@@ -19,8 +19,15 @@
         color: #000000;
         text-decoration: none;
       }
+      #revisions_show, #revisions_hide {
+        display: none;
+      }
   	</style>
   	<style type="text/css" media="screen">
+      #revisions_show, #revisions_hide {
+        text-decoration: underline;
+        cursor: pointer;
+      }
       #content_wrap {
         width: 70%;
         margin: auto;
@@ -250,43 +257,59 @@
         <p class="copyright">&copy; 2008 GETCO LLC. All Rights Reserved.</p>
       </div>
       <div id="revisions" class="chapter">
-        <h2>Revisions</h2>
-        <p>
-          <span class="term" class="date">2008.09.18</span>
-          <span class="term" class="person">Vlad&nbsp;Didenko<br />Richard Glick</span>
-          <div class="comments">Adjusted the <code>log_level_scope</code> description in the <a href="#http_request">HTTP request</a> section, and log levels format and meanings in the <a href="#log_files">Log and PID files</a> section to match the <code>syslog</code> RFC. Also, added the mentioning of the <a href="#status_request"><code>status</code></a> request in the <a href="#logic">Intraction logic</a> section.</div>
-          <div class="float_break"></div>
-        </p>
-        <p>
-          <span class="term" class="date">2008.09.17</span>
-          <span class="term" class="person">Vlad&nbsp;Didenko</span>
-          <div class="comments">Removed the <code>status</code> request parameter. Added the <code>log_level_scope</code> request parameter. Modified the way the <code>param</code> request parameter described. Added the &laquo;log_level&raquo; descriptions to the <a href="#log_files">Log and PID files</a> section. Higlighted &laquo;done&raquo; items with green border.</div>
-          <div class="float_break"></div>
-        </p>
-        <p>
-          <span class="term" class="date">2008.08.26</span>
-          <span class="term" class="person">Vlad&nbsp;Didenko,<br />Brian&nbsp;Bruns</span>
-          <div class="comments">Removed the <code>sql_domain</code> request parameter - the domain name can be part of the user name. Change the <a href="#http_response">HTTP response</a> specification to have column metadata returned in a rowset property <code>fields</code> (instead of <code>types</code>) as <code>Array</code> of <code>Hashes</code> (instead of <code>Array</code> of <code>Arrays</code>). Added browser specifications to the <a href="#environment">Environment</a> section. Added the ContentType specification to the <a href="#http_response">HTTP response</a> section. Removed the live upgrade requirement from <a href="#app_shutdown">Application shutdown</a> logic.</div>
-          <div class="float_break"></div>
-        </p>
-        <p>
-          <span class="term" class="date">2008.08.13</span>
-          <span class="term" class="person">Vlad&nbsp;Didenko</span>
-          <div class="comments">Added <code>query_tag</code> to request and response interfaces, Javascript example, changed <code>types</code> format in the response from <code>Object</code> to <code>Array</code> of <code>Arrays</code>.</div>
-          <div class="float_break"></div>
-        </p>
-        <p>
-          <span class="term" class="date">2008.08.08</span>
-          <span class="term" class="person">Vlad&nbsp;Didenko</span>
-          <div class="comments">Interfaces and Environment, refined connection persistense and timeouts.</div>
-          <div class="float_break"></div>
-        </p>
-        <p>
-          <span class="term" class="date">2008.08.07</span>
-          <span class="term" class="person">Vlad Didenko</span>
-          <div class="comments">Initial version: Overview, Features, Interaction Logic</div>
-          <div class="float_break"></div>
-        </p>
+        <h2><span id="revisions_show" onclick="
+          document.getElementById('revisions_show').style.display = 'none';
+          document.getElementById('revisions_hide').style.display = '';
+          document.getElementById('revisions_body').style.display = '';
+        ">Show</span><span id="revisions_hide" style="display:none;" onclick="
+          document.getElementById('revisions_show').style.display = '';
+          document.getElementById('revisions_hide').style.display = 'none';
+          document.getElementById('revisions_body').style.display = 'none';
+        ">Hide</span> Revisions</h2>
+        <div id="revisions_body" style="display:none;">
+          <p>
+            <span class="term" class="date">2008.09.23</span>
+            <span class="term" class="person">Vlad&nbsp;Didenko</span>
+            <div class="comments">The &laquo;length&raquo; attribute is now required in field specifications. added an optional &laquo;scale&raquo; attribute for numeric and decimal types.</div>
+            <div class="float_break"></div>
+          </p>
+          <p>
+            <span class="term" class="date">2008.09.18</span>
+            <span class="term" class="person">Vlad&nbsp;Didenko<br />Richard Glick</span>
+            <div class="comments">Adjusted the <code>log_level_scope</code> description in the <a href="#http_request">HTTP request</a> section, and log levels format and meanings in the <a href="#log_files">Log and PID files</a> section to match the <code>syslog</code> RFC. Also, added the mentioning of the <a href="#status_request"><code>status</code></a> request in the <a href="#logic">Intraction logic</a> section.</div>
+            <div class="float_break"></div>
+          </p>
+          <p>
+            <span class="term" class="date">2008.09.17</span>
+            <span class="term" class="person">Vlad&nbsp;Didenko</span>
+            <div class="comments">Removed the <code>status</code> request parameter. Added the <code>log_level_scope</code> request parameter. Modified the way the <code>param</code> request parameter described. Added the &laquo;log_level&raquo; descriptions to the <a href="#log_files">Log and PID files</a> section. Higlighted &laquo;done&raquo; items with green border.</div>
+            <div class="float_break"></div>
+          </p>
+          <p>
+            <span class="term" class="date">2008.08.26</span>
+            <span class="term" class="person">Vlad&nbsp;Didenko,<br />Brian&nbsp;Bruns</span>
+            <div class="comments">Removed the <code>sql_domain</code> request parameter - the domain name can be part of the user name. Change the <a href="#http_response">HTTP response</a> specification to have column metadata returned in a rowset property <code>fields</code> (instead of <code>types</code>) as <code>Array</code> of <code>Hashes</code> (instead of <code>Array</code> of <code>Arrays</code>). Added browser specifications to the <a href="#environment">Environment</a> section. Added the ContentType specification to the <a href="#http_response">HTTP response</a> section. Removed the live upgrade requirement from <a href="#app_shutdown">Application shutdown</a> logic.</div>
+            <div class="float_break"></div>
+          </p>
+          <p>
+            <span class="term" class="date">2008.08.13</span>
+            <span class="term" class="person">Vlad&nbsp;Didenko</span>
+            <div class="comments">Added <code>query_tag</code> to request and response interfaces, Javascript example, changed <code>types</code> format in the response from <code>Object</code> to <code>Array</code> of <code>Arrays</code>.</div>
+            <div class="float_break"></div>
+          </p>
+          <p>
+            <span class="term" class="date">2008.08.08</span>
+            <span class="term" class="person">Vlad&nbsp;Didenko</span>
+            <div class="comments">Interfaces and Environment, refined connection persistense and timeouts.</div>
+            <div class="float_break"></div>
+          </p>
+          <p>
+            <span class="term" class="date">2008.08.07</span>
+            <span class="term" class="person">Vlad Didenko</span>
+            <div class="comments">Initial version: Overview, Features, Interaction Logic</div>
+            <div class="float_break"></div>
+          </p>
+        </div>
       </div>
       <div id="overview" class="chapter">
         <h2>Overview</h2>
@@ -365,7 +388,7 @@
         </div>
         <div id="status_request" class="chapter">
           <h3>Status request</h3>
-          <p>A status report on open connections, loads, timings, memory, version, etc should be available on a configurable URI, <code>/status</code> by default. The <todo>details of the status response</todo> till be detailed later in the project.</p>
+          <p>A status report on open connections, loads, timings, memory, version, etc should be available on a configurable URI, <code>/status</code> by default. The <todo>details of the status response</todo> will be specified later in the project.</p>
         </div>
         <div id="app_shutdown" class="chapter">
           <h3>Application shutdown</h3>
@@ -452,8 +475,9 @@
               <span class="indent">
                 name: <span class="ab">field_name</span> , <br />
                 sql_type: <span class="ab">field_type</span> , <br />
-                length: <span class="json_term">int</span> , &laquo;?&raquo; <br />
-                precision: <span class="json_term">int</span> &laquo;?&raquo; <br />
+                length: <span class="json_term">int</span> , <br />
+                precision: <span class="json_term">int</span> , &laquo;?&raquo; <br />
+                scale: <span class="json_term">int</span> &laquo;?&raquo; <br />
               </span>
             }
           </p>
