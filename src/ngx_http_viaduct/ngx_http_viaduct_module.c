@@ -33,6 +33,7 @@ static ngx_int_t ngx_http_viaduct_create_request(ngx_http_request_t *r);
 static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
 static int fill_data(json_t *json, DBPROCESS *dbproc);
 int viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
+static ngx_int_t ngx_http_viaduct_send_response(ngx_http_request_t *r);
 
 static char *db_error;
 
@@ -79,19 +80,17 @@ ngx_module_t  ngx_http_viaduct_module = {
     NGX_MODULE_V1_PADDING
 };
 
-/*
- * We don't do anything here currently, it's not clear to me if we need to.
- */
 static void
 ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)
 {
     size_t                    root;
     ngx_str_t                 path;
     ngx_log_t                 *log;
+    //ngx_int_t                 rc;
 
-    ngx_http_map_uri_to_path(r, &path, &root, 0);
     log = r->connection->log;
 
+    ngx_http_map_uri_to_path(r, &path, &root, 0);
     /* is GET method? */
     if (r->args.len>0) {
     	ngx_log_error(NGX_LOG_ALERT, log, 0, "args len: %d", r->args.len);
@@ -101,6 +100,7 @@ ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)
        ngx_log_error(NGX_LOG_ALERT, log, 0,
             "buf: \"%s\"", r->request_body->buf->pos);
     } 
+    //rc = ngx_http_viaduct_send_response(r);
 }
 
 /*
@@ -221,15 +221,13 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
 {
     ngx_int_t                  rc;
     ngx_log_t                 *log;
-    ngx_buf_t                 *b;
-    ngx_chain_t                out;
-    /* ngx_http_viaduct_loc_conf_t  *clcf; */
     ngx_http_core_loc_conf_t  *clcf;
-    u_char *json_output;
-    /* FIX ME - static allocation */
-    server_info_t server_info;
+
+    log = r->connection->log;
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "viaduct_handler called");
 
     if (!(r->method & (NGX_HTTP_GET|NGX_HTTP_HEAD|NGX_HTTP_POST))) {
+        ngx_log_error(NGX_LOG_ALERT, log, 0, "unsupported method, returning not allowed");
         return NGX_HTTP_NOT_ALLOWED;
     }
 
@@ -244,14 +242,35 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
 
     r->root_tested = 1;
 
-    log = r->connection->log;
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "here1");
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "here2");
     rc = ngx_http_read_client_request_body(r, ngx_http_viaduct_request_body_handler);
-    if (rc != NGX_OK) {
+
+    if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
+        ngx_log_error(NGX_LOG_ALERT, log, 0, "failed to read client request body");
         return rc;
     }
 
+    //return NGX_DONE;
+    return ngx_http_viaduct_send_response(r);
+}
+
+static ngx_int_t
+ngx_http_viaduct_send_response(ngx_http_request_t *r)
+{
+    ngx_int_t                  rc;
+    ngx_log_t                 *log;
+    ngx_buf_t                 *b;
+    ngx_chain_t                out;
+    u_char *json_output;
+    /* FIX ME - static allocation */
+    server_info_t server_info;
+
+    log = r->connection->log;
+
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
     /* is GET method? */
     if (r->args.len>0) {
 	parse_query_string(r->args.data, &server_info);
@@ -270,7 +289,8 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
     /* we need to allocate all before the header would be sent */
     b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));
     if (b == NULL) {
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    	//ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+	return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
     out.buf = b;
@@ -295,6 +315,8 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
     }
 
     rc = ngx_http_send_header(r);
+    //ngx_http_finalize_request(r, ngx_http_send_header(r));
+    //return;
 
     return ngx_http_output_filter(r, &out);
 }
