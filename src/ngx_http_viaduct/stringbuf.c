@@ -3,62 +3,72 @@
 
 char *sb_to_char(stringbuf_t *string)
 {
+   stringbuf_node_t *node;
    char *outstr = (char *) malloc(sb_len(string) + 1);
    outstr[0] = '\0';
 
+   node = string->head;
    do {
-      if (string->part) strcat(outstr, string->part);
-      string = string->next;
-   } while (string);
+      if (node->part) strcat(outstr, node->part);
+      node = node->next;
+   } while (node);
 
    return outstr;
 }
 
 int sb_len(stringbuf_t *string)
 {
+   stringbuf_node_t *node;
    int len = 0;
 
+   node = string->head;
    do {
-      if (string->part) len += strlen(string->part);
-      string = string->next;
-   } while (string);
+      if (node->part) len += strlen(node->part);
+      node = node->next;
+   } while (node);
 
    return len;
 }
 
 void sb_free(stringbuf_t *string)
 {
-   stringbuf_t *prev;
+   stringbuf_node_t *node;
+   stringbuf_node_t *prev;
 
+   if (!string) return;
+
+   node = string->head;
    do {
-      prev = string;
-      string = string->next;
+      prev = node;
+      node = node->next;
       if (prev->part) free(prev->part);
       free(prev);
-   } while (string->next);
+   } while (node->next);
+   free(string);
 }
 
 stringbuf_t *sb_new(char *s)
 {
    stringbuf_t *string = (stringbuf_t *) malloc(sizeof(stringbuf_t));
    memset(string, 0, sizeof(stringbuf_t));
-   if (s) string->part = strdup(s); 
+   stringbuf_node_t *new_node = malloc(sizeof(stringbuf_node_t));
+   memset(new_node, 0, sizeof(stringbuf_node_t));
+   if (s) new_node->part = strdup(s); 
+   string->head = new_node;
+   string->tail = new_node;
 
    return string;
 }
 
-stringbuf_t *sb_append(stringbuf_t *string, char *s)
+stringbuf_node_t *sb_append(stringbuf_t *string, char *s)
 {
-   while (string->next) {
-	string = string->next;
-   }
+   stringbuf_node_t *new_node = malloc(sizeof(stringbuf_node_t));
+   memset(new_node, 0, sizeof(stringbuf_node_t));
+   if (s) new_node->part = strdup(s); 
+   string->tail->next = new_node;
+   string->tail = new_node;
 
-   stringbuf_t *new_string = malloc(sizeof(stringbuf_t));
-   memset(new_string, 0, sizeof(stringbuf_t));
-   if (s) new_string->part = strdup(s); 
-   string->next = new_string;
-
-   return new_string;
+   return new_node;
 }
 
 /*
