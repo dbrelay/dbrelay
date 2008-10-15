@@ -86,7 +86,7 @@ ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)
     size_t                    root;
     ngx_str_t                 path;
     ngx_log_t                 *log;
-    //ngx_int_t                 rc;
+    ngx_int_t                 rc;
 
     log = r->connection->log;
 
@@ -100,7 +100,7 @@ ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)
        ngx_log_error(NGX_LOG_ALERT, log, 0,
             "buf: \"%s\"", r->request_body->buf->pos);
     } 
-    //rc = ngx_http_viaduct_send_response(r);
+    rc = ngx_http_viaduct_send_response(r);
 }
 
 /*
@@ -253,8 +253,8 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
         return rc;
     }
 
-    //return NGX_DONE;
-    return ngx_http_viaduct_send_response(r);
+    return NGX_DONE;
+    //return ngx_http_viaduct_send_response(r);
 }
 
 static ngx_int_t
@@ -311,14 +311,13 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     r->allow_ranges = 1;
 
     if (r != r->main && ngx_strlen(json_output) == 0) {
-        return ngx_http_send_header(r);
+        rc = ngx_http_send_header(r);
     }
 
     rc = ngx_http_send_header(r);
-    //ngx_http_finalize_request(r, ngx_http_send_header(r));
-    //return;
-
-    return ngx_http_output_filter(r, &out);
+    rc = ngx_http_output_filter(r, &out);
+    ngx_http_finalize_request(r, rc);
+    return rc;
 }
 
 static int is_quoted(int coltype)
