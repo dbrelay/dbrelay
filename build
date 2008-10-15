@@ -20,22 +20,22 @@ else
 	PREFIX=/usr/local
 fi
 
-HERE=`pwd`
+BUILD=`pwd`
 cd src/freetds-0.82
-./configure --prefix=$HERE/freetds-0.82 --with-tdsver=8.0; make
+./configure --prefix=$BUILD/freetds-0.82 --with-tdsver=8.0; make
 
-cd $HERE
+cd $BUILD
 cd src/ngx_http_viaduct
-cat config.in | sed -e "s#FREETDS#$HERE/src/freetds-0.82#g" > config
+cat config.in | sed -e "s#FREETDS#$BUILD/src/freetds-0.82#g" > config
 
-cd $HERE
+cd $BUILD
 cd src/nginx-0.7.11
-./configure --prefix=$PREFIX --with-pcre=$HERE/src/pcre-7.7/ --add-module=$HERE/src/ngx_http_viaduct
+./configure --prefix=$PREFIX --with-pcre=$BUILD/src/pcre-7.7/ --add-module=$BUILD/src/ngx_http_viaduct
 make
 make install
 
 cd $PREFIX
-patch -N -p0 -i $HERE/patches/nginx.conf.patch
+patch -N -p0 -i $BUILD/patches/nginx.conf.patch
 [ -d html ] || mkdir html
-cp $HERE/patches/index.html html
-cp $HERE/patches/jquery-1.2.6.pack.js html
+cp -r $BUILD/html/* html
+cp -r $BUILD/doc html

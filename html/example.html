@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Python access to Viaduct</title>
+    <style type="text/css" media="all">
+      body {
+        width: 80%;
+        margin: auto;
+      }
+      pre {
+        background-color: #eee;
+        margin-left: 2em;
+        border: 1px dotted grey;
+        padding: 1em;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Python example</h1>
+    <ol>
+      <li><a href="simplejson-2.0.3.tar.gz">Download the simplejson package by clicking here</a></li>
+      <li>
+        <p>Install the simplejson package, like this:</p>
+        <pre>tar xzf simplejson-2.0.3.tar.gz
+cd simplejson-2.0.3
+sudo python setup.py install</pre>
+      </li>
+      <li>
+        <p>Run the emaple Python script with your values:</p>
+        <pre>import urllib, urllib2, simplejson
+
+params = {
+  'sql_server':   'dbserver',
+  'sql_database': 'database',
+  'sql_user':     'dbuser',
+  'sql':          'select top 3 * from testtable' }
+
+url = 'http://viaducthost:1433/sql'
+
+response = urllib2.urlopen( url=url, data=urllib.urlencode(params) )
+result = simplejson.load( response )
+
+if 'data' in result:
+  print simplejson.dumps( result['data'], sort_keys=True, indent=2)
+
+if 'error' in result:
+  print simplejson.dumps( result['error'], sort_keys=True, indent=2)</pre>
+      </li>
+    </ol>
+    <hr />
+  </body>
+</html>

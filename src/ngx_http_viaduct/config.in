@@ -1,6 +1,6 @@
 addon_name=ngx_http_viaduct_module
 HTTP_MODULES="$HTTP_MODULES ngx_http_viaduct_module"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_http_viaduct_module.c $ngx_addon_dir/stringbuf.c $ngx_addon_dir/json.c"
-CORE_LIBS="$CORE_LIBS FREETDS/src/dblib/.libs/libsybdb.a FREETDS/src/tds/.libs/libtds.a -liconv"
+CORE_LIBS="$CORE_LIBS FREETDS/src/dblib/.libs/libsybdb.a FREETDS/src/tds/.libs/libtds.a -lrt"
 CORE_INCS="$CORE_INCS -I FREETDS/include"
 
