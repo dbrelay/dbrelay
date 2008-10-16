@@ -26,7 +26,18 @@ cd src/freetds-0.82
 
 cd $BUILD
 cd src/ngx_http_viaduct
-cat config.in | sed -e "s#FREETDS#$BUILD/src/freetds-0.82#g" > config
+echo "s#FREETDS#$BUILD/src/freetds-0.82#g" > /tmp/sedfile.$$
+if [ `uname` = "Darwin" ]
+then
+echo "s#VIADUCT_EXTRA_LIBS#-liconv#g" >> /tmp/sedfile.$$
+elif [ `uname` = "Linux" ]
+then
+echo "s#VIADUCT_EXTRA_LIBS#-lrt#g" >> /tmp/sedfile.$$
+else
+echo "s#VIADUCT_EXTRA_LIBS##g" >> /tmp/sedfile.$$
+fi
+cat config.in | sed -f /tmp/sedfile.$$ > config
+rm -f /tmp/sedfile.$$
 
 cd $BUILD
 cd src/nginx-0.7.11
@@ -36,6 +47,7 @@ make install
 
 cd $PREFIX
 patch -N -p0 -i $BUILD/patches/nginx.conf.patch
-[ -d html ] || mkdir html
-cp -r $BUILD/html/* html
-cp -r $BUILD/doc html
+[ -d html ] || mkdir -p html/tablesorter
+cp $BUILD/html/* html
+cp $BUILD/html/tablesorter/* html/tablesorter
+cp $BUILD/doc/* html
