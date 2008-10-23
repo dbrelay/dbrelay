@@ -7,35 +7,17 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <ngx_http_upstream.h>
-#include <sybdb.h>
-#include "stringbuf.h"
-#include "json.h"
-
+#include "viaduct.h"
 
 typedef struct {
     ngx_http_upstream_conf_t   upstream;
 } ngx_http_viaduct_loc_conf_t;
 
-typedef struct {
-   char sql_server[100];
-   char sql_port[100];
-   char sql_database[100];
-   char sql_user[100];
-   char sql_password[100];
-   char sql[4000];
-   char query_tag[100];
-} server_info_t;
-
-void parse_query_string(u_char *query_string, server_info_t *server_info);
-u_char *run_query(server_info_t *server_info);
+void parse_query_string(u_char *query_string, viaduct_request_t *request);
 static char *ngx_http_viaduct_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_viaduct_create_request(ngx_http_request_t *r);
 static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
-static int fill_data(json_t *json, DBPROCESS *dbproc);
-int viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
 static ngx_int_t ngx_http_viaduct_send_response(ngx_http_request_t *r);
-
-static char *db_error;
 
 static ngx_command_t  ngx_http_viaduct_commands[] = {
 
@@ -266,23 +248,23 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     ngx_chain_t                out;
     u_char *json_output;
     /* FIX ME - static allocation */
-    server_info_t server_info;
+    viaduct_request_t request;
 
     log = r->connection->log;
 
     ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
     /* is GET method? */
     if (r->args.len>0) {
-	parse_query_string(r->args.data, &server_info);
+	parse_query_string(r->args.data, &request);
     }
     /* is POST method? */
     if (r->request_body->buf && r->request_body->buf->pos!=NULL) {
-	parse_query_string(r->request_body->buf->pos, &server_info);
+	parse_query_string(r->request_body->buf->pos, &request);
     } 
     /* FIX ME - need to check to see if we have everything and error if not */
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql_server: \"%s\"", server_info.sql_server);
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql: \"%s\"", server_info.sql);
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql_server: \"%s\"", request.sql_server);
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql: \"%s\"", request.sql);
     
     log->action = "sending response to client";
 
@@ -296,7 +278,8 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL;
 
-    json_output = (u_char *) run_query(&server_info);
+    request.log = log;
+    json_output = (u_char *) viaduct_db_run_query(&request);
     b->pos = json_output;
     b->last = json_output + ngx_strlen(json_output);
     b->memory = 1;
@@ -318,230 +301,6 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     rc = ngx_http_output_filter(r, &out);
     ngx_http_finalize_request(r, rc);
     return rc;
-}
-
-static int is_quoted(int coltype)
-{
-   if (coltype == SYBVARCHAR ||
-       coltype == SYBCHAR ||
-       coltype == SYBDATETIMN ||
-       coltype == SYBDATETIME ||
-       coltype == SYBDATETIME4) 
-          return 1;
-   else return 0;
-}
-static char *get_sqltype_string(char *dest, int coltype, int collen)
-{
-	switch (coltype) {
-		case SYBVARCHAR : 
-			sprintf(dest, "varchar");
-			break;
-		case SYBCHAR : 
-			sprintf(dest, "char");
-			break;
-		case SYBINT4 : 
-		case SYBINT2 : 
-		case SYBINT1 : 
-		case SYBINTN : 
-			if (collen==1)
-				sprintf(dest, "tinyint");
-			else if (collen==2)
-				sprintf(dest, "smallint");
-			else if (collen==4)
-				sprintf(dest, "int");
-			break;
-		case SYBFLT8 : 
-		case SYBREAL : 
-		case SYBFLTN : 
-			if (collen==4) 
-			    sprintf(dest, "real");
-			else if (collen==8) 
-			    sprintf(dest, "float");
-			break;
-		case SYBMONEY : 
-			    sprintf(dest, "money");
-			break;
-		case SYBMONEY4 : 
-			    sprintf(dest, "smallmoney");
-			break;
-		case SYBIMAGE : 
-			    sprintf(dest, "image");
-			break;
-		case SYBTEXT : 
-			    sprintf(dest, "text");
-			break;
-		case SYBBIT : 
-			    sprintf(dest, "bit");
-			break;
-		case SYBDATETIME4 : 
-		case SYBDATETIME : 
-		case SYBDATETIMN : 
-			if (collen==4)
-				sprintf(dest, "smalldatetime");
-			else if (collen==8)
-				sprintf(dest, "datetime");
-			break;
-		case SYBNUMERIC : 
-			sprintf(dest, "numeric");
-			break;
-		case SYBDECIMAL : 
-			sprintf(dest, "decimal");
-			break;
-		default : 
-			sprintf(dest, "unknown type %d", coltype);
-			break;
-	}
-	return dest;
-}
-static unsigned char has_length(int coltype)
-{
-	if (coltype==SYBVARCHAR || coltype==SYBCHAR)
-		return 1;
-	else
-		return 0;
-}
-static unsigned char has_prec(int coltype)
-{
-	if (coltype==SYBDECIMAL || coltype==SYBNUMERIC)
-		return 1;
-	else
-		return 0;
-}
-u_char *run_query(server_info_t *server_info)
-{
-   LOGINREC *login;
-   DBPROCESS *dbproc;
-   /* FIX ME */
-   RETCODE rc;
-   char error_string[500];
-   json_t *json = json_new();
-   u_char *ret;
-
-   error_string[0]='\0';
-
-   json_new_object(json);
-
-   json_add_key(json, "request");
-   json_new_object(json);
-   json_add_string(json, "query_tag", server_info->query_tag);
-   json_add_string(json, "sql_server", server_info->sql_server);
-   json_add_string(json, "sql_user", server_info->sql_user);
-
-   if (server_info->sql_port!=NULL && strlen(server_info->sql_port)>0) 
-      json_add_string(json, "sql_port", server_info->sql_port);
-
-   json_add_string(json, "sql_database", server_info->sql_database);
-
-/*
-   if (server_info->sql_password!=NULL && strlen(server_info->sql_password)>0) 
-      json_add_string(json, "sql_password", server_info->sql_password);
-*/
-
-   json_end_object(json);
-   
-   dberrhandle(viaduct_db_err_handler);
-
-   login = dblogin();
-   if (server_info->sql_password!=NULL && strlen(server_info->sql_password)>0) 
-   	DBSETLPWD(login, server_info->sql_password); 
-   else
-        DBSETLPWD(login, NULL);
-   DBSETLUSER(login, server_info->sql_user);
-   DBSETLAPP(login, "viaduct");
-   DBSETLHOST(login, server_info->sql_server);
-
-   dbproc = dbopen(login, server_info->sql_server);
-   if (dbproc==NULL) {
-	strcpy(error_string, "Failed to login");
-   } else {
-   	rc = dbuse(dbproc, server_info->sql_database);
-   	rc = dbcmd(dbproc, server_info->sql);
-   	rc = dbsqlexec(dbproc);
-   	if (rc==SUCCEED) {
-	   fill_data(json, dbproc);
-	} else {
-	   strcpy(error_string, db_error);
-	}
-   }
-   json_add_key(json, "log");
-   json_new_object(json);
-   json_add_string(json, "sql", server_info->sql);
-   if (strlen(error_string)) {
-      json_add_string(json, "error", error_string);
-   }
-   json_end_object(json);
-
-   json_end_object(json);
-
-   ret = (u_char *) json_to_string(json);
-   json_free(json);
-   return ret;
-}
-static int fill_data(json_t *json, DBPROCESS *dbproc)
-{
-   int numcols, colnum;
-   RETCODE rc;
-   char tmp[100];
-   char colval[256][31];
-   int colnull[256];
-   DBTYPEINFO *typeinfo;
-
-   json_add_key(json, "data");
-   json_new_array(json);
-   while ((rc = dbresults(dbproc)) != NO_MORE_RESULTS) 
-   {
-	json_new_object(json);
-	json_add_key(json, "fields");
-	json_new_array(json);
-
-	numcols = dbnumcols(dbproc);
-	for (colnum=1; colnum<=numcols; colnum++) {
-	    json_new_object(json);
-	    json_add_string(json, "name", dbcolname(dbproc, colnum));
-            get_sqltype_string(tmp, dbcoltype(dbproc, colnum), dbcollen(dbproc, colnum));
-	    json_add_string(json, "sql_type", tmp);
-            //if (has_length(dbcoltype(dbproc, colnum))) {
-            sprintf(tmp, "%d", dbcollen(dbproc, colnum));
-	    json_add_string(json, "length", tmp);
-            //}
-            if (has_prec(dbcoltype(dbproc, colnum))) {
-               typeinfo = dbcoltypeinfo(dbproc, colnum);
-               sprintf(tmp, "%d", typeinfo->precision);
-	       json_add_string(json, "precision", tmp);
-               sprintf(tmp, "%d", typeinfo->scale);
-	       json_add_string(json, "scale", tmp);
-            }
-	    json_end_object(json);
-        }
-	json_end_array(json);
-	json_add_key(json, "rows");
-	json_new_array(json);
-
-	for (colnum=1; colnum<=numcols; colnum++) {
-        	dbbind(dbproc, colnum, NTBSTRINGBIND, 0, (BYTE *) &colval[colnum-1]);
-        	dbnullbind(dbproc, colnum, (DBINT *) &colnull[colnum-1]);
-	}
-        while (dbnextrow(dbproc)!=NO_MORE_ROWS) { 
-	   json_new_object(json);
-	   for (colnum=1; colnum<=numcols; colnum++) {
-	      if (colnull[colnum-1]==-1) 
-              	json_add_null(json, dbcolname(dbproc, colnum));
-	      else if (is_quoted(dbcoltype(dbproc, colnum))) 
-              	json_add_string(json, dbcolname(dbproc, colnum), colval[colnum-1]);
-              else
-              	json_add_number(json, dbcolname(dbproc, colnum), colval[colnum-1]);
-           }
-           json_end_object(json);
-        }
-        json_end_array(json);
-        sprintf(tmp, "%u", dbcount(dbproc));
-        json_add_number(json, "count", tmp);
-        json_end_object(json);
-   }
-   /* sprintf(error_string, "rc = %d", rc); */
-   json_end_array(json);
-
-   return 0;
 }
 
 static char *
@@ -568,10 +327,13 @@ ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf)
     }
     return conf;
 }
-void write_value(server_info_t *server_info, char *key, char *value)
+static void 
+write_value(viaduct_request_t *request, char *key, char *value)
 {
    u_char *dst, *src;
    unsigned int i;
+   char *log_levels[] = { "debug", "informational", "notice", "warning", "error", "critical" };
+   char *log_level_scopes[] = { "server", "connection", "query" };
 
    dst = (u_char *) value; src = (u_char *) value;
    ngx_unescape_uri(&dst, &src, strlen(value), 0);
@@ -583,33 +345,43 @@ void write_value(server_info_t *server_info, char *key, char *value)
    }
 
    if (!strcmp(key, "sql_database")) {
-      strcpy(server_info->sql_database, value);
+      strcpy(request->sql_database, value);
    } else if (!strcmp(key, "sql_server")) {
-      strcpy(server_info->sql_server, value);
+      strcpy(request->sql_server, value);
    } else if (!strcmp(key, "sql_user")) {
-      strcpy(server_info->sql_user, value);
+      strcpy(request->sql_user, value);
    } else if (!strcmp(key, "sql")) {
-      strcpy(server_info->sql, value);
+      strcpy(request->sql, value);
    } else if (!strcmp(key, "query_tag")) {
-      strcpy(server_info->query_tag, value);
+      strcpy(request->query_tag, value);
    } else if (!strcmp(key, "sql_password")) {
-      strcpy(server_info->sql_password, value);
+      strcpy(request->sql_password, value);
+   } else if (!strcmp(key, "connection_name")) {
+      strcpy(request->connection_name, value);
+   } else if (!strcmp(key, "connection_timeout")) {
+      request->connection_timeout = atol(value);
+   } else if (!strcmp(key, "log_level")) {
+      for (i=0; i<sizeof(log_levels)/sizeof(char *); i++)
+         if (!strcmp(value,log_levels[i])) request->log_level = i;
+   } else if (!strcmp(key, "log_level_scope")) {
+      for (i=0; i<sizeof(log_level_scopes)/sizeof(char *); i++)
+         if (!strcmp(value,log_level_scopes[i])) request->log_level_scope = i;
    }
 }
-void parse_query_string(u_char *query_string, server_info_t *server_info)
+void parse_query_string(u_char *query_string, viaduct_request_t *request)
 {
 	   char key[100];
 	   char value[1000];
 	   char *s, *k = key, *v = value;
 	   int target = 0;
 
-	   memset(server_info, 0, sizeof(server_info_t));
+	   memset(request, 0, sizeof(viaduct_request_t));
 	   for (s=(char *)query_string; *s; s++)
 	   { 
 	      if (*s=='&') {
 		  *k='\0';
 		  *v='\0';
-		  write_value(server_info, key, value);
+		  write_value(request, key, value);
 		  target=0;
 		  k=key;
 	      } else if (*s=='=') {
@@ -624,15 +396,6 @@ void parse_query_string(u_char *query_string, server_info_t *server_info)
 	   *k='\0';
 	   while (v>=value && (*v=='\n' || *v=='\r')) *v--='\0';
 	   *v='\0';
-	   write_value(server_info, key, value);
+	   write_value(request, key, value);
 
 	}
-
-	int
-	viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr)
-	{
-		db_error = strdup(dberrstr);
-
-		return INT_CANCEL;
-	}
-
