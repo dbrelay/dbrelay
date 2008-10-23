@@ -252,7 +252,9 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     /* FIX ME - static allocation */
     viaduct_request_t request;
 
+    memset(&request, 0, sizeof(viaduct_request_t));
     log = r->connection->log;
+    request.log = log;
 
     ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
     /* is GET method? */
@@ -280,7 +282,6 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL;
 
-    request.log = log;
     json_output = (u_char *) viaduct_db_run_query(&request);
     b->pos = json_output;
     b->last = json_output + ngx_strlen(json_output);
@@ -369,6 +370,8 @@ write_value(viaduct_request_t *request, char *key, char *value)
       for (i=0; i<sizeof(log_level_scopes)/sizeof(char *); i++)
          if (!strcmp(value,log_level_scopes[i])) request->log_level_scope = i;
    }
+   viaduct_log_debug(request, key);
+   viaduct_log_debug(request, value);
 }
 void parse_query_string(u_char *query_string, size_t sz, viaduct_request_t *request)
 {
@@ -377,7 +380,6 @@ void parse_query_string(u_char *query_string, size_t sz, viaduct_request_t *requ
 	   char *s, *k = key, *v = value;
 	   int target = 0;
 
-	   memset(request, 0, sizeof(viaduct_request_t));
 	   for (s=(char *)query_string; s < (char *)query_string + sz; s++)
 	   { 
 	      if (*s=='&') {
