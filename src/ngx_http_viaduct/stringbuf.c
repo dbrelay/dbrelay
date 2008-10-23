@@ -3,13 +3,17 @@
 
 char *sb_to_char(stringbuf_t *string)
 {
+   int end = 0;
    stringbuf_node_t *node;
    char *outstr = (char *) malloc(sb_len(string) + 1);
    outstr[0] = '\0';
 
    node = string->head;
    do {
-      if (node->part) strcat(outstr, node->part);
+      if (node->part) {
+         strcpy(&outstr[end], node->part);
+         end += strlen(node->part);
+      }
       node = node->next;
    } while (node);
 
