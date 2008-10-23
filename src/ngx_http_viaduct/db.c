@@ -213,12 +213,15 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    } else {
    	rc = dbuse(conn->dbproc, request->sql_database);
    	rc = dbcmd(conn->dbproc, request->sql);
+   	viaduct_log_debug(request, "Sending sql query");
    	rc = dbsqlexec(conn->dbproc);
    	if (rc==SUCCEED) {
+   	   viaduct_log_debug(request, "Filling JSON output");
 	   viaduct_db_fill_data(json, conn->dbproc);
 	} else {
 	   strcpy(error_string, db_error);
 	}
+   	viaduct_log_debug(request, "Done filling JSON output");
    }
    json_add_key(json, "log");
    json_new_object(json);
