@@ -13,7 +13,8 @@ typedef struct {
     ngx_http_upstream_conf_t   upstream;
 } ngx_http_viaduct_loc_conf_t;
 
-void parse_query_string(u_char *query_string, size_t sz, viaduct_request_t *request);
+void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request);
+void parse_get_query_string(u_char *data, viaduct_request_t *request);
 static char *ngx_http_viaduct_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_viaduct_create_request(ngx_http_request_t *r);
 static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
@@ -84,6 +85,8 @@ ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)
             "buf: \"%s\"", r->request_body->buf->pos);
     } 
 #endif
+    ngx_log_error(NGX_LOG_ALERT, log, 0,
+        "buf: \"%s\"", r->request_body->bufs->buf->pos);
     rc = ngx_http_viaduct_send_response(r);
 }
 
@@ -259,11 +262,11 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
     /* is GET method? */
     if (r->args.len>0) {
-	parse_query_string(r->args.data, strlen((char *)r->args.data), &request);
+	parse_get_query_string(r->args.data, &request);
     }
     /* is POST method? */
     if (r->request_body->buf && r->request_body->buf->pos!=NULL) {
-	parse_query_string(r->request_body->buf->pos, r->request_body->buf->last - r->request_body->buf->pos + 1, &request);
+	parse_post_query_string(r->request_body->bufs, &request);
     } 
     /* FIX ME - need to check to see if we have everything and error if not */
 
@@ -373,15 +376,19 @@ write_value(viaduct_request_t *request, char *key, char *value)
    viaduct_log_debug(request, key);
    viaduct_log_debug(request, value);
 }
-void parse_query_string(u_char *query_string, size_t sz, viaduct_request_t *request)
+void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
 {
-	   char key[100];
-	   char value[1000];
-	   char *s, *k = key, *v = value;
-	   int target = 0;
+   char key[100];
+   char value[4000];
+   char *s, *k = key, *v = value;
+   int target = 0;
+   ngx_buf_t *buf;
 
-	   for (s=(char *)query_string; s < (char *)query_string + sz; s++)
-	   { 
+   for (; bufs!=NULL; bufs = bufs->next) 
+   {
+      buf = bufs->buf;
+      for (s= (char *)buf->pos; s !=  (char *)buf->last; s++)
+      { 
 	      if (*s=='&') {
 		  *k='\0';
 		  *v='\0';
@@ -396,10 +403,39 @@ void parse_query_string(u_char *query_string, size_t sz, viaduct_request_t *requ
 	      } else {
 		  *v++=*s;
 	      }
-	   }
-	   *k='\0';
-	   while (v>=value && (*v=='\n' || *v=='\r')) *v--='\0';
-	   *v='\0';
-	   write_value(request, key, value);
+      }
+   }
+   *k='\0';
+   while (v>=value && (*v=='\n' || *v=='\r')) *v--='\0';
+   *v='\0';
+   write_value(request, key, value);
+}
+void parse_get_query_string(u_char *data, viaduct_request_t *request)
+{
+   char key[100];
+   char value[4000];
+   char *s, *k = key, *v = value;
+   int target = 0;
 
-	}
+   for (s=(char *)data; *s; s++)
+   { 
+      if (*s=='&') {
+         *k='\0';
+	 *v='\0';
+	 write_value(request, key, value);
+         target=0;
+         k=key;
+      } else if (*s=='=') {
+         target=1;
+         v=value;
+      } else if (target==0) {
+         *k++=*s;
+      } else {
+	 *v++=*s;
+      }
+   }
+   *k='\0';
+   while (v>=value && (*v=='\n' || *v=='\r')) *v--='\0';
+   *v='\0';
+   write_value(request, key, value);
+}
