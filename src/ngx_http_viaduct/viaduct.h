@@ -22,14 +22,14 @@
 #define VIADUCT_LOG_LVL_CRIT    6
 
 typedef struct {
-   char sql_server[100];
-   char sql_port[100];
-   char sql_database[100];
-   char sql_user[100];
-   char sql_password[100];
-   char sql[4000];
-   char query_tag[100];
-   char connection_name[100];
+   char *sql_server;
+   char *sql_port;
+   char *sql_database;
+   char *sql_user;
+   char *sql_password;
+   char *sql;
+   char *query_tag;
+   char *connection_name;
    long connection_timeout;
    int log_level;
    int log_level_scope;
@@ -37,16 +37,27 @@ typedef struct {
 } viaduct_request_t;
 
 typedef struct {
+   char *sql_server;
+   char *sql_port;
+   char *sql_database;
+   char *sql_user;
+   char *sql_password;
+   char *connection_name;
+   long connection_timeout;
    time_t tm_create;
    time_t tm_accessed;
    LOGINREC *login;
    DBPROCESS *dbproc;
    unsigned char in_use;
+   unsigned int slot;
 } viaduct_connection_t;
 
 u_char *viaduct_db_run_query(viaduct_request_t *request);
 int viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
 void viaduct_log_debug(viaduct_request_t *request, const char *fmt, ...);
+
+viaduct_request_t *viaduct_alloc_request();
+void viaduct_free_request(viaduct_request_t *request);
 
 
 #endif /* _VIADUCT_H_INCLUDED_ */

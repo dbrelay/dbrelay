@@ -252,26 +252,27 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     ngx_buf_t                 *b;
     ngx_chain_t                out;
     u_char *json_output;
-    /* FIX ME - static allocation */
-    viaduct_request_t request;
+    viaduct_request_t *request;
 
-    memset(&request, 0, sizeof(viaduct_request_t));
     log = r->connection->log;
-    request.log = log;
+
+    request = viaduct_alloc_request();
+    request->log = log;
+    request->log_level = 0;
 
     ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
     /* is GET method? */
     if (r->args.len>0) {
-	parse_get_query_string(r->args.data, &request);
+	parse_get_query_string(r->args.data, request);
     }
     /* is POST method? */
     if (r->request_body->buf && r->request_body->buf->pos!=NULL) {
-	parse_post_query_string(r->request_body->bufs, &request);
+	parse_post_query_string(r->request_body->bufs, request);
     } 
     /* FIX ME - need to check to see if we have everything and error if not */
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql_server: \"%s\"", request.sql_server);
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql: \"%s\"", request.sql);
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql_server: \"%s\"", request->sql_server);
+    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql: \"%s\"", request->sql);
     
     log->action = "sending response to client";
 
@@ -285,7 +286,9 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL;
 
-    json_output = (u_char *) viaduct_db_run_query(&request);
+    json_output = (u_char *) viaduct_db_run_query(request);
+    viaduct_free_request(request);
+
     b->pos = json_output;
     b->last = json_output + ngx_strlen(json_output);
     b->memory = 1;
@@ -351,19 +354,19 @@ write_value(viaduct_request_t *request, char *key, char *value)
    }
 
    if (!strcmp(key, "sql_database")) {
-      strcpy(request->sql_database, value);
+      request->sql_database = strdup(value);
    } else if (!strcmp(key, "sql_server")) {
-      strcpy(request->sql_server, value);
+      request->sql_server = strdup(value);
    } else if (!strcmp(key, "sql_user")) {
-      strcpy(request->sql_user, value);
+      request->sql_user = strdup(value);
    } else if (!strcmp(key, "sql")) {
-      strcpy(request->sql, value);
+      request->sql = strdup(value);
    } else if (!strcmp(key, "query_tag")) {
-      strcpy(request->query_tag, value);
+      request->query_tag = strdup(value);
    } else if (!strcmp(key, "sql_password")) {
-      strcpy(request->sql_password, value);
+      request->sql_password = strdup(value);
    } else if (!strcmp(key, "connection_name")) {
-      strcpy(request->connection_name, value);
+      request->connection_name = strdup(value);
    } else if (!strcmp(key, "connection_timeout")) {
       request->connection_timeout = atol(value);
    } else if (!strcmp(key, "log_level")) {
@@ -373,8 +376,8 @@ write_value(viaduct_request_t *request, char *key, char *value)
       for (i=0; i<sizeof(log_level_scopes)/sizeof(char *); i++)
          if (!strcmp(value,log_level_scopes[i])) request->log_level_scope = i;
    }
-   viaduct_log_debug(request, key);
-   viaduct_log_debug(request, value);
+   viaduct_log_debug(request, "key %s", key);
+   viaduct_log_debug(request, "value %s", value);
 }
 void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
 {
@@ -383,6 +386,9 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    char *s, *k = key, *v = value;
    int target = 0;
    ngx_buf_t *buf;
+
+   ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "parsing post data");
+   viaduct_log_debug(request, "parsing post data");
 
    for (; bufs!=NULL; bufs = bufs->next) 
    {
