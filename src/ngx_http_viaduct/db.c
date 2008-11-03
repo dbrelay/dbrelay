@@ -17,7 +17,7 @@ static viaduct_connection_t *connections[100];
 static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *request)
 {
    viaduct_connection_t *conn = malloc(sizeof(viaduct_connection_t));
-   memset(conn, sizeof(viaduct_connection_t), '\0');
+   memset(conn, '\0', sizeof(viaduct_connection_t));
 
    dberrhandle(viaduct_db_err_handler);
 
@@ -112,7 +112,12 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
 {
    unsigned int slot;
 
-   viaduct_log_debug(request, "closing connection %ud", conn->slot);
+   if (!conn) {
+      viaduct_log_debug(request, "attempt to close null connection ");
+      return;
+   }
+
+   viaduct_log_debug(request, "closing connection %d", conn->slot);
 
    if (conn->dbproc) dbclose(conn->dbproc);
    if (conn->sql_server) free(conn->sql_server);
@@ -145,15 +150,16 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
 static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
    conn->in_use = FALSE;
-   if (conn->connection_name==NULL || strlen(conn->connection_name)==0)
+   if (conn->connection_name==NULL || strlen(conn->connection_name)==0) {
       viaduct_db_close_connection(conn, request);
+   }
 }
 static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *request)
 {
    viaduct_connection_t *conn;
 
    /* if there is no connection name, allocate a new connection */
-   if (request->connection_name==NULL) {
+   if (request->connection_name==NULL || strlen(request->connection_name)==0) {
       viaduct_log_debug(request, "empty connection name, allocating new");
       return  viaduct_db_alloc_connection(request);
    }
@@ -265,6 +271,8 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    error_string[0]='\0';
 
+   viaduct_log_debug(request, "run_query called");
+
    json_new_object(json);
 
    json_add_key(json, "request");
@@ -286,6 +294,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    json_end_object(json);
    
+   viaduct_log_debug(request, "calling get_connection");
    conn = viaduct_db_get_connection(request);
    viaduct_log_debug(request, "Allocated connection for query");
    if (conn->dbproc==NULL) {
@@ -400,7 +409,7 @@ viaduct_alloc_request()
    viaduct_request_t *request;
 
    request = (viaduct_request_t *) malloc(sizeof(viaduct_request_t));
-   memset(request, 0, sizeof(viaduct_request_t));
+   memset(request, '\0', sizeof(viaduct_request_t));
 
    return request;
 }
