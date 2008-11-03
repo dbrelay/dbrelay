@@ -35,7 +35,7 @@ params = {
   'sql_server':   'dbserver',
   'sql_database': 'database',
   'sql_user':     'dbuser',
-  'sql':          'select top 3 * from testtable' }
+  'sql':          """select top 3 * from testtable""" }
 
 url = 'http://viaducthost:1433/sql'
 
@@ -43,10 +43,12 @@ response = urllib2.urlopen( url=url, data=urllib.urlencode(params) )
 result = simplejson.load( response )
 
 if 'data' in result:
-  print simplejson.dumps( result['data'], sort_keys=True, indent=2)
+  print simplejson.dumps( result['data'], sort_keys=False, indent=2)
 
-if 'error' in result:
-  print simplejson.dumps( result['error'], sort_keys=True, indent=2)</pre>
+if 'log' in result and 'error' in result['log']:
+  print simplejson.dumps( result['log']['error'], sort_keys=False, indent=2)
+  print 'The query was: \n'
+  print result['log']['sql']</pre>
       </li>
     </ol>
     <hr />

@@ -67,7 +67,15 @@
           tr = $( '<tr>' ).appendTo( table );
           for ( idx in headers ) {
             cell = row[ headers[ idx ] ];
-            $( '<td>' ).text( cell ? cell : '' ).appendTo( tr );
+            if ( cell == null ) {
+              $( '<td>' ).html( '- &otimes; -').
+              css( 'text-align', 'center' ).
+              appendTo( tr );
+            } else {
+              $( '<td>' ).
+              text( cell.toString() ).
+              appendTo( tr );
+            }
           };
         };
         table.appendTo( '#results' );
