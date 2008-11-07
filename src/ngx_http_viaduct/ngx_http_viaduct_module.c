@@ -392,7 +392,7 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "parsing post data");
    viaduct_log_debug(request, "parsing post data");
 
-   for (chain = bufs; chain!=NULL; chain = bufs->next) 
+   for (chain = bufs; chain!=NULL; chain = chain->next) 
    {
       buf = chain->buf;
       bufsz += (buf->last - buf->pos) + 1;
@@ -401,7 +401,7 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    v = value;
    ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "post data %l bytes", bufsz);
 
-   for (chain = bufs; chain!=NULL; chain = bufs->next) 
+   for (chain = bufs; chain!=NULL; chain = chain->next) 
    {
       buf = chain->buf;
       for (s= (char *)buf->pos; s !=  (char *)buf->last; s++)
