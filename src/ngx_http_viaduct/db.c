@@ -8,8 +8,6 @@
 static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc);
 static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *request);
 
-static char *db_error;
-
 #define MAX_CONNECTIONS 10
 
 static viaduct_connection_t *connections[100];
@@ -20,6 +18,7 @@ static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *req
    memset(conn, '\0', sizeof(viaduct_connection_t));
 
    dberrhandle(viaduct_db_err_handler);
+   dbmsghandle(viaduct_db_msg_handler);
 
    /* copy parameters necessary to do connection hash match */
    if (request->sql_server && strlen(request->sql_server)) 
@@ -50,7 +49,7 @@ static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *req
       
    conn->tm_create = time(NULL);
    conn->in_use = TRUE;
-
+   dbsetuserdata(conn->dbproc, (BYTE *)request);
 
    return conn;
 }
@@ -102,6 +101,7 @@ static viaduct_connection_t *viaduct_db_find_connection(viaduct_request_t *reque
             viaduct_log_debug(request, "found connection match for request at slot %d", i);
             conn->tm_accessed = time(NULL);
             conn->in_use = TRUE;
+            dbsetuserdata(conn->dbproc, (BYTE *) request);
             return conn;
          }
       }
@@ -150,7 +150,9 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
 static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
    conn->in_use = FALSE;
+   
    if (conn->connection_name==NULL || strlen(conn->connection_name)==0) {
+      dbsetuserdata(conn->dbproc,NULL);
       viaduct_db_close_connection(conn, request);
    }
 }
@@ -308,7 +310,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    	   viaduct_log_debug(request, "Filling JSON output");
 	   viaduct_db_fill_data(json, conn->dbproc);
 	} else {
-	   strcpy(error_string, db_error);
+	   strcpy(error_string, request->error_message);
 	}
    	viaduct_log_debug(request, "Done filling JSON output");
    }
@@ -396,11 +398,31 @@ static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
 }
 
 int
+viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line)
+{
+   if (dbproc!=NULL) {
+      if (msgno==5701 || msgno==5703 || msgno==5704) return 0;
+
+      viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(dbproc);
+      if (request!=NULL) {
+         if (msgtext && strlen(msgtext)>0) 
+            strcat(request->error_message, "\n");
+         strcat(request->error_message, msgtext);
+      }
+   }
+
+   return 0;
+}
+int
 viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr)
 {
-	db_error = strdup(dberrstr);
+   //db_error = strdup(dberrstr);
+   if (dbproc!=NULL) {
+      //viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(dbproc);
+      //strcat(request->error_message, dberrstr);
+   }
 
-	return INT_CANCEL;
+   return INT_CANCEL;
 }
 
 viaduct_request_t *

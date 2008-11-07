@@ -34,6 +34,7 @@ typedef struct {
    int log_level;
    int log_level_scope;
    ngx_log_t *log;
+   char error_message[4000];
 } viaduct_request_t;
 
 typedef struct {
@@ -54,6 +55,9 @@ typedef struct {
 
 u_char *viaduct_db_run_query(viaduct_request_t *request);
 int viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
+int
+viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line);
+
 void viaduct_log_debug(viaduct_request_t *request, const char *fmt, ...);
 
 viaduct_request_t *viaduct_alloc_request();
