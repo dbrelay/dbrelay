@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Viaduct table example</title>
-    <script src="jquery-1.2.6.pack.js" type="text/javascript"></script>
+    <script src="js/jquery-1.2.6.pack.js" type="text/javascript"></script>
+    <script src="js/jquery-ui-1.5.2.pack.js" type="text/javascript" charset="utf-8"></script>
     <script src="tablesorter/jquery.tablesorter.min.js" type="text/javascript"></script>
     <script type="text/javascript" charset="utf-8">
 
@@ -20,6 +21,10 @@
       };
 
       $(document).ready(function() {
+        $('#sql').resizable({
+          handles: "s,e",
+          transparent: true
+        });
         $('#go').click(function(){
           $('#results').empty();
           viaductQuery(
