@@ -51,5 +51,6 @@ patch -N -p0 -i $BUILD/patches/nginx.conf.patch
 [ -d html/js ] || mkdir -p html/js
 [ -d html/tablesorter ] || mkdir -p html/tablesorter
 cp $BUILD/html/* html
+cp $BUILD/html/js/* html/js
 cp $BUILD/html/tablesorter/* html/tablesorter
 cp $BUILD/doc/* html
