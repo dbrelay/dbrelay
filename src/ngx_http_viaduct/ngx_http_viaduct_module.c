@@ -382,17 +382,28 @@ write_value(viaduct_request_t *request, char *key, char *value)
 void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
 {
    char key[100];
-   char value[4000];
-   char *s, *k = key, *v = value;
+   char *value;
+   char *s, *k = key, *v;
    int target = 0;
    ngx_buf_t *buf;
+   ngx_chain_t *chain;
+   unsigned long bufsz = 0;
 
    ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "parsing post data");
    viaduct_log_debug(request, "parsing post data");
 
-   for (; bufs!=NULL; bufs = bufs->next) 
+   for (chain = bufs; chain!=NULL; chain = bufs->next) 
    {
-      buf = bufs->buf;
+      buf = chain->buf;
+      bufsz += (buf->last - buf->pos) + 1;
+   }
+   value = (char *) malloc(bufsz);
+   v = value;
+   ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "post data %l bytes", bufsz);
+
+   for (chain = bufs; chain!=NULL; chain = bufs->next) 
+   {
+      buf = chain->buf;
       for (s= (char *)buf->pos; s !=  (char *)buf->last; s++)
       { 
 	      if (*s=='&') {
@@ -415,6 +426,7 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    while (v>=value && (*v=='\n' || *v=='\r')) *v--='\0';
    *v='\0';
    write_value(request, key, value);
+   free(value);
 }
 void parse_get_query_string(u_char *data, viaduct_request_t *request)
 {
