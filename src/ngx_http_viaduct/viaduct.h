@@ -5,7 +5,13 @@
 #ifndef _VIADUCTDB_H_INCLUDED_
 #define _VIADUCTDB_H_INCLUDED_
 
+#include <stdlib.h>
+#include <time.h>
+
+#ifndef CMDLINE
 #include <ngx_core.h>
+#endif
+
 #include <sybdb.h>
 #include "stringbuf.h"
 #include "json.h"
@@ -20,6 +26,11 @@
 #define VIADUCT_LOG_LVL_WARN    4
 #define VIADUCT_LOG_LVL_ERROR   5
 #define VIADUCT_LOG_LVL_CRIT    6
+
+#ifdef CMDLINE
+   typedef struct ngx_log_s {} ngx_log_t;
+   typedef unsigned char u_char;
+#endif
 
 typedef struct {
    char *sql_server;

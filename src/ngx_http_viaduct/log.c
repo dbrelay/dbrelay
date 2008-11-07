@@ -4,6 +4,11 @@
  */
 
 #include "viaduct.h"
+#include <stdarg.h>
+
+#ifdef CMDLINE
+#define NGX_MAX_ERROR_STR 4096
+#endif
 
 void
 viaduct_log_debug(viaduct_request_t *request, const char *fmt, ...)
@@ -19,9 +24,16 @@ viaduct_log_debug(viaduct_request_t *request, const char *fmt, ...)
     */
    memset(buf, 0, NGX_MAX_ERROR_STR);
 
+#ifndef CMDLINE
    va_start(args, fmt);
    p = ngx_vsnprintf(buf, NGX_MAX_ERROR_STR, fmt, args);
    va_end(args);
    ngx_log_error_core(NGX_LOG_DEBUG, request->log, 0, (char *)buf);
+#else
+   va_start(args, fmt);
+   p = vsnprintf((char *)buf, NGX_MAX_ERROR_STR, fmt, args);
+   va_end(args);
+   fprintf(stderr, "%s\n", (char *)buf);
+#endif
 
 }
