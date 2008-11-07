@@ -14,6 +14,8 @@ static viaduct_connection_t *connections[100];
 
 static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *request)
 {
+   char tmpbuf[30];
+   int len; 
    viaduct_connection_t *conn = malloc(sizeof(viaduct_connection_t));
    memset(conn, '\0', sizeof(viaduct_connection_t));
 
@@ -42,8 +44,17 @@ static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *req
    else
         DBSETLPWD(conn->login, NULL);
    DBSETLUSER(conn->login, request->sql_user);
-   DBSETLAPP(conn->login, "viaduct");
-   DBSETLHOST(conn->login, request->sql_server);
+   if (request->connection_name && strlen(request->connection_name)>0) {
+      memset(tmpbuf, '\0', sizeof(tmpbuf));
+      strcpy(tmpbuf, "viaduct (");
+      len = strlen("viaduct (");
+      strncat(tmpbuf, request->connection_name, sizeof(tmpbuf) - len - 3);
+      strcat(tmpbuf, ")");
+      DBSETLAPP(conn->login, tmpbuf);
+   } else {
+      DBSETLAPP(conn->login, "viaduct");
+   }
+   //DBSETLHOST(conn->login, request->sql_server);
  
    conn->dbproc = dbopen(conn->login, request->sql_server);
       
@@ -141,6 +152,7 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
    now = time(NULL);
    for (i=0; i<MAX_CONNECTIONS; i++) {
       conn = connections[i];
+      if (!conn || conn->in_use) continue;
       if (conn->tm_accessed + conn->connection_timeout < now) {
          viaduct_log_debug(request, "timing out conection %ud", conn->slot);
          viaduct_db_close_connection(conn, request);
@@ -163,14 +175,15 @@ static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *reques
    /* if there is no connection name, allocate a new connection */
    if (request->connection_name==NULL || strlen(request->connection_name)==0) {
       viaduct_log_debug(request, "empty connection name, allocating new");
-      return  viaduct_db_alloc_connection(request);
-   }
+      conn = viaduct_db_alloc_connection(request);
 
    /* look for an matching idle connection */
-   if ((conn = viaduct_db_find_connection(request))==NULL) {
+   } else if ((conn = viaduct_db_find_connection(request))==NULL) {
       /* else we need to allocate a new connection */
       conn = viaduct_db_alloc_connection(request);
    }
+
+   viaduct_db_close_connections(request);
 
    return conn;
 }
