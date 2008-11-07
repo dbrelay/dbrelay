@@ -29,7 +29,8 @@
               'sql_port'     : $('#sql_port')[0].value,
               'sql_database' : $('#sql_database')[0].value,
               'sql_user'     : $('#sql_user')[0].value,
-              'sql_password' : $('#sql_password')[0].value
+              'sql_password' : $('#sql_password')[0].value,
+              'connection_name' : $('#connection_name')[0].value
             },
             $('#sql')[0].value,
             processRowSets,
@@ -117,6 +118,7 @@
       <label for="sql_database">Database</label><input type="text" name="sql_database" value="" id="sql_database"><br />
       <label for="sql_user">User</label><input type="text" name="sql_user" value="" id="sql_user"><br />
       <label for="sql_password">Password</label><input type="password" name="sql_password" value="" id="sql_password"><br />
+      <label for="connection_name">Connection</label><input type="text" name="connection_name" value="" id="connection_name"><br />
       <label for="sql">Query</label><textarea name="sql" rows="8" cols="80" id="sql"></textarea>
       <p><input type="button" id="go" value="GO&nbsp;&nbsp;&gt;&nbsp;&gt;&nbsp;&gt;"></p>
     </form>
