@@ -19,13 +19,27 @@
         if ( tag !== undefined ) connection[ "query_tag" ] = tag;
         $.post( viaduct, connection, callback, "json");
       };
-
+      
+      var land = function () {
+        $('#spinner').hide();
+        $('#go').show().data('inflight', false);
+      };
+      
       $(document).ready(function() {
+        var launch = function () {
+          var go = $('#go');
+          if (go.data('inflight') == true) return false;
+          go.data('inflight', true).hide();
+          $('#spinner').show();
+          return true;
+        };
+
         $('#sql').resizable({
           handles: "s,e",
           transparent: true
         });
         $('#go').click(function(){
+          if ( ! launch() ) { return false ; };
           $('#results').empty();
           viaductQuery(
             '/sql',
@@ -55,7 +69,7 @@
           };
           $('<hr>').appendTo( '#results' );
         };
-        // $('<pre>').html(response.log.sql).appendTo( '#results' );
+        land();
       };
 
       var makeTable = function( rowset ) {
@@ -108,6 +122,12 @@
         text-align: right;
         float: left;
         padding-right: 1em; }
+      #spinner {
+        display: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
     </style>
     <link rel="stylesheet" type="text/css" href="tablesorter/style.css">
   </head>
@@ -125,7 +145,10 @@
       <label for="sql_password">Password</label><input type="password" name="sql_password" value="" id="sql_password"><br />
       <label for="connection_name">Connection</label><input type="text" name="connection_name" value="" id="connection_name"><br />
       <label for="sql">Query</label><textarea name="sql" rows="8" cols="80" id="sql"></textarea>
-      <p><input type="button" id="go" value="GO&nbsp;&nbsp;&gt;&nbsp;&gt;&nbsp;&gt;"></p>
+      <p>
+        <input type="button" id="go" value="GO&nbsp;&nbsp;&gt;&nbsp;&gt;&nbsp;&gt;">
+        <img id="spinner" src="img/spinner.gif" />
+      </p>
     </form>
     <div id="results">
     </div>
