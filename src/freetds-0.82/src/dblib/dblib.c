@@ -1113,7 +1113,7 @@ tdsdbopen(LOGINREC * login, const char *server, int msdblib)
 	dbproc->tds_socket = tds_alloc_socket(dblib_get_tds_ctx(), 512);
 
 	tds_set_parent(dbproc->tds_socket, dbproc);
-	dbproc->tds_socket->option_flag2 &= ~0x02;	/* we're not an ODBC driver */
+	/* dbproc->tds_socket->option_flag2 &= ~0x02; */	/* we're not an ODBC driver */
 	dbproc->tds_socket->env_chg_func = db_env_chg;
 	dbproc->envchange_rcv = 0;
 	dbproc->dbcurdb[0] = '\0';
