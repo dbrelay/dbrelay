@@ -400,7 +400,7 @@ static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
            json_end_object(json);
         }
         json_end_array(json);
-        sprintf(tmp, "%u", dbcount(dbproc));
+        sprintf(tmp, "%d", dbcount(dbproc));
         json_add_number(json, "count", tmp);
         json_end_object(json);
    }
