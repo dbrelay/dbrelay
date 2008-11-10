@@ -232,6 +232,7 @@
           <li><a href="#logic">Interaction logic</a>
             <ol>
               <li><a href="#normal_request">Normal request</a></li>
+              <li><a href="#persistence">Persistense considerations</li>
               <li><a href="#status_request">Status request</a></li>
               <li><a href="#app_shutdown">Application shutdown</a></li>
             </ol>
@@ -270,6 +271,12 @@
           document.getElementById('revisions_body').style.display = 'none';
         ">Hide</span> Revisions</h2>
         <div id="revisions_body" style="display:none;">
+          <p>
+            <span class="term" class="date">2008.11.09</span>
+            <span class="term" class="person">Vlad&nbsp;Didenko</span>
+            <div class="comments">Clarified queuing and state maintanance for named persistent connections in the <a href="#persistence">Persistence considerations</a> chapter, which has been moved. Clarified the garbage collection route in the <a href="#normal_request">Normal Request</a> section.</div>
+            <div class="float_break"></div>
+          </p>
           <p>
             <span class="term" class="date">2008.10.07</span>
             <span class="term" class="person">Brian&nbsp;Bruns<br />Vlad&nbsp;Didenko</span>
@@ -392,8 +399,17 @@
             <li><p><div class="error_note"><todo>error handler</todo></div>After receiving the client request, the Viaduct applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.</p></li>
             <li><p><div class="error_note"><todo>error handler</todo></div>When the request gets a connection assigned, it should queue it's SQL query for execution on that connection. Every query should run in a fresh context, meaning, that <span class="em">no</span> temporary objects or other context information from previous queries on the same connection should be visible and impacting the new query.</p></li>
             <li><p><div class="error_note"><todo>error handler</todo></div>The resulting datasets should be formatted and returned to the client.</p></li>
-            <li><p><div class="error_note"><todo>error handler</todo></div>There should be a connection &quot;grabage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.</p></li>
+            <li>
+              <p><div class="error_note"><todo>error handler</todo></div>There should be a connection &quot;garbage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.</p>
+              <p>As it is implemented now, a connection &laquo;garbage collector&raquo; only runs when there is an incoming viaduct request. In future releases, there may be an independant agent or thread running for administration/cleanup.</p>
+            </li>
           </ol>
+        </div>
+        <div id="persistence" class="chapter">
+          <h3>Persistense considerations</h4>
+          <p>Connections are persistent beyond the HTTP response if, and only if, a connection name is provided. Multiple connections may persist under the same name, distinguished by other connection parameters. To be reused, persistent connections are referred to by the whole combination of sql_server, sql_port, sql_database, sql_domain, sql_user, sql_password (crypted), connection_name. Those parameters are referred to as <em>connection hash keys</em>. Connection timeout adjusted by each query which sets it. Error style is specific for the query and is not persistent.</p>
+          <p>If a request comes to a named connection which is busy with another query, the request should be queued and executed in a FIFO manner. No two connections should match the same set of hash keys. The reason for these two requirements is that named persistent connection may have state, which users may need to maintain and predictably retrieve on named connections.</p>
+          <p>Connection parameters are defined below in the <a href="#http_request">HTTP request</a> section, including the details of the <code>connection_timeout</code> parameter.</p>
         </div>
         <div id="status_request" class="chapter">
           <h3>Status request</h3>
@@ -424,21 +440,19 @@
           <p><span class="term done">sql_user</span>Username string recognised by the SQL server.</p>
           <p><span class="term done">sql_password</span>Optional password for the sql_user.</p>
           <h4 id="http_request_conn">Connection lifecycle</h4>
-          <p><span class="term todo">connection_name</span>Optional name to persist this connection under.</p>
+          <p><span class="term done">connection_name</span>Optional name to persist this connection under.</p>
           <p><span class="term todo">connection_timeout</span>Optional number of seconds from the last received query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
           <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
           <p><span class="term todo">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
           <p><span class="term todo">log_level_scope</span>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</p>
           <h4 id="http_request_query">SQL query</h4>
           <p><span class="term done">sql</span>Optional TSQL statement batch conformant with MS SQL Server 2005 TSQL. &quot;Sql&quot; and &quot;param[]&quot; parameters may be omitted when, for example, setting the new application log level.</p>
-          <p><span class="term">params</span></p>Optional list of comma-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional parameters to be bound into the SQL query. Output parameters are not supported. <todo>How would we quote and escape values for quotes, commas and colons?</todo></p>
-          <p><span class="term">error_style</span>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</p>
-          <h4>Persistense considerations</h4>
-          <p>Connections are persistent beyond the HTTP response if, and only if, a connection name is provided. Multiple connections may persist under the same name, distinguished by other connection parameters. To be reused, persistent connections are referred to by the whole combination of sql_server, sql_port, sql_database, sql_domain, sql_user, sql_password (crypted), connection_name. Those parameters are referred to as <em>connection hash keys</em>. Connection timeout adjusted by each query which sets it. Error style is specific for the query and is not persistent.</p>
+          <p><span class="term todo">params</span></p>Optional list of comma-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional parameters to be bound into the SQL query. Output parameters are not supported. <todo>How would we quote and escape values for quotes, commas and colons?</todo></p>
+          <p><span class="term todo">error_style</span>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</p>
         </div>
         <div id="http_response" class="chapter">
           <h3>HTTP response (JSON)</h3>
-          <p>Teh Viaduct application will return the results as &quot;<code>application/json</code>&quot; ContentType.</p>
+          <p>The Viaduct application will return the results as &quot;<code>application/json</code>&quot; ContentType.</p>
           <p>An HTTP response is described as a JSON object below. Regular text is for literals, <span class="ab">italic caps</span> are for the terms defined later in the specification, and <span class="json_term">underlined</span> words are for <a href="http://json.org/">JSON-defined terms</a>. Object members may appear in any order inside the object. Members marked with &laquo;?&raquo; are optional. Array elements or object members, marked with &quot;&middot; &middot; &middot;&quot; after them, occur <span class="em">zero</span> or more times.</p>
           <p class="spec"><span class="term done"><span class="ab">response</span></span>
             {<br />
