@@ -64,8 +64,12 @@
         };
         for ( rs_id in response.data ) {
           rowset = response.data[ rs_id ];
-          if ( rowset.count ){
-            t = makeTable( rowset );
+          if ( rowset.count > 0 ){
+            if ( rowset.rows && rowset.rows.length ) {
+              t = makeTable( rowset );
+            };
+            $('<p>' + rowset.count + ' rows affected</p>' ).
+            appendTo( '#results' );
           };
           $('<hr>').appendTo( '#results' );
         };
