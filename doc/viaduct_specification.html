@@ -274,7 +274,7 @@
           <p>
             <span class="term" class="date">2008.11.09</span>
             <span class="term" class="person">Vlad&nbsp;Didenko</span>
-            <div class="comments">Clarified queuing and state maintanance for named persistent connections in the <a href="#persistence">Persistence considerations</a> chapter, which has been moved. Clarified the garbage collection route in the <a href="#normal_request">Normal Request</a> section.</div>
+            <div class="comments">Clarified queuing and state maintanance for named persistent connections in the <a href="#persistence">Persistence considerations</a> chapter, which has been moved. Clarified the garbage collection route in the <a href="#normal_request">Normal Request</a> section. Changed the start point for calculating connection timeout in the <a href="#http_request_conn">Connection lifecycle</a>.</div>
             <div class="float_break"></div>
           </p>
           <p>
@@ -441,7 +441,7 @@
           <p><span class="term done">sql_password</span>Optional password for the sql_user.</p>
           <h4 id="http_request_conn">Connection lifecycle</h4>
           <p><span class="term done">connection_name</span>Optional name to persist this connection under.</p>
-          <p><span class="term todo">connection_timeout</span>Optional number of seconds from the last received query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
+          <p><span class="term todo">connection_timeout</span>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
           <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
           <p><span class="term todo">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
           <p><span class="term todo">log_level_scope</span>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</p>
