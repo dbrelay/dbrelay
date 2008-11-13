@@ -410,8 +410,12 @@ static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
            json_end_object(json);
         }
         json_end_array(json);
-        sprintf(tmp, "%d", dbcount(dbproc));
-        json_add_number(json, "count", tmp);
+        if (dbcount(dbproc)==-1) {
+           json_add_null(json, "count");
+        } else {
+           sprintf(tmp, "%d", dbcount(dbproc));
+           json_add_number(json, "count", tmp);
+        }
         json_end_object(json);
    }
    /* sprintf(error_string, "rc = %d", rc); */
