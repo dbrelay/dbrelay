@@ -344,6 +344,12 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    ret = (u_char *) json_to_string(json);
    json_free(json);
    viaduct_log_debug(request, "Query completed, freeing connection.");
+
+   /* set time accessed at end of processing so that long queries do not
+    * become eligible for being timed out immediately.  
+    */
+   conn->tm_accessed = time(NULL);
+
    viaduct_db_free_connection(conn, request);
    return ret;
 }
