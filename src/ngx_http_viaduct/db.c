@@ -5,6 +5,9 @@
 
 #include "viaduct.h"
 
+#define IS_SET(x) (x && strlen(x)>0)
+#define IS_EMPTY(x) (!x || strlen(x)==0)
+
 static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc);
 static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *request);
 
@@ -23,28 +26,28 @@ static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *req
    dbmsghandle(viaduct_db_msg_handler);
 
    /* copy parameters necessary to do connection hash match */
-   if (request->sql_server && strlen(request->sql_server)) 
+   if (IS_SET(request->sql_server)) 
       conn->sql_server = strdup(request->sql_server);
-   if (request->sql_port && strlen(request->sql_port)) 
+   if (IS_SET(request->sql_port)) 
       conn->sql_port = strdup(request->sql_port);
-   if (request->sql_user && strlen(request->sql_user)) 
+   if (IS_SET(request->sql_user))
       conn->sql_user = strdup(request->sql_user);
-   if (request->sql_password && strlen(request->sql_password)) 
+   if (IS_SET(request->sql_password))
       conn->sql_password = strdup(request->sql_password);
-   if (request->sql_database && strlen(request->sql_database)) 
+   if (IS_SET(request->sql_database))
       conn->sql_database = strdup(request->sql_database);
-   if (request->connection_name && strlen(request->connection_name)) 
+   if (IS_SET(request->connection_name))
       conn->connection_name = strdup(request->connection_name);
 
    conn->connection_timeout = request->connection_timeout ? request->connection_timeout : 60;
 
    conn->login = dblogin();
-   if (request->sql_password!=NULL && strlen(request->sql_password)>0) 
+   if (IS_SET(request->sql_password)) 
     DBSETLPWD(conn->login, request->sql_password); 
    else
         DBSETLPWD(conn->login, NULL);
    DBSETLUSER(conn->login, request->sql_user);
-   if (request->connection_name && strlen(request->connection_name)>0) {
+   if (IS_SET(request->connection_name)) {
       memset(tmpbuf, '\0', sizeof(tmpbuf));
       strcpy(tmpbuf, "viaduct (");
       len = strlen("viaduct (");
@@ -82,8 +85,7 @@ static viaduct_connection_t *viaduct_db_alloc_connection(viaduct_request_t *requ
 }
 static unsigned int match(char *s1, char *s2)
 {
-   if (s1==NULL && (s2==NULL || strlen(s2)==0)) return TRUE;
-   if (s2==NULL && (s1==NULL || strlen(s1)==0)) return TRUE;
+   if (IS_EMPTY(s1) && IS_EMPTY(s2)) return TRUE;
    if (s1==NULL || s2==NULL) return FALSE;
    if (!strcmp(s1, s2)) return TRUE;
    return FALSE;
@@ -163,7 +165,7 @@ static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_reque
 {
    conn->in_use = FALSE;
    
-   if (conn->connection_name==NULL || strlen(conn->connection_name)==0) {
+   if (IS_EMPTY(conn->connection_name)) {
       dbsetuserdata(conn->dbproc,NULL);
       viaduct_db_close_connection(conn, request);
    }
@@ -173,7 +175,7 @@ static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *reques
    viaduct_connection_t *conn;
 
    /* if there is no connection name, allocate a new connection */
-   if (request->connection_name==NULL || strlen(request->connection_name)==0) {
+   if (IS_EMPTY(request->connection_name)) {
       viaduct_log_debug(request, "empty connection name, allocating new");
       conn = viaduct_db_alloc_connection(request);
 
@@ -292,18 +294,20 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    json_add_key(json, "request");
    json_new_object(json);
-   json_add_string(json, "query_tag", request->query_tag);
+
+   if (IS_SET(request->query_tag)) 
+      json_add_string(json, "query_tag", request->query_tag);
    json_add_string(json, "sql_server", request->sql_server);
    json_add_string(json, "sql_user", request->sql_user);
 
-   if (request->sql_port!=NULL && strlen(request->sql_port)>0) 
+   if (IS_SET(request->sql_port)) 
       json_add_string(json, "sql_port", request->sql_port);
 
    json_add_string(json, "sql_database", request->sql_database);
 
 /*
  * do not return password back to client
-   if (request->sql_password!=NULL && strlen(request->sql_password)>0) 
+   if (IS_SET(request->sql_password)) 
       json_add_string(json, "sql_password", request->sql_password);
 */
 
@@ -418,7 +422,7 @@ viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severi
 
       viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(dbproc);
       if (request!=NULL) {
-         if (msgtext && strlen(msgtext)>0) 
+         if (IS_SET(msgtext)) 
             strcat(request->error_message, "\n");
          strcat(request->error_message, msgtext);
       }
