@@ -64,7 +64,7 @@
           .each( function(){
             page = $(this).attr('href');
             $('<p>').appendTo('#docs').prepend(
-              $('<a>').attr('href', '/eg/' + page ).text( page ).
+              $('<a>').attr('href', '/eg/' + page ).text( page.replace("_"," ").replace(/\.[^.]+$/,"") )
             );
           });
         });
@@ -145,13 +145,20 @@
         padding: 0;
         margin: 0;
       }
-      #docs { float: right; }
+      #docs {
+        float: right;
+        text-align: right;
+        padding: 1em;
+        border: 1px solid grey;
+        margin: 0em 1em 1em 1em;
+      }
+      #docs h3 { text-align: left; }
     </style>
     <link rel="stylesheet" type="text/css" href="tablesorter/style.css">
   </head>
   <body>
     <div id="docs">
-      <h3>Documentation</h3>
+      <h3>Documentation:</h3>
       <p><a href="doc/viaduct_specification.html">Specifications</a></p>
       <p><a href="doc/viaduct_architecture.pdf">Architecture</a></p>
     </div>
