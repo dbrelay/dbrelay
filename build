@@ -55,5 +55,5 @@ patch -N -p0 -i $BUILD/patches/nginx.conf.patch
 cp $BUILD/html/* html
 cp $BUILD/html/js/* html/js
 cp $BUILD/html/img/* html/img
-cp $BUILD/html/doc/* html/doc
 cp $BUILD/html/tablesorter/* html/tablesorter
+cp $BUILD/doc/* html/doc
