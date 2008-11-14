@@ -48,12 +48,14 @@ make install
 cd $PREFIX
 patch -N -p0 -i $BUILD/patches/nginx.conf.patch
 [ -d html ] || mkdir -p html
+[ -d html/eg/ ] || mkdir -p html/eg
 [ -d html/js ] || mkdir -p html/js
 [ -d html/img ] || mkdir -p html/img
 [ -d html/doc ] || mkdir -p html/doc
 [ -d html/tablesorter ] || mkdir -p html/tablesorter
 cp $BUILD/html/* html
 cp $BUILD/html/js/* html/js
+cp $BUILD/html/eg/* html/eg
 cp $BUILD/html/img/* html/img
 cp $BUILD/html/tablesorter/* html/tablesorter
 cp $BUILD/doc/* html/doc

@@ -38,6 +38,7 @@
           handles: "s,e",
           transparent: true
         });
+
         $('#go').click(function(){
           if ( ! launch() ) { return false ; };
           $('#results').empty();
@@ -55,7 +56,19 @@
             processRowSets,
             'Example'
           );
-        })
+        });
+        
+        $.get( "/eg/", function (data) {
+          $(data).find('a')
+          .filter('[href$=".html"]:not("[href^=.]"):not("[href^=?]")')
+          .each( function(){
+            page = $(this).attr('href');
+            $('<p>').appendTo('#docs').prepend(
+              $('<a>').attr('href', '/eg/' + page ).text( page ).
+            );
+          });
+        });
+        
       });
       
       function processRowSets( response ) {
@@ -132,14 +145,15 @@
         padding: 0;
         margin: 0;
       }
+      #docs { float: right; }
     </style>
     <link rel="stylesheet" type="text/css" href="tablesorter/style.css">
   </head>
   <body>
-    <div style="float:right;">
+    <div id="docs">
+      <h3>Documentation</h3>
       <p><a href="doc/viaduct_specification.html">Specifications</a></p>
       <p><a href="doc/viaduct_architecture.pdf">Architecture</a></p>
-      <p><a href="example.html">Python example</a></p>
     </div>
     <form id=accept-charset="utf-8">
       <label for="sql_server">Server</label><input type="text" name="sql_server" value="" id="sql_server"><br />

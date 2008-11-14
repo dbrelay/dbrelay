@@ -9,13 +9,17 @@
          server_name  localhost;
  
          #charset koi8-r;
-@@ -45,6 +45,10 @@
+@@ -45,6 +45,14 @@
              index  index.html index.htm;
          }
  
++        location /eg/ {
++          autoindex on;
++        }
++
 +        location /sql {
-+            viaduct;
-+	}
++          viaduct;
++        }
 +
          #error_page  404              /404.html;
  
