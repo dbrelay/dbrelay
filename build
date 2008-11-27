@@ -40,7 +40,7 @@ cat config.in | sed -f /tmp/sedfile.$$ > config
 rm -f /tmp/sedfile.$$
 
 cd $BUILD
-cd src/nginx-0.7.11
+cd src/nginx-0.7.22
 ./configure --prefix=$PREFIX --with-pcre=$BUILD/src/pcre-7.7/ --add-module=$BUILD/src/ngx_http_viaduct
 make
 make install
