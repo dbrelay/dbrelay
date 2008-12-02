@@ -1,0 +1,12 @@
+
+/*
+ * Copyright (C) Igor Sysoev
+ */
+
+#ifndef _NGX_DEFAULT_CONF_H_INCLUDED_
+#define _NGX_DEFAULT_CONF_H_INCLUDED_
+
+const char *ngx_default_conf_data = 
+"DEFAULT_CONF_IN"
+;
+#endif /* _NGX_DEFAULT_CONF_H_INCLUDED_ */
