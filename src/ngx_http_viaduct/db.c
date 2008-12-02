@@ -376,10 +376,10 @@ static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
 	    json_add_string(json, "name", dbcolname(dbproc, colnum));
             viaduct_db_get_sqltype_string(tmp, dbcoltype(dbproc, colnum), dbcollen(dbproc, colnum));
 	    json_add_string(json, "sql_type", tmp);
-            //if (viaduct_db_has_length(dbcoltype(dbproc, colnum))) {
-            sprintf(tmp, "%d", dbcollen(dbproc, colnum));
-	    json_add_string(json, "length", tmp);
-            //}
+            if (viaduct_db_has_length(dbcoltype(dbproc, colnum))) {
+            	sprintf(tmp, "%d", dbcollen(dbproc, colnum));
+	    	json_add_string(json, "length", tmp);
+            }
             if (viaduct_db_has_prec(dbcoltype(dbproc, colnum))) {
                typeinfo = dbcoltypeinfo(dbproc, colnum);
                sprintf(tmp, "%d", typeinfo->precision);
