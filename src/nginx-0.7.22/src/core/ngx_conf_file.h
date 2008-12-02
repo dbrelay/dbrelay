@@ -155,6 +155,8 @@ typedef struct {
     ngx_file_t            file;
     ngx_buf_t            *buffer;
     ngx_uint_t            line;
+    ngx_uint_t            offset;
+    ngx_uint_t            internal;
 } ngx_conf_file_t;
 
 

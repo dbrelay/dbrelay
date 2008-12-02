@@ -6,6 +6,7 @@
 
 #include <ngx_config.h>
 #include <ngx_core.h>
+#include <ngx_default_conf.h>
 
 #define NGX_CONF_BUFFER  4096
 
@@ -116,24 +117,27 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
         /* open configuration file */
 
         fd = ngx_open_file(filename->data, NGX_FILE_RDONLY, NGX_FILE_OPEN, 0);
-        if (fd == NGX_INVALID_FILE) {
-            ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno,
-                               ngx_open_file_n " \"%s\" failed",
-                               filename->data);
-            return NGX_CONF_ERROR;
-        }
 
         prev = cf->conf_file;
 
         cf->conf_file = ngx_palloc(cf->pool, sizeof(ngx_conf_file_t));
+
         if (cf->conf_file == NULL) {
             return NGX_CONF_ERROR;
         }
 
-        if (ngx_fd_info(fd, &cf->conf_file->file.info) == -1) {
-            ngx_log_error(NGX_LOG_EMERG, cf->log, ngx_errno,
-                          ngx_fd_info_n " \"%s\" failed", filename->data);
-        }
+        if (fd == NGX_INVALID_FILE) {
+            cf->conf_file->internal = 1;
+            //ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno,
+                               //ngx_open_file_n " \"%s\" failed",
+                               //filename->data);
+            //return NGX_CONF_ERROR;
+        } else {
+           if (ngx_fd_info(fd, &cf->conf_file->file.info) == -1) {
+              ngx_log_error(NGX_LOG_EMERG, cf->log, ngx_errno,
+                       ngx_fd_info_n " \"%s\" failed", filename->data);
+           }
+	}
 
         b = ngx_calloc_buf(cf->pool);
         if (b == NULL) {
@@ -152,12 +156,16 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
         b->end = b->last + NGX_CONF_BUFFER;
         b->temporary = 1;
 
-        cf->conf_file->file.fd = fd;
-        cf->conf_file->file.name.len = filename->len;
-        cf->conf_file->file.name.data = filename->data;
-        cf->conf_file->file.offset = 0;
-        cf->conf_file->file.log = cf->log;
+        if (!cf->conf_file->internal) {
+        	cf->conf_file->file.fd = fd;
+        	cf->conf_file->file.name.len = filename->len;
+        	cf->conf_file->file.name.data = filename->data;
+        	cf->conf_file->file.offset = 0;
+        	cf->conf_file->file.log = cf->log;
+        }
         cf->conf_file->line = 1;
+        cf->conf_file->offset = 0;
+        //cf->conf_file->internal = 1;
 
         type = parse_file;
 
@@ -260,7 +268,7 @@ done:
 
         cf->conf_file = prev;
 
-        if (ngx_close_file(fd) == NGX_FILE_ERROR) {
+        if (fd!=-1 && ngx_close_file(fd) == NGX_FILE_ERROR) {
             ngx_log_error(NGX_LOG_ALERT, cf->log, ngx_errno,
                           ngx_close_file_n " %s failed",
                           cf->conf_file->file.name.data);
@@ -454,13 +462,17 @@ ngx_conf_read_token(ngx_conf_t *cf)
     start = b->pos;
     start_line = cf->conf_file->line;
 
-    file_size = ngx_file_size(&cf->conf_file->file.info);
+    if (cf->conf_file->internal) {
+       file_size = strlen(ngx_default_conf_data);
+    } else {
+       file_size = ngx_file_size(&cf->conf_file->file.info);
+    }
 
     for ( ;; ) {
 
         if (b->pos >= b->last) {
 
-            if (cf->conf_file->file.offset >= file_size) {
+            if (cf->conf_file->offset >= file_size) {
 
                 if (cf->args->nelts > 0) {
 
@@ -508,14 +520,25 @@ ngx_conf_read_token(ngx_conf_t *cf)
                 ngx_memcpy(b->start, start, len);
             }
 
-            size = (ssize_t) (file_size - cf->conf_file->file.offset);
+            if (cf->conf_file->internal) {
+               size = (ssize_t) (file_size - cf->conf_file->offset);
+            } else {
+               size = (ssize_t) (file_size - cf->conf_file->file.offset);
+            }
 
             if (size > b->end - (b->start + len)) {
                 size = b->end - (b->start + len);
             }
 
-            n = ngx_read_file(&cf->conf_file->file, b->start + len, size,
+            if (cf->conf_file->internal) {
+               memcpy(b->start + len, &ngx_default_conf_data[cf->conf_file->offset], size);
+               cf->conf_file->offset += size;
+               n = size;
+            } else {
+               n = ngx_read_file(&cf->conf_file->file, b->start + len, size,
                               cf->conf_file->file.offset);
+               cf->conf_file->offset = cf->conf_file->file.offset;
+            }
 
             if (n == NGX_ERROR) {
                 return NGX_ERROR;
@@ -718,6 +741,8 @@ ngx_conf_read_token(ngx_conf_t *cf)
                 }
                 *dst = '\0';
                 word->len = len;
+                //ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+                                   //"word %s offset %d", word->data, cf->conf_file->offset);
 
                 if (ch == ';') {
                     return NGX_OK;
@@ -982,8 +1007,13 @@ ngx_conf_log_error(ngx_uint_t level, ngx_conf_t *cf, ngx_err_t err,
         return;
     }
 
-    ngx_log_error(level, cf->log, 0, "%s in %s:%ui",
+    if (cf->conf_file->internal) {
+    	ngx_log_error(level, cf->log, 0, "%s in %s:%ui",
+                  errstr, "internal", cf->conf_file->line);
+    } else {
+    	ngx_log_error(level, cf->log, 0, "%s in %s:%ui",
                   errstr, cf->conf_file->file.name.data, cf->conf_file->line);
+    }
 }
 
 
