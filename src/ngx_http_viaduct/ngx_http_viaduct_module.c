@@ -341,6 +341,7 @@ write_value(viaduct_request_t *request, char *key, char *value)
 {
    u_char *dst, *src;
    unsigned int i;
+   unsigned char noprint=0;
    char *log_levels[] = { "debug", "informational", "notice", "warning", "error", "critical" };
    char *log_level_scopes[] = { "server", "connection", "query" };
 
@@ -365,6 +366,7 @@ write_value(viaduct_request_t *request, char *key, char *value)
       request->query_tag = strdup(value);
    } else if (!strcmp(key, "sql_password")) {
       request->sql_password = strdup(value);
+      noprint = 1;
    } else if (!strcmp(key, "connection_name")) {
       request->connection_name = strdup(value);
    } else if (!strcmp(key, "connection_timeout")) {
@@ -376,8 +378,11 @@ write_value(viaduct_request_t *request, char *key, char *value)
       for (i=0; i<sizeof(log_level_scopes)/sizeof(char *); i++)
          if (!strcmp(value,log_level_scopes[i])) request->log_level_scope = i;
    }
-   viaduct_log_debug(request, "key %s", key);
-   viaduct_log_debug(request, "value %s", value);
+   
+   if (!noprint) {
+      viaduct_log_debug(request, "key %s", key);
+      viaduct_log_debug(request, "value %s", value);
+   }
 }
 void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
 {
