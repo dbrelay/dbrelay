@@ -442,7 +442,7 @@ static ngx_int_t
 ngx_conf_read_token(ngx_conf_t *cf)
 {
     u_char      *start, ch, *src, *dst;
-    off_t        file_size;
+    ngx_uint_t   file_size;
     size_t       len;
     ssize_t      n, size;
     ngx_uint_t   found, need_space, last_space, sharp_comment, variable;
