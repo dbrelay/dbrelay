@@ -158,12 +158,14 @@ void json_add_null(json_t *json, char *key)
 }
 void json_add_string(json_t *json, char *key, char *value)
 {
-   char *s, *first;
+   char *s, *first, *tmp;
    char c;
+   
+   tmp = strdup(value);
 
    json_add_key(json, key);
    sb_append(json->sb, "\"");
-   for (s=value, first=value; *s; s++) {
+   for (s=tmp, first=tmp; *s; s++) {
       if (!is_printable(*s)) {
          c = *s;
          *s='\0';
@@ -175,6 +177,8 @@ void json_add_string(json_t *json, char *key, char *value)
    sb_append(json->sb, first);
    sb_append(json->sb, "\"");
    json->pending = 0;
+
+   free(tmp);
 }
 
 void json_push(json_t *json, int node_type)
