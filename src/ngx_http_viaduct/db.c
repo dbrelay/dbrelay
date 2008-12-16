@@ -14,6 +14,7 @@ static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *reques
 #define MAX_CONNECTIONS 10
 
 static viaduct_connection_t *connections[100];
+static char login_error[500];
 
 static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *request)
 {
@@ -317,7 +318,8 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    conn = viaduct_db_get_connection(request);
    viaduct_log_debug(request, "Allocated connection for query");
    if (conn->dbproc==NULL) {
-	strcpy(error_string, "Failed to login");
+	//strcpy(error_string, "Failed to login");
+	strcpy(error_string, login_error);
    } else {
    	rc = dbuse(conn->dbproc, request->sql_database);
    	rc = dbcmd(conn->dbproc, request->sql);
@@ -435,6 +437,8 @@ viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severi
          if (IS_SET(msgtext)) 
             strcat(request->error_message, "\n");
          strcat(request->error_message, msgtext);
+      } else {
+         strcat(login_error, msgtext);
       }
    }
 
