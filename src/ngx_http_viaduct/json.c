@@ -128,7 +128,7 @@ void json_add_number(json_t *json, char *key, char *value)
 }
 static int is_printable(char c)
 {
-   if (c<' ' || c=='\"' || c=='\\') return 0;
+   if (c<' ' || c=='\"') return 0;
    else return 1;
 }
 static void append_nonprintable(stringbuf_t *sb, char c)

@@ -14,7 +14,13 @@ static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *reques
 #define MAX_CONNECTIONS 10
 
 static viaduct_connection_t *connections[100];
+/* I'm not particularly happy with this, in order to return a detailed message 
+ * from the msg handler, we have to use a static buffer because there is no
+ * dbproc to dbsetuserdata() on.  This will go away when we change out the 
+ * dblib API.
+ */
 static char login_error[500];
+static int login_msgno;
 
 static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *request)
 {
@@ -319,7 +325,12 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    viaduct_log_debug(request, "Allocated connection for query");
    if (conn->dbproc==NULL) {
 	//strcpy(error_string, "Failed to login");
-	strcpy(error_string, login_error);
+        if (login_msgno == 18452 && IS_EMPTY(request->sql_password)) {
+	    strcpy(error_string, "Login failed and no password was set, please check.\n");
+	    strcat(error_string, login_error);
+        } else {
+	    strcpy(error_string, login_error);
+        }
    } else {
    	rc = dbuse(conn->dbproc, request->sql_database);
    	rc = dbcmd(conn->dbproc, request->sql);
@@ -438,7 +449,8 @@ viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severi
             strcat(request->error_message, "\n");
          strcat(request->error_message, msgtext);
       } else {
-         strcpy(login_error, msgtext);
+         login_msgno = msgno;
+         strcat(login_error, msgtext);
       }
    }
 
