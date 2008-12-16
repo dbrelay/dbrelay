@@ -438,7 +438,7 @@ viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severi
             strcat(request->error_message, "\n");
          strcat(request->error_message, msgtext);
       } else {
-         strcat(login_error, msgtext);
+         strcpy(login_error, msgtext);
       }
    }
 
