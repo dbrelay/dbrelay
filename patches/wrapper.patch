@@ -1,0 +1,41 @@
+--- auto/sources	2008-11-10 10:22:33.000000000 -0500
++++ auto/sources	2008-12-16 10:49:31.000000000 -0500
+@@ -38,6 +38,7 @@
+ 
+ 
+ CORE_SRCS="src/core/nginx.c \
++           src/core/viaduct.c \
+            src/core/ngx_log.c \
+            src/core/ngx_palloc.c \
+            src/core/ngx_array.c \
+--- src/core/viaduct.c  2008-12-23 07:31:40.000000000 -0500
++++ src/core/viaduct.c	2008-12-16 10:04:33.000000000 -0500
+@@ -0,0 +1,17 @@
++
++/*
++ * Copyright (C) Igor Sysoev
++ */
++
++
++#include <ngx_config.h>
++#include <ngx_core.h>
++#include <nginx.h>
++
++int ngx_cdecl ngx_main(int argc, char *const *argv);
++
++int ngx_cdecl
++main(int argc, char *const *argv)
++{
++    return ngx_main(argc, argv);
++}
+--- src/core/nginx.c	2008-11-11 11:17:45.000000000 -0500
++++ src/core/nginx.c	2008-12-16 06:55:02.000000000 -0500
+@@ -189,7 +189,7 @@
+ 
+ 
+ int ngx_cdecl
+-main(int argc, char *const *argv)
++ngx_main(int argc, char *const *argv)
+ {
+     char             *p;
+     ssize_t           n;

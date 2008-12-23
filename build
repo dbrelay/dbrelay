@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -x
+#set -x
 
 if [ "$1" = "--help" ]
 then
@@ -50,7 +50,11 @@ cat config.in | sed -f /tmp/sedfile.$$ > config
 rm -f /tmp/sedfile.$$
 
 cd $BUILD
-cd src/nginx-0.7.22
+cd src
+tar xvfz nginx-0.7.28.tar.gz
+cd nginx-0.7.28
+patch -N -p0 < ../../patches/wrapper.patch
+patch -N -p0 < ../../patches/conffile.patch
 HEAD=`grep '^"DEFAULT_CONF_IN"$' -n src/core/ngx_default_conf.h.in | cut -f1 -d:`
 WC=`wc -l src/core/ngx_default_conf.h.in | awk '{print $1}'`
 TAIL=`expr $WC - $HEAD`

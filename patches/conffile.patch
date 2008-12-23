@@ -1,0 +1,297 @@
+--- src/core/ngx_conf_file.h	2008-08-26 17:05:59.000000000 -0400
++++ src/core/ngx_conf_file.h	2008-11-28 12:30:24.000000000 -0500
+@@ -155,6 +155,8 @@
+     ngx_file_t            file;
+     ngx_buf_t            *buffer;
+     ngx_uint_t            line;
++    ngx_uint_t            offset;
++    ngx_uint_t            internal;
+ } ngx_conf_file_t;
+ 
+ 
+--- src/core/ngx_conf_file.c	2008-11-11 11:17:45.000000000 -0500
++++ src/core/ngx_conf_file.c	2008-12-16 16:34:44.000000000 -0500
+@@ -6,6 +6,7 @@
+ 
+ #include <ngx_config.h>
+ #include <ngx_core.h>
++#include <ngx_default_conf.h>
+ 
+ #define NGX_CONF_BUFFER  4096
+ 
+@@ -116,24 +117,27 @@
+         /* open configuration file */
+ 
+         fd = ngx_open_file(filename->data, NGX_FILE_RDONLY, NGX_FILE_OPEN, 0);
+-        if (fd == NGX_INVALID_FILE) {
+-            ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno,
+-                               ngx_open_file_n " \"%s\" failed",
+-                               filename->data);
+-            return NGX_CONF_ERROR;
+-        }
+ 
+         prev = cf->conf_file;
+ 
+         cf->conf_file = ngx_palloc(cf->pool, sizeof(ngx_conf_file_t));
++
+         if (cf->conf_file == NULL) {
+             return NGX_CONF_ERROR;
+         }
+ 
+-        if (ngx_fd_info(fd, &cf->conf_file->file.info) == -1) {
+-            ngx_log_error(NGX_LOG_EMERG, cf->log, ngx_errno,
+-                          ngx_fd_info_n " \"%s\" failed", filename->data);
+-        }
++        if (fd == NGX_INVALID_FILE) {
++            cf->conf_file->internal = 1;
++            //ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno,
++                               //ngx_open_file_n " \"%s\" failed",
++                               //filename->data);
++            //return NGX_CONF_ERROR;
++        } else {
++           if (ngx_fd_info(fd, &cf->conf_file->file.info) == -1) {
++              ngx_log_error(NGX_LOG_EMERG, cf->log, ngx_errno,
++                       ngx_fd_info_n " \"%s\" failed", filename->data);
++           }
++	}
+ 
+         b = ngx_calloc_buf(cf->pool);
+         if (b == NULL) {
+@@ -152,12 +156,16 @@
+         b->end = b->last + NGX_CONF_BUFFER;
+         b->temporary = 1;
+ 
+-        cf->conf_file->file.fd = fd;
+-        cf->conf_file->file.name.len = filename->len;
+-        cf->conf_file->file.name.data = filename->data;
+-        cf->conf_file->file.offset = 0;
+-        cf->conf_file->file.log = cf->log;
++        if (!cf->conf_file->internal) {
++        	cf->conf_file->file.fd = fd;
++        	cf->conf_file->file.name.len = filename->len;
++        	cf->conf_file->file.name.data = filename->data;
++        	cf->conf_file->file.offset = 0;
++        	cf->conf_file->file.log = cf->log;
++        }
+         cf->conf_file->line = 1;
++        cf->conf_file->offset = 0;
++        //cf->conf_file->internal = 1;
+ 
+         type = parse_file;
+ 
+@@ -260,7 +268,7 @@
+ 
+         cf->conf_file = prev;
+ 
+-        if (ngx_close_file(fd) == NGX_FILE_ERROR) {
++        if (fd!=-1 && ngx_close_file(fd) == NGX_FILE_ERROR) {
+             ngx_log_error(NGX_LOG_ALERT, cf->log, ngx_errno,
+                           ngx_close_file_n " %s failed",
+                           cf->conf_file->file.name.data);
+@@ -434,7 +442,7 @@
+ ngx_conf_read_token(ngx_conf_t *cf)
+ {
+     u_char      *start, ch, *src, *dst;
+-    off_t        file_size;
++    ngx_uint_t   file_size;
+     size_t       len;
+     ssize_t      n, size;
+     ngx_uint_t   found, need_space, last_space, sharp_comment, variable;
+@@ -454,13 +462,17 @@
+     start = b->pos;
+     start_line = cf->conf_file->line;
+ 
+-    file_size = ngx_file_size(&cf->conf_file->file.info);
++    if (cf->conf_file->internal) {
++       file_size = strlen(ngx_default_conf_data);
++    } else {
++       file_size = ngx_file_size(&cf->conf_file->file.info);
++    }
+ 
+     for ( ;; ) {
+ 
+         if (b->pos >= b->last) {
+ 
+-            if (cf->conf_file->file.offset >= file_size) {
++            if (cf->conf_file->offset >= file_size) {
+ 
+                 if (cf->args->nelts > 0) {
+ 
+@@ -508,14 +520,25 @@
+                 ngx_memcpy(b->start, start, len);
+             }
+ 
+-            size = (ssize_t) (file_size - cf->conf_file->file.offset);
++            if (cf->conf_file->internal) {
++               size = (ssize_t) (file_size - cf->conf_file->offset);
++            } else {
++               size = (ssize_t) (file_size - cf->conf_file->file.offset);
++            }
+ 
+             if (size > b->end - (b->start + len)) {
+                 size = b->end - (b->start + len);
+             }
+ 
+-            n = ngx_read_file(&cf->conf_file->file, b->start + len, size,
++            if (cf->conf_file->internal) {
++               memcpy(b->start + len, &ngx_default_conf_data[cf->conf_file->offset], size);
++               cf->conf_file->offset += size;
++               n = size;
++            } else {
++               n = ngx_read_file(&cf->conf_file->file, b->start + len, size,
+                               cf->conf_file->file.offset);
++               cf->conf_file->offset = cf->conf_file->file.offset;
++            }
+ 
+             if (n == NGX_ERROR) {
+                 return NGX_ERROR;
+@@ -718,6 +741,8 @@
+                 }
+                 *dst = '\0';
+                 word->len = len;
++                //ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
++                                   //"word %s offset %d", word->data, cf->conf_file->offset);
+ 
+                 if (ch == ';') {
+                     return NGX_OK;
+@@ -982,8 +1007,13 @@
+         return;
+     }
+ 
+-    ngx_log_error(level, cf->log, 0, "%s in %s:%ui",
++    if (cf->conf_file->internal) {
++    	ngx_log_error(level, cf->log, 0, "%s in %s:%ui",
++                  errstr, "internal", cf->conf_file->line);
++    } else {
++    	ngx_log_error(level, cf->log, 0, "%s in %s:%ui",
+                   errstr, cf->conf_file->file.name.data, cf->conf_file->line);
++    }
+ }
+ 
+ 
+--- src/core/ngx_default_conf.h.in      2008-12-23 08:55:08.000000000 -0500
++++ src/core/ngx_default_conf.h.in	2008-12-02 10:31:33.000000000 -0500
+@@ -0,0 +1,12 @@
++
++/*
++ * Copyright (C) Igor Sysoev
++ */
++
++#ifndef _NGX_DEFAULT_CONF_H_INCLUDED_
++#define _NGX_DEFAULT_CONF_H_INCLUDED_
++
++const char *ngx_default_conf_data = 
++"DEFAULT_CONF_IN"
++;
++#endif /* _NGX_DEFAULT_CONF_H_INCLUDED_ */
+--- conf/internal.conf  2008-12-23 08:55:08.000000000 -0500
++++ conf/internal.conf	2008-12-02 14:23:53.000000000 -0500
+@@ -0,0 +1,108 @@
++worker_processes  5;
++ 
++events { 
++    worker_connections  1024; 
++} 
++ 
++http { 
++types { 
++    text/html                             html htm shtml; 
++    text/css                              css; 
++    text/xml                              xml; 
++    image/gif                             gif; 
++    image/jpeg                            jpeg jpg; 
++    application/x-javascript              js; 
++    application/atom+xml                  atom; 
++    application/rss+xml                   rss; 
++ 
++    text/mathml                           mml; 
++    text/plain                            txt; 
++    text/vnd.sun.j2me.app-descriptor      jad; 
++    text/vnd.wap.wml                      wml; 
++    text/x-component                      htc; 
++ 
++    image/png                             png; 
++    image/tiff                            tif tiff; 
++    image/vnd.wap.wbmp                    wbmp; 
++    image/x-icon                          ico; 
++    image/x-jng                           jng; 
++    image/x-ms-bmp                        bmp; 
++    image/svg+xml                         svg; 
++ 
++    application/java-archive              jar war ear; 
++    application/mac-binhex40              hqx; 
++    application/msword                    doc; 
++    application/pdf                       pdf; 
++    application/postscript                ps eps ai; 
++    application/rtf                       rtf; 
++    application/vnd.ms-excel              xls; 
++    application/vnd.ms-powerpoint         ppt; 
++    application/vnd.wap.wmlc              wmlc; 
++    application/vnd.wap.xhtml+xml         xhtml; 
++    application/vnd.google-earth.kml+xml  kml; 
++    application/vnd.google-earth.kmz      kmz; 
++    application/x-cocoa                   cco; 
++    application/x-java-archive-diff       jardiff; 
++    application/x-java-jnlp-file          jnlp; 
++    application/x-makeself                run; 
++    application/x-perl                    pl pm; 
++    application/x-pilot                   prc pdb; 
++    application/x-rar-compressed          rar; 
++    application/x-redhat-package-manager  rpm; 
++    application/x-sea                     sea; 
++    application/x-shockwave-flash         swf; 
++    application/x-stuffit                 sit; 
++    application/x-tcl                     tcl tk; 
++    application/x-x509-ca-cert            der pem crt; 
++    application/x-xpinstall               xpi; 
++    application/zip                       zip; 
++ 
++    application/octet-stream              bin exe dll; 
++    application/octet-stream              deb; 
++    application/octet-stream              dmg; 
++    application/octet-stream              eot; 
++    application/octet-stream              iso img; 
++    application/octet-stream              msi msp msm; 
++ 
++    audio/midi                            mid midi kar; 
++    audio/mpeg                            mp3; 
++    audio/x-realaudio                     ra; 
++ 
++    video/3gpp                            3gpp 3gp; 
++    video/mpeg                            mpeg mpg; 
++    video/quicktime                       mov; 
++    video/x-flv                           flv; 
++    video/x-mng                           mng; 
++    video/x-ms-asf                        asx asf; 
++    video/x-ms-wmv                        wmv; 
++    video/x-msvideo                       avi; 
++} 
++    default_type  application/octet-stream; 
++ 
++    sendfile        on; 
++ 
++    keepalive_timeout  65; 
++ 
++    server { 
++        listen       1433; 
++        server_name  localhost; 
++ 
++        location / { 
++            root   html; 
++            index  index.html index.htm; 
++        } 
++ 
++        location /eg/ { 
++          autoindex on; 
++        } 
++  
++        location /sql { 
++          viaduct; 
++        } 
++  
++        error_page   500 502 503 504  /50x.html; 
++        location = /50x.html { 
++            root   html; 
++        } 
++    } 
++} 
