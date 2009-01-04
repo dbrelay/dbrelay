@@ -1,0 +1,11 @@
+--- src/dblib/dblib.c	2008-01-01 18:09:46.000000000 -0500
++++ src/dblib/dblib.c	2008-11-07 20:14:51.000000000 -0500
+@@ -1113,7 +1113,7 @@
+ 	dbproc->tds_socket = tds_alloc_socket(dblib_get_tds_ctx(), 512);
+ 
+ 	tds_set_parent(dbproc->tds_socket, dbproc);
+-	dbproc->tds_socket->option_flag2 &= ~0x02;	/* we're not an ODBC driver */
++	/* dbproc->tds_socket->option_flag2 &= ~0x02; */	/* we're not an ODBC driver */
+ 	dbproc->tds_socket->env_chg_func = db_env_chg;
+ 	dbproc->envchange_rcv = 0;
+ 	dbproc->dbcurdb[0] = '\0';

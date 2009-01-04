@@ -30,13 +30,26 @@ else
 	CONFPATH=conf/internal.conf
 fi
 
-BUILD=`pwd`
-cd src/freetds-0.82
-./configure --prefix=$BUILD/freetds-0.82 --with-tdsver=8.0; make
+TDSDIR=freetds-0.82
+PCREDIR=pcre-7.8
+NGXDIR=nginx-0.7.22
 
+BUILD=`pwd`
+cd src
+tar xvfz $PCREDIR.tgz
+tar xvfz $TDSDIR.tgz
+tar xvfz $NGXDIR.tar.gz
+cd ..
+
+# FreeTDS configuration
+cd src/$TDSDIR
+patch -N -p0 < ../../patches/freetds.patch
+./configure --prefix=$BUILD/$TDSDIR --with-tdsver=8.0; make
+
+# Viaduct module configuration
 cd $BUILD
 cd src/ngx_http_viaduct
-echo "s#FREETDS#$BUILD/src/freetds-0.82#g" > /tmp/sedfile.$$
+echo "s#FREETDS#$BUILD/src/$TDSDIR#g" > /tmp/sedfile.$$
 if [ `uname` = "Darwin" ]
 then
 echo "s#VIADUCT_EXTRA_LIBS#-liconv#g" >> /tmp/sedfile.$$
@@ -49,10 +62,9 @@ fi
 cat config.in | sed -f /tmp/sedfile.$$ > config
 rm -f /tmp/sedfile.$$
 
+# NGINX configuration
 cd $BUILD
-cd src
-tar xvfz nginx-0.7.28.tar.gz
-cd nginx-0.7.28
+cd src/$NGXDIR
 patch -N -p0 < ../../patches/wrapper.patch
 patch -N -p0 < ../../patches/conffile.patch
 HEAD=`grep '^"DEFAULT_CONF_IN"$' -n src/core/ngx_default_conf.h.in | cut -f1 -d:`
@@ -63,7 +75,7 @@ head -$HEAD src/core/ngx_default_conf.h.in > src/core/ngx_default_conf.h
 cat $CONFPATH | sed -e 's/^/"/' | sed -e 's/$/"/' >> src/core/ngx_default_conf.h
 tail -$TAIL src/core/ngx_default_conf.h.in >> src/core/ngx_default_conf.h
 
-./configure --prefix=$PREFIX --with-pcre=$BUILD/src/pcre-7.7/ --add-module=$BUILD/src/ngx_http_viaduct
+./configure --prefix=$PREFIX --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_http_viaduct
 make
 make install
 
