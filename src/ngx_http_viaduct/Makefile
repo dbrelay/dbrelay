@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc -g
 CFLAGS=-DCMDLINE -I ../freetds-0.82/include
 OBJS=main.o db.o log.o json.o stringbuf.o
 
