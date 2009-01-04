@@ -201,6 +201,7 @@ static int viaduct_db_is_quoted(int coltype)
 {
    if (coltype == SYBVARCHAR ||
        coltype == SYBCHAR ||
+       coltype == SYBTEXT ||
        coltype == SYBDATETIMN ||
        coltype == SYBDATETIME ||
        coltype == SYBDATETIME4) 
