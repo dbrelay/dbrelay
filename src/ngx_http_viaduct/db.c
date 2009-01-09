@@ -4,12 +4,16 @@
  */
 
 #include "viaduct.h"
+#include "stringbuf.h"
 
 #define IS_SET(x) (x && strlen(x)>0)
 #define IS_EMPTY(x) (!x || strlen(x)==0)
 
 static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc);
 static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *request);
+static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
+static int viaduct_find_placeholder(char *sql);
+
 
 #define MAX_CONNECTIONS 10
 
@@ -293,6 +297,9 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    json_t *json = json_new();
    u_char *ret;
    viaduct_connection_t *conn;
+   char *newsql;
+   int i = 0;
+   char tmp[20];
 
    error_string[0]='\0';
 
@@ -334,7 +341,9 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
         }
    } else {
    	rc = dbuse(conn->dbproc, request->sql_database);
-   	rc = dbcmd(conn->dbproc, request->sql);
+   	newsql = viaduct_resolve_params(request, request->sql);
+   	rc = dbcmd(conn->dbproc, newsql);
+        free(newsql);
    	viaduct_log_debug(request, "Sending sql query");
    	rc = dbsqlexec(conn->dbproc);
    	if (rc==SUCCEED) {
@@ -351,6 +360,13 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    if (strlen(error_string)) {
       json_add_string(json, "error", error_string);
    }
+   i = 0;
+   while (request->params[i]) {
+      sprintf(tmp, "param%d", i);
+      json_add_string(json, tmp, request->params[i]);
+      i++;
+   }
+
    json_end_object(json);
 
    json_end_object(json);
@@ -492,4 +508,66 @@ viaduct_free_request(viaduct_request_t *request)
    if (request->connection_name) free(request->connection_name);
 
    free(request);
+}
+static int
+is_quoted_param(char *param)
+{
+   int ret;
+   char *tmp = strdup(param);
+   char *s = strstr(tmp, ":");
+   *s = '\0';
+   if (!strcasecmp(tmp, "char") ||
+       !strcasecmp(tmp, "varchar") ||
+       !strcasecmp(tmp, "datetime") ||
+       !strcasecmp(tmp, "smalldatetime"))
+      ret = TRUE;
+   else ret = FALSE;
+   free(tmp);
+   return ret;
+}
+static char *
+viaduct_resolve_params(viaduct_request_t *request, char *sql)
+{
+   int i = 0;
+   int pos = 0, prevpos = 0;
+   stringbuf_t *sb = sb_new(NULL);
+   char *ret;
+   char *tmpsql = strdup(sql);
+
+   while (request->params[i]) {
+      prevpos = pos;
+      pos += viaduct_find_placeholder(&tmpsql[pos]);
+      if (pos==-1) ; // fix
+      else {
+         tmpsql[pos]='\0';
+         sb_append(sb, &tmpsql[prevpos]);
+         if (is_quoted_param(request->params[i])) sb_append(sb, "'");
+         sb_append(sb, strstr(request->params[i], ":") + 1);
+         if (is_quoted_param(request->params[i])) sb_append(sb, "'");
+         pos++;
+      }
+      i++;
+   } 
+   sb_append(sb, &tmpsql[pos]);
+   ret = sb_to_char(sb);
+   free(tmpsql);
+   sb_free(sb);
+   viaduct_log_debug(request, "new sql %s", ret);
+   return ret;
+}
+static int
+viaduct_find_placeholder(char *sql)
+{
+   int quoted = 0;
+   int i = 0;
+   int found = 0;
+   int len = strlen(sql);
+
+   do {
+     if (sql[i]=='\'') quoted = quoted ? 0 : 1;
+     if (!quoted && sql[i]=='?') found = 1;
+     i++;
+   } while (!found && i<len);
+   if (!found) return -1;
+   else return i-1;
 }

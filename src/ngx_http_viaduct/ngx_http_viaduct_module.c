@@ -377,6 +377,14 @@ write_value(viaduct_request_t *request, char *key, char *value)
    } else if (!strcmp(key, "log_level_scope")) {
       for (i=0; i<sizeof(log_level_scopes)/sizeof(char *); i++)
          if (!strcmp(value,log_level_scopes[i])) request->log_level_scope = i;
+
+   } else if (!strncmp(key, "param", 5)) {
+      i = atoi(&key[5]);
+      if (i>VIADUCT_MAX_PARAMS) {
+         viaduct_log_debug(request, "param%d exceeds VIADUCT_MAX_PARAMS", i);
+      } else if (i>0) {
+         request->params[i-1] = strdup(value);
+      }
    }
    
    if (!noprint) {

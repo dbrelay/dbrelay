@@ -16,6 +16,8 @@
 #include "stringbuf.h"
 #include "json.h"
 
+#define VIADUCT_MAX_PARAMS 100
+
 #define VIADUCT_LOG_SCOPE_SERVER 1
 #define VIADUCT_LOG_SCOPE_CONN 2
 #define VIADUCT_LOG_SCOPE_QUERY 3
@@ -46,6 +48,7 @@ typedef struct {
    int log_level_scope;
    ngx_log_t *log;
    char error_message[4000];
+   char *params[VIADUCT_MAX_PARAMS];
 } viaduct_request_t;
 
 typedef struct {
