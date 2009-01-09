@@ -120,8 +120,9 @@
       }
       todo {
         display: inline;
-        font-weight: bold;
-        color: #23318F;
+        border: 2px solid #2900A6;
+        padding: 0em 0.15em;
+        margin: -1px 0.15em;
       }
       .em {
         font-variant: small-caps;
@@ -146,7 +147,7 @@
       p > .term {
         text-align: left;
         background-color: #eee;
-        min-width: 6em;
+        min-width: 8em;
       }
       .term {
         display: block;
@@ -244,11 +245,13 @@
                   <li><a href="#http_request_db">Database server</a></li>
                   <li><a href="#http_request_conn">Connection lifecycle</a></li>
                   <li><a href="#http_request_query">SQL query</a></li>
+                  <li><a href="#http_admin_request"></a></li>
                 </ol>
               </li>
               <li><a href="#http_response">HTTP response (JSON)</a></li>
               <li><a href="#log_files">Log and PID files</a></li>
               <li><a href="#static_files">Static files</a></li>
+              <li><a href="#runtime_files">Run time files</a></li>
               <li><a href="#command_line">Command line parameters</a></li>
             </ol>
           </li>
@@ -271,6 +274,18 @@
           document.getElementById('revisions_body').style.display = 'none';
         ">Hide</span> Revisions</h2>
         <div id="revisions_body" style="display:none;">
+          <p>
+            <span class="term" class="date">2009.01.09</span>
+            <span class="term" class="person">Brian&nbsp;Bruns<br />Vlad&nbsp;Didenko</span>
+            <div class="comments">Started the <a href="#http_admin_request">Administrative interface</a> chapter. Corrected and cleaned the SQL parameters specification in <a href="#http_request_query">the HTTP Request</a> section.</div>
+            <div class="float_break"></div>
+          </p>
+          <p>
+            <span class="term" class="date">2008.12.02</span>
+            <span class="term" class="person">Brian&nbsp;Bruns<br />Vlad&nbsp;Didenko</span>
+            <div class="comments">Changed the SQL parameters specification in the <a href="#persistence">Persistence considerations</a> chapter, which has been moved. Clarified the garbage collection route in the <a href="#normal_request">Normal Request</a> section. Changed the start point for calculating connection timeout in the <a href="#http_request_conn">Connection lifecycle</a>.</div>
+            <div class="float_break"></div>
+          </p>
           <p>
             <span class="term" class="date">2008.11.09</span>
             <span class="term" class="person">Vlad&nbsp;Didenko</span>
@@ -394,13 +409,13 @@
           <h3>Normal request</h3>
           <ol>
             <li>
-              <p><div class="error_note"><todo>error handler</todo></div>Client request expected to contain all nesessary information to locate and authenticate into the server to run the query as well as the query itself.</p>
+              <p><div class="error_note todo">error handler</div>Client request expected to contain all nesessary information to locate and authenticate into the server to run the query as well as the query itself.</p>
             </li>
-            <li><p><div class="error_note"><todo>error handler</todo></div>After receiving the client request, the Viaduct applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.</p></li>
-            <li><p><div class="error_note"><todo>error handler</todo></div>When the request gets a connection assigned, it should queue it's SQL query for execution on that connection. Every query should run in a fresh context, meaning, that <span class="em">no</span> temporary objects or other context information from previous queries on the same connection should be visible and impacting the new query.</p></li>
-            <li><p><div class="error_note"><todo>error handler</todo></div>The resulting datasets should be formatted and returned to the client.</p></li>
+            <li><p><div class="error_note todo">error handler</div>After receiving the client request, the Viaduct applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.</p></li>
+            <li><p><div class="error_note todo">error handler</div>When the request gets a connection assigned, it should queue it's SQL query for execution on that connection. Every query should run in a fresh context, meaning, that <span class="em">no</span> temporary objects or other context information from previous queries on the same connection should be visible and impacting the new query.</p></li>
+            <li><p><div class="error_note todo">error handler</div>The resulting datasets should be formatted and returned to the client.</p></li>
             <li>
-              <p><div class="error_note"><todo>error handler</todo></div>There should be a connection &quot;garbage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.</p>
+              <p><div class="error_note todo">error handler</div>There should be a connection &quot;garbage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.</p>
               <p>As it is implemented now, a connection &laquo;garbage collector&raquo; only runs when there is an incoming viaduct request. In future releases, there may be an independant agent or thread running for administration/cleanup.</p>
             </li>
           </ol>
@@ -413,7 +428,7 @@
         </div>
         <div id="status_request" class="chapter">
           <h3>Status request</h3>
-          <p>A status report on open connections, loads, timings, memory, version, etc should be available on a configurable URI, <code>/status</code> by default. The <todo>details of the status response</todo> will be specified later in the project.</p>
+          <p>A status report on open connections, loads, timings, memory, version, etc should be available on a configurable URI, <code>/status</code> by default. The <span class="todo">details of the status response</span> will be specified later in the project.</p>
         </div>
         <div id="app_shutdown" class="chapter">
           <h3>Application shutdown</h3>
@@ -441,14 +456,18 @@
           <p><span class="term done">sql_password</span>Optional password for the sql_user.</p>
           <h4 id="http_request_conn">Connection lifecycle</h4>
           <p><span class="term done">connection_name</span>Optional name to persist this connection under.</p>
-          <p><span class="term todo">connection_timeout</span>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
+          <p><span class="term done">connection_timeout</span>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours). <span class="todo">Due to a not-yet-fixed bug the connections are not shutdown after the expiration time.</span></p>
           <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
           <p><span class="term todo">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
           <p><span class="term todo">log_level_scope</span>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</p>
           <h4 id="http_request_query">SQL query</h4>
           <p><span class="term done">sql</span>Optional TSQL statement batch conformant with MS SQL Server 2005 TSQL. &quot;Sql&quot; and &quot;param[]&quot; parameters may be omitted when, for example, setting the new application log level.</p>
-          <p><span class="term todo">params</span></p>Optional list of comma-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional parameters to be bound into the SQL query. Output parameters are not supported. <todo>How would we quote and escape values for quotes, commas and colons?</todo></p>
+          <p><span class="term done">param<em>X</em></span>Optional postfix-numbered set of colon-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional SQL parameters to be bound into the SQL query. Output parameters are not supported. Parameters should come as an integer-indexed zero-based sequence. <span class="todo">Gaps in parameter indexes should cause notice-level errors</span>. SQL parameter values are expected to be URL-encoded. The accepted &laquo;<code>type</code>&raquo; values are <code>int</code>, <code>smallint</code>, <code>tinyint</code>, <code>numeric</code>, <code>float</code>, <code>real</code>, <code>char</code>, <code>varchar</code>, <code>datetime</code>, <code>smalldatetime</code>.</p>
           <p><span class="term todo">error_style</span>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</p>
+          <h4 id="http_admin_request">Administrative requests</h4>
+          <p><span class="term todo">admin</span>A keyword to get to the set of administrative commands. When specified, only administrative request&#x27;s parameters are taken in consideration. A specific administrative parameter is expected in the same http request.</p>
+          <p><span class="term todo">status</span>Request the server status as a part of the administrative http request.</p>
+          <p><span class="term todo">cmd</span>Execute a command on the sever. <span class="todo">Specific commands and their format to be decided later in the project.</span></p>
         </div>
         <div id="http_response" class="chapter">
           <h3>HTTP response (JSON)</h3>
@@ -519,7 +538,7 @@
         </div>
         <div id="log_files" class="chapter">
           <h3>Log and PID files</h3>
-          <p>If no directories specified, logs and PID files are created in system-vendor recommended directory as defined in the application source header files. File names, if configurable in Nginx, should include the executable name, listening HTTP port, date and time stamp and, appropriately, have .log or .pid extension. The PID file should only contain a numeric PID of the application process. Content of the log files at appropriate levels will be decided later in the project.</p>
+          <p>If no directories specified, logs and PID files are created in system-vendor recommended directory as defined in the application source header files. File names, if configurable in Nginx, should include the executable name, listening HTTP port, date and time stamp and, appropriately, have .log or .pid extension. The PID file should only contain a numeric PID of the application process. Content of the log files at appropriate levels will be decided later in the project. If using the system-vendor recommended directories fails, then log and PID files should go into a temporary directory together with <a href="#runtime_files">run time files</a>.</p>
           <p>Log files are written according to the &laquo;log_level&raquo; setting in the <code>syslog</code> format as per &sect;4.1 of <a href="http://tools.ietf.org/rfc/rfc3164.txt">RFC 3164</a>. The messages are assigned to &laquo;user-level messages&raquo; facility (value <code>1</code>). The following are the meanings for the &laquo;log_level&raquo; values, mapped to the <code>syslog</code> &laquo;severity&raquo; levels:</p>
           <p><span class="term">debug</span>The complete http connection, request and database server lifecycle information, including full set of timings on both client and database sides.</p>
           <p><span class="term">informational</span>Live configuration changes. For now, this is only &laquo;<code>log_level</code>&raquo; for &laquo;<code>server</code>&raquo; and &laquo;<code>connection</code>&raquo; scopes.</p>
@@ -547,6 +566,10 @@
           <h3>Static files</h3>
           <p>Examles of static files are HTML, JavaScript, CSS, SWF, Image and other files, which are sent to HTTP clients straight from the server's filesystem without modifications.</p>
           <p>If no --root directory specified, static files are searched for in system-vendor recommended directory as defined in the application source header files.</p>
+        </div>
+        <div id="runtime_files" class="chapter">
+          <h3>Run time files</h3>
+          <p>The web server needs a place for temporary files, currently residing in the <code>client_body_temp</code>, <code>fastcgi_temp</code>, and <code>proxy_temp</code> subdirectories of the build&#x27;s <code>PREFIX</code> directory. If those do not exist per the build-time configuration, the server will create them in a single temporary directory. The directory should be removed during the graceful process shutdown. No cleanup attempted in the case of abnormal shutdown. Name of the temporary directory should be available via <span class="todo">a management web page</span>.</p>
         </div>
         <div id="command_line" class="chapter">
           <h3>Command line parameters</h3>
