@@ -492,6 +492,7 @@ viaduct_alloc_request()
 
    request = (viaduct_request_t *) malloc(sizeof(viaduct_request_t));
    memset(request, '\0', sizeof(viaduct_request_t));
+   request->connection_keepalive = 1;
 
    return request;
 }
