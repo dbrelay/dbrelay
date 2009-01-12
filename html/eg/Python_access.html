@@ -31,11 +31,14 @@ sudo python setup.py install</pre>
         <p>Run the emaple Python script with your values:</p>
         <pre>import urllib, urllib2, simplejson
 
+del os.environ['HTTP_PROXY']    # Unless your architecture needs it
+
 params = {
-  'sql_server':   'dbserver',
-  'sql_database': 'database',
-  'sql_user':     'dbuser',
-  'sql':          """select top 3 * from testtable""" }
+  'http_keepalive': '0',        # Python urllib2 in 2.5 breaks HTTP1.1 persistent connections
+  'sql_server':     'dbserver',
+  'sql_database':   'database',
+  'sql_user':       'dbuser',
+  'sql':            """select top 3 * from testtable""" }
 
 url = 'http://viaducthost:1433/sql'
 

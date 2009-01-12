@@ -271,7 +271,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     } 
     /* FIX ME - need to check to see if we have everything and error if not */
 
-    if (!request->connection_keepalive) {
+    if (!request->http_keepalive) {
        r->keepalive = 0;
     }
 
@@ -375,8 +375,8 @@ write_value(viaduct_request_t *request, char *key, char *value)
       request->connection_name = strdup(value);
    } else if (!strcmp(key, "connection_timeout")) {
       request->connection_timeout = atol(value);
-   } else if (!strcmp(key, "connection_keepalive")) {
-      request->connection_keepalive = atoi(value);
+   } else if (!strcmp(key, "http_keepalive")) {
+      request->http_keepalive = atoi(value);
    } else if (!strcmp(key, "log_level")) {
       for (i=0; i<sizeof(log_levels)/sizeof(char *); i++)
          if (!strcmp(value,log_levels[i])) request->log_level = i;

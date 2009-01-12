@@ -44,7 +44,7 @@ typedef struct {
    char *query_tag;
    char *connection_name;
    long connection_timeout;
-   int connection_keepalive;
+   int http_keepalive;
    int log_level;
    int log_level_scope;
    ngx_log_t *log;

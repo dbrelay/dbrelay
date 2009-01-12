@@ -245,7 +245,7 @@
                   <li><a href="#http_request_db">Database server</a></li>
                   <li><a href="#http_request_conn">Connection lifecycle</a></li>
                   <li><a href="#http_request_query">SQL query</a></li>
-                  <li><a href="#http_admin_request"></a></li>
+                  <li><a href="#http_admin_request">Administrative requests</a></li>
                 </ol>
               </li>
               <li><a href="#http_response">HTTP response (JSON)</a></li>
@@ -277,7 +277,7 @@
           <p>
             <span class="term" class="date">2009.01.09</span>
             <span class="term" class="person">Brian&nbsp;Bruns<br />Vlad&nbsp;Didenko</span>
-            <div class="comments">Started the <a href="#http_admin_request">Administrative interface</a> chapter. Corrected and cleaned the SQL parameters specification in <a href="#http_request_query">the HTTP Request</a> section.</div>
+            <div class="comments">Started the <a href="#http_admin_request">Administrative interface</a> chapter. Corrected and cleaned the SQL parameters specification in <a href="#http_request_query">the HTTP Request</a> section. Introduced the <code>http_keepalive</code> parameter in the <a href="#http_request_conn">Connection lifecycle</a> chapter to address the broken HTTP 1.1 implementation in Python 2.5.x.</div>
             <div class="float_break"></div>
           </p>
           <p>
@@ -457,7 +457,7 @@
           <h4 id="http_request_conn">Connection lifecycle</h4>
           <p><span class="term done">connection_name</span>Optional name to persist this connection under.</p>
           <p><span class="term done">connection_timeout</span>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours). <span class="todo">Due to a not-yet-fixed bug the connections are not shutdown after the expiration time.</span></p>
-          <p><span class="term done">connection_keepalive</span>Optional flag to support broken HTTP clients.  When set to <span>0</span> Viaduct will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></p>
+          <p><span class="term done">http_keepalive</span>Optional flag to support broken HTTP clients.  When set to <span>0</span> Viaduct will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></p>
           <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
           <p><span class="term todo">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
           <p><span class="term todo">log_level_scope</span>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</p>
