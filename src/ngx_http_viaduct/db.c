@@ -14,8 +14,6 @@ static int viaduct_db_get_connection(viaduct_request_t *request);
 static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
 
-#define MAX_CONNECTIONS 20
-
 /* I'm not particularly happy with this, in order to return a detailed message 
  * from the msg handler, we have to use a static buffer because there is no
  * dbproc to dbsetuserdata() on.  This will go away when we change out the 
@@ -82,7 +80,7 @@ static int viaduct_db_alloc_connection(viaduct_request_t *request)
    viaduct_connection_t *connections;
    connections = viaduct_get_shmem();
 
-   for (i=0; i<MAX_CONNECTIONS; i++) {
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
      if (connections[i].pid==0) {
 	slot = i;
         break;
@@ -130,7 +128,7 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
    viaduct_log_debug(request, "find_connection called");
    viaduct_connection_t *connections;
    connections = viaduct_get_shmem();
-   for (i=0; i<MAX_CONNECTIONS; i++) {
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
       conn = &connections[i];
       if (conn->pid!=0 && conn->in_use==FALSE) {
          if (viaduct_db_match(conn, request)) {
@@ -180,7 +178,7 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
 
    now = time(NULL);
    connections = viaduct_get_shmem();
-   for (i=0; i<MAX_CONNECTIONS; i++) {
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
       conn = &connections[i];
       if (!conn->pid || conn->in_use) continue;
       if (conn->tm_accessed + conn->connection_timeout < now) {
@@ -328,7 +326,7 @@ u_char *viaduct_db_status(viaduct_request_t *request)
 
    connections = viaduct_get_shmem();
 
-   for (i=0; i<MAX_CONNECTIONS; i++) {
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
      conn = &connections[i];
      if (connections[i].pid!=0) {
         json_new_object(json);
