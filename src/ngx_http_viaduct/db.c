@@ -10,14 +10,12 @@
 #define IS_EMPTY(x) (!x || strlen(x)==0)
 
 static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc);
-static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *request);
+static int viaduct_db_get_connection(viaduct_request_t *request);
 static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
 
+#define MAX_CONNECTIONS 20
 
-#define MAX_CONNECTIONS 10
-
-static viaduct_connection_t *connections[100];
 /* I'm not particularly happy with this, in order to return a detailed message 
  * from the msg handler, we have to use a static buffer because there is no
  * dbproc to dbsetuserdata() on.  This will go away when we change out the 
@@ -26,11 +24,10 @@ static viaduct_connection_t *connections[100];
 static char login_error[500];
 static int login_msgno;
 
-static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *request)
+static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_connection_t *conn)
 {
    char tmpbuf[30];
    int len; 
-   viaduct_connection_t *conn = malloc(sizeof(viaduct_connection_t));
    memset(conn, '\0', sizeof(viaduct_connection_t));
 
    dberrhandle(viaduct_db_err_handler);
@@ -38,17 +35,17 @@ static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *req
 
    /* copy parameters necessary to do connection hash match */
    if (IS_SET(request->sql_server)) 
-      conn->sql_server = strdup(request->sql_server);
+      strcpy(conn->sql_server, request->sql_server);
    if (IS_SET(request->sql_port)) 
-      conn->sql_port = strdup(request->sql_port);
+      strcpy(conn->sql_port, request->sql_port);
    if (IS_SET(request->sql_user))
-      conn->sql_user = strdup(request->sql_user);
+      strcpy(conn->sql_user, request->sql_user);
    if (IS_SET(request->sql_password))
-      conn->sql_password = strdup(request->sql_password);
+      strcpy(conn->sql_password, request->sql_password);
    if (IS_SET(request->sql_database))
-      conn->sql_database = strdup(request->sql_database);
+      strcpy(conn->sql_database, request->sql_database);
    if (IS_SET(request->connection_name))
-      conn->connection_name = strdup(request->connection_name);
+      strcpy(conn->connection_name, request->connection_name);
 
    conn->connection_timeout = request->connection_timeout ? request->connection_timeout : 60;
 
@@ -76,23 +73,34 @@ static viaduct_connection_t *viaduct_db_create_connection(viaduct_request_t *req
    conn->in_use = TRUE;
    dbsetuserdata(conn->dbproc, (BYTE *)request);
 
-   return conn;
+   conn->pid = getpid();
 }
-static viaduct_connection_t *viaduct_db_alloc_connection(viaduct_request_t *request)
+static int viaduct_db_alloc_connection(viaduct_request_t *request)
 {
-   int i;
+   int i, slot = -1;
+
+   viaduct_connection_t *connections;
+   connections = viaduct_get_shmem();
 
    for (i=0; i<MAX_CONNECTIONS; i++) {
-     if (connections[i]==NULL) {
-        connections[i] = viaduct_db_create_connection(request);
-   	viaduct_log_debug(request, "allocating slot %d to request", i);
-        connections[i]->slot = i;
-	return connections[i];
+     if (connections[i].pid==0) {
+	slot = i;
+        break;
      }
    }
+
    /* we have exhausted the pool, log something sensible and return null */
-   viaduct_log_debug(request, "No free connections available!");
-   return NULL;
+   if (slot==-1) {
+      viaduct_log_debug(request, "No free connections available!");
+      viaduct_release_shmem(connections);
+      return -1;
+   }
+
+   viaduct_db_populate_connection(request, &connections[slot]);
+   viaduct_log_debug(request, "allocating slot %d to request", slot);
+   connections[slot].slot = slot;
+   viaduct_release_shmem(connections);
+   return slot;
 }
 static unsigned int match(char *s1, char *s2)
 {
@@ -104,6 +112,7 @@ static unsigned int match(char *s1, char *s2)
 static unsigned int viaduct_db_match(viaduct_connection_t *conn, viaduct_request_t *request)
 {
    viaduct_log_debug(request, "comparing %s and %s", conn->connection_name, request->connection_name);
+   if (conn->pid != getpid()) return FALSE;
    if (match(conn->sql_server, request->sql_server) &&
        match(conn->sql_port, request->sql_port) &&
        match(conn->sql_database, request->sql_database) &&
@@ -113,24 +122,29 @@ static unsigned int viaduct_db_match(viaduct_connection_t *conn, viaduct_request
          return TRUE;
    else return FALSE;
 }
-static viaduct_connection_t *viaduct_db_find_connection(viaduct_request_t *request)
+static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
 {
    viaduct_connection_t *conn;
    int i;
 
+   viaduct_log_debug(request, "find_connection called");
+   viaduct_connection_t *connections;
+   connections = viaduct_get_shmem();
    for (i=0; i<MAX_CONNECTIONS; i++) {
-      conn = connections[i];
-      if (conn!=NULL && conn->in_use==FALSE) {
+      conn = &connections[i];
+      if (conn->pid!=0 && conn->in_use==FALSE) {
          if (viaduct_db_match(conn, request)) {
             viaduct_log_debug(request, "found connection match for request at slot %d", i);
             conn->tm_accessed = time(NULL);
             conn->in_use = TRUE;
             dbsetuserdata(conn->dbproc, (BYTE *) request);
-            return conn;
+            viaduct_release_shmem(connections);		
+            return i;
          }
       }
    }
-   return conn;
+   viaduct_release_shmem(connections);		
+   return -1;
 }
 static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
@@ -144,33 +158,37 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
    viaduct_log_debug(request, "closing connection %d", conn->slot);
 
    if (conn->dbproc) dbclose(conn->dbproc);
-   if (conn->sql_server) free(conn->sql_server);
-   if (conn->sql_user) free(conn->sql_user);
-   if (conn->sql_database) free(conn->sql_database);
-   //if (conn->sql_port) free(conn->sql_port);
-   if (conn->sql_password) free(conn->sql_password);
-   if (conn->connection_name) free(conn->connection_name);
+   conn->sql_server[0]='\0';
+   conn->sql_user[0]='\0';
+   conn->sql_database[0]='\0';
+   conn->sql_port[0]='\0';
+   conn->sql_password[0]='\0';
+   conn->connection_name[0]='\0';
+   conn->in_use = 0;
    slot = conn->slot;
 
-   free(conn);
-
-   connections[slot]=NULL;
+   //free(conn);
+   //connections[slot]=NULL;
+   //memset(conn, '\0', sizeof(viaduct_connection_t));
 }
 static void viaduct_db_close_connections(viaduct_request_t *request)
 {
    viaduct_connection_t *conn;
+   viaduct_connection_t *connections;
    int i;
    time_t now;
 
    now = time(NULL);
+   connections = viaduct_get_shmem();
    for (i=0; i<MAX_CONNECTIONS; i++) {
-      conn = connections[i];
-      if (!conn || conn->in_use) continue;
+      conn = &connections[i];
+      if (!conn->pid || conn->in_use) continue;
       if (conn->tm_accessed + conn->connection_timeout < now) {
          viaduct_log_debug(request, "timing out conection %ud", conn->slot);
          viaduct_db_close_connection(conn, request);
       }
    }
+   viaduct_release_shmem(connections);
 }
 static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
@@ -181,24 +199,26 @@ static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_reque
       viaduct_db_close_connection(conn, request);
    }
 }
-static viaduct_connection_t *viaduct_db_get_connection(viaduct_request_t *request)
+static int viaduct_db_get_connection(viaduct_request_t *request)
 {
-   viaduct_connection_t *conn;
+   //viaduct_connection_t *conn;
+   int slot = -1;
 
    /* if there is no connection name, allocate a new connection */
    if (IS_EMPTY(request->connection_name)) {
       viaduct_log_debug(request, "empty connection name, allocating new");
-      conn = viaduct_db_alloc_connection(request);
+      slot = viaduct_db_alloc_connection(request);
 
    /* look for an matching idle connection */
-   } else if ((conn = viaduct_db_find_connection(request))==NULL) {
+   } else if ((slot = viaduct_db_find_connection(request))==-1) {
       /* else we need to allocate a new connection */
-      conn = viaduct_db_alloc_connection(request);
+      slot = viaduct_db_alloc_connection(request);
+      viaduct_log_debug(request, "no match allocating slot %d", slot);
    }
 
-   viaduct_db_close_connections(request);
+   //viaduct_db_close_connections(request);
 
-   return conn;
+   return slot;
 }
 
 static int viaduct_db_is_quoted(int coltype)
@@ -289,6 +309,61 @@ static unsigned char viaduct_db_has_prec(int coltype)
 	else
 		return 0;
 }
+u_char *viaduct_db_status(viaduct_request_t *request)
+{
+   viaduct_connection_t *connections;
+   viaduct_connection_t *conn;
+   json_t *json = json_new();
+   int i;
+   char tmpstr[100];
+   u_char *json_output;
+   struct tm *ts;
+
+   connections = viaduct_get_shmem();
+
+   json_new_object(json);
+   json_add_key(json, "status");
+   json_new_object(json);
+   json_add_key(json, "connections");
+   json_new_array(json);
+
+   for (i=0; i<MAX_CONNECTIONS; i++) {
+     conn = &connections[i];
+     if (connections[i].pid!=0) {
+        json_new_object(json);
+        sprintf(tmpstr, "%u", conn->slot);
+        json_add_number(json, "slot", tmpstr);
+        sprintf(tmpstr, "%u", conn->pid);
+        json_add_number(json, "pid", tmpstr);
+        json_add_string(json, "name", conn->connection_name ? conn->connection_name : "");
+        ts = localtime(&conn->tm_create);
+        strftime(tmpstr, sizeof(tmpstr), "%Y-%m-%d %H:%M:%S", ts);
+        json_add_string(json, "tm_created", tmpstr);
+        ts = localtime(&conn->tm_accessed);
+        strftime(tmpstr, sizeof(tmpstr), "%Y-%m-%d %H:%M:%S", ts);
+        json_add_string(json, "tm_accessed", tmpstr);
+        json_add_string(json, "sql_server", conn->sql_server ? conn->sql_server : "");
+        json_add_string(json, "sql_server", conn->sql_server ? conn->sql_server : "");
+        json_add_string(json, "sql_port", conn->sql_port ? conn->sql_port : "");
+        json_add_string(json, "sql_database", conn->sql_database ? conn->sql_database : "");
+        json_add_string(json, "sql_user", conn->sql_user ? conn->sql_user : "");
+        sprintf(tmpstr, "%ld", conn->connection_timeout);
+        json_add_number(json, "connection_timeout", tmpstr);
+        sprintf(tmpstr, "%u", conn->in_use);
+        json_add_number(json, "in_use", tmpstr);
+        json_end_object(json);
+     }
+   }
+
+   json_end_array(json);
+   json_end_object(json);
+   json_end_object(json);
+
+   json_output = (u_char *) json_to_string(json);
+   json_free(json);
+
+   return json_output;
+}
 u_char *viaduct_db_run_query(viaduct_request_t *request)
 {
    /* FIX ME */
@@ -297,6 +372,9 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    json_t *json = json_new();
    u_char *ret;
    viaduct_connection_t *conn;
+   viaduct_connection_t *connections;
+   DBPROCESS *dbproc = NULL;
+   int slot = -1;
    char *newsql;
    int i = 0;
    char tmp[20];
@@ -329,9 +407,14 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    json_end_object(json);
    
    viaduct_log_debug(request, "calling get_connection");
-   conn = viaduct_db_get_connection(request);
+   slot = viaduct_db_get_connection(request);
+
+   connections = viaduct_get_shmem();
+   dbproc = connections[slot].dbproc;
+   viaduct_release_shmem(connections);
+
    viaduct_log_debug(request, "Allocated connection for query");
-   if (conn->dbproc==NULL) {
+   if (dbproc==NULL) {
 	//strcpy(error_string, "Failed to login");
         if (login_msgno == 18452 && IS_EMPTY(request->sql_password)) {
 	    strcpy(error_string, "Login failed and no password was set, please check.\n");
@@ -340,15 +423,15 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 	    strcpy(error_string, login_error);
         }
    } else {
-   	rc = dbuse(conn->dbproc, request->sql_database);
+   	rc = dbuse(dbproc, request->sql_database);
    	newsql = viaduct_resolve_params(request, request->sql);
-   	rc = dbcmd(conn->dbproc, newsql);
+   	rc = dbcmd(dbproc, newsql);
         free(newsql);
    	viaduct_log_debug(request, "Sending sql query");
-   	rc = dbsqlexec(conn->dbproc);
+   	rc = dbsqlexec(dbproc);
    	if (rc==SUCCEED) {
    	   viaduct_log_debug(request, "Filling JSON output");
-	   viaduct_db_fill_data(json, conn->dbproc);
+	   viaduct_db_fill_data(json, dbproc);
 	} else {
 	   strcpy(error_string, request->error_message);
 	}
@@ -366,7 +449,6 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       json_add_string(json, tmp, request->params[i]);
       i++;
    }
-
    json_end_object(json);
 
    json_end_object(json);
@@ -375,12 +457,15 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    json_free(json);
    viaduct_log_debug(request, "Query completed, freeing connection.");
 
+   connections = viaduct_get_shmem();
    /* set time accessed at end of processing so that long queries do not
     * become eligible for being timed out immediately.  
     */
+   conn = &connections[slot];
    conn->tm_accessed = time(NULL);
-
    viaduct_db_free_connection(conn, request);
+   viaduct_release_shmem(connections);
+
    return ret;
 }
 static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
@@ -499,14 +584,7 @@ viaduct_alloc_request()
 void
 viaduct_free_request(viaduct_request_t *request)
 {
-   if (request->sql_server) free(request->sql_server);
-   if (request->sql_port) free(request->sql_port);
-   if (request->sql_database) free(request->sql_database);
-   if (request->sql_user) free(request->sql_user);
-   if (request->sql_password) free(request->sql_password);
    if (request->sql) free(request->sql);
-   if (request->query_tag) free(request->query_tag);
-   if (request->connection_name) free(request->connection_name);
 
    free(request);
 }

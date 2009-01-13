@@ -290,7 +290,8 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL;
 
-    json_output = (u_char *) viaduct_db_run_query(request);
+    if (request->status) json_output = (u_char *) viaduct_db_status(request);
+    else json_output = (u_char *) viaduct_db_run_query(request);
     viaduct_free_request(request);
 
     b->pos = json_output;
@@ -341,6 +342,15 @@ ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf)
     return conf;
 }
 static void 
+copy_value(char *dest, char *src, int sz)
+{
+   if (strlen(src) < sz) strcpy(dest, src);
+   else {
+      strncpy(dest, src, sz - 1);
+      dest[sz-1]='\0';
+   }
+}
+static void 
 write_value(viaduct_request_t *request, char *key, char *value)
 {
    u_char *dst, *src;
@@ -358,21 +368,23 @@ write_value(viaduct_request_t *request, char *key, char *value)
       if (value[i]=='+') value[i]=' ';
    }
 
-   if (!strcmp(key, "sql_database")) {
-      request->sql_database = strdup(value);
+   if (!strcmp(key, "status")) {
+      request->status = 1;
+   } else if (!strcmp(key, "sql_database")) {
+      copy_value(request->sql_database, value, VIADUCT_OBJ_SZ);
    } else if (!strcmp(key, "sql_server")) {
-      request->sql_server = strdup(value);
+      copy_value(request->sql_server, value, VIADUCT_NAME_SZ);
    } else if (!strcmp(key, "sql_user")) {
-      request->sql_user = strdup(value);
+      copy_value(request->sql_user, value, VIADUCT_OBJ_SZ);
    } else if (!strcmp(key, "sql")) {
       request->sql = strdup(value);
    } else if (!strcmp(key, "query_tag")) {
-      request->query_tag = strdup(value);
+      copy_value(request->query_tag, value, VIADUCT_NAME_SZ);
    } else if (!strcmp(key, "sql_password")) {
-      request->sql_password = strdup(value);
+      copy_value(request->sql_password, value, VIADUCT_OBJ_SZ);
       noprint = 1;
    } else if (!strcmp(key, "connection_name")) {
-      request->connection_name = strdup(value);
+      copy_value(request->connection_name, value, VIADUCT_NAME_SZ);
    } else if (!strcmp(key, "connection_timeout")) {
       request->connection_timeout = atol(value);
    } else if (!strcmp(key, "http_keepalive")) {
@@ -383,7 +395,6 @@ write_value(viaduct_request_t *request, char *key, char *value)
    } else if (!strcmp(key, "log_level_scope")) {
       for (i=0; i<sizeof(log_level_scopes)/sizeof(char *); i++)
          if (!strcmp(value,log_level_scopes[i])) request->log_level_scope = i;
-
    } else if (!strncmp(key, "param", 5)) {
       i = atoi(&key[5]);
       if (i>VIADUCT_MAX_PARAMS) {

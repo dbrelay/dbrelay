@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Viaduct Status</title>
+    <script src="js/jquery-1.2.6.pack.js" type="text/javascript"></script>
+    <script src="js/jquery-ui-1.5.2.pack.js" type="text/javascript" charset="utf-8"></script>
+    <script src="tablesorter/jquery.tablesorter.min.js" type="text/javascript"></script>
+    <script type="text/javascript" charset="utf-8">
+
+      $(document).ajaxError(function(){
+          if (window.console && window.console.error) {
+              console.error(arguments);
+          }
+      });
+      
+      function viaductStatusQuery( viaduct, connection, sql, callback) {
+        connection[ "sql" ] = sql;
+        $.post( viaduct, connection, callback, "json");
+      };
+      
+      var land = function () {
+        $('#spinner').hide();
+        $('#go').show().data('inflight', false);
+      };
+      
+      $(document).ready(function() {
+        var launch = function () {
+          var go = $('#go');
+          if (go.data('inflight') == true) return false;
+          go.data('inflight', true).hide();
+          $('#spinner').show();
+          return true;
+        };
+
+        $('#sql').resizable({
+          handles: "s,e",
+          transparent: true
+        });
+
+        $('#go').click(function(){
+          if ( ! launch() ) { return false ; };
+          $('#results').empty();
+          viaductStatusQuery(
+            'http://' + $('#viaduct_server')[0].value + ':' + $('#viaduct_port')[0].value + '/sql',
+            {
+              'status'   : 1,
+              'sql_server'   : ' ',
+              'sql_port'     : ' ',
+              'sql_database' : ' ',
+              'sql_user'     : ' ',
+              'sql_password' : ' '
+            },
+            ' ',
+            processStatus,
+            'Example'
+          );
+        });
+        
+        $.get( "/eg/", function (data) {
+          $(data).find('a')
+          .filter('[href$=".html"]:not("[href^=.]"):not("[href^=?]")')
+          .each( function(){
+            page = $(this).attr('href');
+            $('<p>').appendTo('#docs').prepend(
+              $('<a>').attr('href', '/eg/' + page ).text( page.replace("_"," ").replace(/\.[^.]+$/,"") )
+            );
+          });
+        });
+        
+      });
+      
+      function processStatus( response ) {
+        //$('<p>' + response.status.connections + '</p>').appendTo( '#results' );
+        t = makeTable( response.status.connections );
+        //for ( conn_id in response.status.connections ) {
+          //conn = response.status.connections[ conn_id ];
+	  //alert('slot ' + conn.slot);
+          //$('<p>' + conn.slot + '</p>').appendTo( '#results' );
+          //$('<p>' + conn.tm_accessed + '</p>').appendTo( '#results' );
+          //$('slot').appendTo( '#results' );
+          //$('<br/>').appendTo( '#results' );
+        //}
+        land();
+      };
+
+      var makeTable = function( conns ) {
+        table = $( '<table>' );
+        thead = $( '<thead>' ).appendTo( table );
+        tr = $( '<tr>' ).appendTo( thead );
+        $( '<th>' ).html( 'Slot' ).appendTo( tr );
+        $( '<th>' ).html( 'Pid' ).appendTo( tr );
+        $( '<th>' ).html( 'Name' ).appendTo( tr );
+        $( '<th>' ).html( 'Created' ).appendTo( tr );
+        $( '<th>' ).html( 'Last Accessed' ).appendTo( tr );
+        $( '<th>' ).html( 'Timeout' ).appendTo( tr );
+        $( '<th>' ).html( 'In Use?' ).appendTo( tr );
+        for ( conn_id in conns ) {
+          conn = conns[ conn_id ];
+          tr = $( '<tr>' ).appendTo( table );
+          $( '<td>' ).text( conn.slot.toString() ).
+          appendTo( tr );
+          $( '<td>' ).text( conn.pid.toString() ).
+          appendTo( tr );
+          $( '<td>' ).text( conn.name.toString() ).
+          appendTo( tr );
+          $( '<td>' ).text( conn.tm_created.toString() ).
+          appendTo( tr );
+          $( '<td>' ).text( conn.tm_accessed.toString() ).
+          appendTo( tr );
+          $( '<td>' ).text( conn.connection_timeout.toString() ).
+          appendTo( tr );
+          $( '<td>' ).text( conn.in_use.toString() ).
+          appendTo( tr );
+        };
+        table.appendTo( '#results' );
+        table.addClass('tablesorter').tablesorter({
+          cssHeader: 'header',
+          cssAsc:    'headerSortUp',
+          cssDesc:   'headerSortDown'
+        });
+        return table;
+      };
+    </script>
+    <style type="text/css" media="screen">
+      body, textarea, input, button { font-size: 12px; }
+      table {
+        border-collapse: collapse;
+        margin-bottom: 0.5em; }
+      table, thead, tbody, td, th, tr {
+        border: 1px solid gray;}
+      hr {
+        border: 1px dotted grey;
+        margin: 2em 0em; }
+      label {
+        width: 6em;
+        text-align: right;
+        float: left;
+        padding-right: 1em; }
+      #spinner {
+        display: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+      #docs {
+        float: right;
+        text-align: right;
+        padding: 1em;
+        border: 1px solid grey;
+        margin: 0em 1em 1em 1em;
+      }
+      #docs h3 { text-align: left; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="tablesorter/style.css">
+  </head>
+  <body>
+    <div id="docs">
+      <h3>Documentation:</h3>
+      <p><a href="doc/viaduct_specification.html">Specifications</a></p>
+      <p><a href="doc/viaduct_architecture.pdf">Architecture</a></p>
+    </div>
+    <form id=accept-charset="utf-8">
+      <label for="viaduct_server">Server</label><input type="text" name="viaduct_server" value="localhost" id="viaduct_server"><br />
+      <label for="viaduct_port">Port</label><input type="text" name="viaduct_port" value="1433" id="viaduct_port"><br />
+      <p>
+        <input type="button" id="go" value="GO&nbsp;&nbsp;&gt;&nbsp;&gt;&nbsp;&gt;">
+        <img id="spinner" src="img/spinner.gif" />
+      </p>
+    </form>
+    <div id="results">
+    </div>
+  </body>
+</html>

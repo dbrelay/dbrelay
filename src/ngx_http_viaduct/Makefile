@@ -1,6 +1,6 @@
 CC=gcc -g
 CFLAGS=-DCMDLINE -I ../freetds-0.82/include
-OBJS=main.o db.o log.o json.o stringbuf.o
+OBJS=main.o db.o log.o json.o stringbuf.o shmem.o
 
 viaduct: $(OBJS)
 	echo $(CC) -o $@ $(OBJS)
