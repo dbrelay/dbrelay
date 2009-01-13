@@ -319,13 +319,14 @@ u_char *viaduct_db_status(viaduct_request_t *request)
    u_char *json_output;
    struct tm *ts;
 
-   connections = viaduct_get_shmem();
 
    json_new_object(json);
    json_add_key(json, "status");
    json_new_object(json);
    json_add_key(json, "connections");
    json_new_array(json);
+
+   connections = viaduct_get_shmem();
 
    for (i=0; i<MAX_CONNECTIONS; i++) {
      conn = &connections[i];
@@ -354,6 +355,8 @@ u_char *viaduct_db_status(viaduct_request_t *request)
         json_end_object(json);
      }
    }
+
+   viaduct_release_shmem(connections);
 
    json_end_array(json);
    json_end_object(json);
