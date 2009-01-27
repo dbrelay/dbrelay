@@ -180,6 +180,10 @@ void json_add_string(json_t *json, char *key, char *value)
 
    free(tmp);
 }
+void json_add_json(json_t *json, char *value)
+{
+   sb_append(json->sb, value);
+}
 
 void json_push(json_t *json, int node_type)
 {

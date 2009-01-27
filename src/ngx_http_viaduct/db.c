@@ -13,6 +13,7 @@ static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc);
 static int viaduct_db_get_connection(viaduct_request_t *request);
 static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
+u_char *viaduct_exec_query(DBPROCESS *dbproc, char *database, char *sql);
 
 /* I'm not particularly happy with this, in order to return a detailed message 
  * from the msg handler, we have to use a static buffer because there is no
@@ -46,6 +47,18 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
       strcpy(conn->connection_name, request->connection_name);
 
    conn->connection_timeout = request->connection_timeout ? request->connection_timeout : 60;
+
+   if (IS_SET(request->connection_name) &&
+       !strcmp(request->connection_name, "helper")) {
+      tmpnam(conn->sock_path);
+      viaduct_log_debug(request, "socket name %s", conn->sock_path);
+      viaduct_conn_launch_connector(conn->sock_path);
+      conn->tm_create = time(NULL);
+      conn->in_use = TRUE;
+      conn->pid = getpid();
+
+      return;
+   }
 
    conn->login = dblogin();
    if (IS_SET(request->sql_password)) 
@@ -368,17 +381,18 @@ u_char *viaduct_db_status(viaduct_request_t *request)
 u_char *viaduct_db_run_query(viaduct_request_t *request)
 {
    /* FIX ME */
-   RETCODE rc;
    char error_string[500];
    json_t *json = json_new();
    u_char *ret;
    viaduct_connection_t *conn;
    viaduct_connection_t *connections;
    DBPROCESS *dbproc = NULL;
+   int s;
    int slot = -1;
    char *newsql;
    int i = 0;
    char tmp[20];
+   char *sock_path;
 
    error_string[0]='\0';
 
@@ -407,15 +421,32 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    json_end_object(json);
    
+   newsql = viaduct_resolve_params(request, request->sql);
+
    viaduct_log_debug(request, "calling get_connection");
    slot = viaduct_db_get_connection(request);
 
    connections = viaduct_get_shmem();
    dbproc = connections[slot].dbproc;
+   sock_path = connections[slot].sock_path;
    viaduct_release_shmem(connections);
 
    viaduct_log_debug(request, "Allocated connection for query");
-   if (dbproc==NULL) {
+
+   if (IS_SET(request->connection_name) &&
+       !strcmp(request->connection_name, "helper")) 
+   {
+      viaduct_log_debug(request, "connecting to connection helper");
+      viaduct_log_debug(request, "socket address %s", sock_path);
+      s = viaduct_connect_to_helper(sock_path);
+      viaduct_log_debug(request, "sending request");
+      ret = (u_char *) viaduct_conn_send_request(s, request);
+      viaduct_log_debug(request, "back");
+      json_add_json(json, ", ");
+      json_add_json(json, (char *) ret);
+      viaduct_conn_close(s);
+   } else {
+      if (dbproc==NULL) {
 	//strcpy(error_string, "Failed to login");
         if (login_msgno == 18452 && IS_EMPTY(request->sql_password)) {
 	    strcpy(error_string, "Login failed and no password was set, please check.\n");
@@ -423,21 +454,18 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
         } else {
 	    strcpy(error_string, login_error);
         }
-   } else {
-   	rc = dbuse(dbproc, request->sql_database);
-   	newsql = viaduct_resolve_params(request, request->sql);
-   	rc = dbcmd(dbproc, newsql);
-        free(newsql);
+      } else {
    	viaduct_log_debug(request, "Sending sql query");
-   	rc = dbsqlexec(dbproc);
-   	if (rc==SUCCEED) {
-   	   viaduct_log_debug(request, "Filling JSON output");
-	   viaduct_db_fill_data(json, dbproc);
-	} else {
-	   strcpy(error_string, request->error_message);
-	}
+        ret = viaduct_exec_query(dbproc, request->sql_database, newsql);
+        if (ret==NULL) strcpy(error_string, request->error_message);
+        json_add_json(json, ", ");
+        json_add_json(json, (char *) ret);
+        //free(ret);
    	viaduct_log_debug(request, "Done filling JSON output");
-   }
+      }
+   } // !named connection
+
+   free(newsql);
    json_add_key(json, "log");
    json_new_object(json);
    json_add_string(json, "sql", request->sql);
@@ -467,6 +495,27 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    viaduct_db_free_connection(conn, request);
    viaduct_release_shmem(connections);
 
+   return ret;
+}
+
+u_char *
+viaduct_exec_query(DBPROCESS *dbproc, char *database, char *sql)
+{
+  json_t *json = json_new();
+  u_char *ret;
+  RETCODE rc;
+
+  rc = dbuse(dbproc, database);
+  rc = dbcmd(dbproc, sql);
+  rc = dbsqlexec(dbproc);
+  if (rc==SUCCEED) {
+   viaduct_db_fill_data(json, dbproc);
+   } else {
+      return NULL;
+      //strcpy(error_string, request->error_message);
+   }
+   ret = (u_char *) json_to_string(json);
+   json_free(json);
    return ret;
 }
 static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)

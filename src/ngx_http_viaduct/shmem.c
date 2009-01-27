@@ -40,6 +40,8 @@ viaduct_connection_t *viaduct_lock_shmem()
    sb.sem_op = -1;
    if (semop(semid, &sb, 1)==1)
       perror("semop");
+
+   return NULL;
 }
 void viaduct_unlock_shmem()
 {

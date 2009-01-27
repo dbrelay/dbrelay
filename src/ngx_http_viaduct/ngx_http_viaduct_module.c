@@ -344,7 +344,7 @@ ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf)
 static void 
 copy_value(char *dest, char *src, int sz)
 {
-   if (strlen(src) < sz) strcpy(dest, src);
+   if (strlen(src) < (unsigned int) sz) strcpy(dest, src);
    else {
       strncpy(dest, src, sz - 1);
       dest[sz-1]='\0';

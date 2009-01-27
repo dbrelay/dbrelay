@@ -1,11 +1,11 @@
 #include "viaduct.h"
 #include "stdio.h"
 
-#define DATABASE "dbname"
-#define SERVER "127.0.0.1"
+#define DATABASE "getco"
+#define SERVER "192.168.16.128"
 #define USERNAME "sa"
 #define PASSWORD ""
-#define SQL "SELECT * FROM table1"
+#define SQL "SELECT * FROM viaduct2"
 
 int main(int argc, char **argv)
 {
