@@ -284,6 +284,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     ngx_chain_t                out;
     u_char *json_output;
     viaduct_request_t *request;
+    size_t len;
 
     log = r->connection->log;
 
@@ -311,8 +312,14 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     
     log->action = "sending response to client";
 
+    if (request->status) json_output = (u_char *) viaduct_db_status(request);
+    else json_output = (u_char *) viaduct_db_run_query(request);
+    viaduct_free_request(request);
+
     /* we need to allocate all before the header would be sent */
-    b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));
+    len = ngx_strlen(json_output);
+    b = ngx_create_temp_buf(r->pool, len + 1);
+    //b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));
     if (b == NULL) {
     	//ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
 	return NGX_HTTP_INTERNAL_SERVER_ERROR;
@@ -321,13 +328,12 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL;
 
-    if (request->status) json_output = (u_char *) viaduct_db_status(request);
-    else json_output = (u_char *) viaduct_db_run_query(request);
-    viaduct_free_request(request);
+    //b->pos = json_output;
+    //b->last = json_output + len;
+    b->last = ngx_cpymem(b->last, json_output, len);
+    free(json_output);
 
-    b->pos = json_output;
-    b->last = json_output + ngx_strlen(json_output);
-    b->memory = 1;
+    //b->memory = 1;
     b->last_buf = 1;
 
     r->headers_out.content_type.len = sizeof("text/plain") - 1;
@@ -338,7 +344,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     r->headers_out.last_modified_time = 23349600;
     r->allow_ranges = 1;
 
-    if (r != r->main && ngx_strlen(json_output) == 0) {
+    if (r != r->main && len == 0) {
         rc = ngx_http_send_header(r);
     }
 
