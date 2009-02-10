@@ -79,9 +79,9 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
    viaduct_connection_t *connections;
    int i, s;
 
-   ngx_log_error(NGX_LOG_ALERT, cycle->log, 0, "in exit master");
-
    connections = viaduct_get_shmem();
+
+   if (!connections) return;
 
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
      if (connections[i].sock_path && strlen(connections[i].sock_path)) {
