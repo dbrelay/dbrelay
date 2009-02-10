@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include "viaduct.h"
 
-#define SOCK_PATH "/tmp/viaduct/connector"
 #define DEBUG 0
 
 char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
@@ -23,7 +22,7 @@ viaduct_conn_kill(int s)
 {
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr;
+   int in_ptr = 0;
 
    viaduct_conn_send_string(s, ":DIE\n");
    viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
@@ -34,7 +33,7 @@ viaduct_conn_close(int s)
 {
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr;
+   int in_ptr = 0;
 
    viaduct_conn_send_string(s, ":QUIT\n");
    viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
@@ -48,7 +47,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
    int results = 0;
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr;
+   int in_ptr = 0;
 
    viaduct_conn_set_option(s, "SERVER", request->sql_server);
    viaduct_conn_set_option(s, "DATABASE", request->sql_database);
@@ -87,7 +86,7 @@ viaduct_conn_set_option(int s, char *option, char *value)
 {
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr;
+   int in_ptr = 0;
    char set_string[100];
 
    sprintf(set_string, ":SET %s %s\n", option, value);
@@ -100,6 +99,7 @@ viaduct_connect_to_helper(char *sock_path)
 {
    int s, len;
    struct sockaddr_un remote;
+   int on = 1;
 
    if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
        perror("socket");
@@ -118,15 +118,20 @@ viaduct_connect_to_helper(char *sock_path)
    }
    if (DEBUG) printf("Connected.\n");
 
+   setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
+
    return s;
 }
 void viaduct_conn_launch_connector(char *sock_path)
 {
    char *argv[] = {"viaduct-connector", sock_path, NULL};
    pid_t child;
+   char connector_path[256]; 
 
    if ((child = fork())==0) {
-     execv("./connector", argv);
+     strcpy(connector_path, NGX_PREFIX);
+     strcat(connector_path, "/sbin/connector");
+     execv(connector_path, argv);
    } else {
      /* wait for connector to be ready, signaled by dead parent */
      waitpid(child, NULL, 0);

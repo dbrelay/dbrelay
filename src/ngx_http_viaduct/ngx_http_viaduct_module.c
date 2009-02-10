@@ -19,6 +19,8 @@ static char *ngx_http_viaduct_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf
 static ngx_int_t ngx_http_viaduct_create_request(ngx_http_request_t *r);
 static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
 static ngx_int_t ngx_http_viaduct_send_response(ngx_http_request_t *r);
+ngx_int_t ngx_http_viaduct_init_master(ngx_log_t *log);
+void ngx_http_viaduct_exit_master(ngx_cycle_t *cycle);
 
 static ngx_command_t  ngx_http_viaduct_commands[] = {
 
@@ -53,15 +55,44 @@ ngx_module_t  ngx_http_viaduct_module = {
     &ngx_http_viaduct_module_ctx, /* module context */
     ngx_http_viaduct_commands,   /* module directives */
     NGX_HTTP_MODULE,               /* module type */
-    NULL,                          /* init master */
+    ngx_http_viaduct_init_master,  /* init master */
     NULL,                          /* init module */
     NULL,                          /* init process */
     NULL,                          /* init thread */
     NULL,                          /* exit thread */
     NULL,                          /* exit process */
-    NULL,                          /* exit master */
+    ngx_http_viaduct_exit_master,  /* exit master */
     NGX_MODULE_V1_PADDING
 };
+
+ngx_int_t
+ngx_http_viaduct_init_master(ngx_log_t *log)
+{
+   ngx_log_error(NGX_LOG_ALERT, log, 0, "in init master");
+
+   return NGX_OK;
+}
+
+void 
+ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
+{
+   viaduct_connection_t *connections;
+   int i, s;
+
+   ngx_log_error(NGX_LOG_ALERT, cycle->log, 0, "in exit master");
+
+   connections = viaduct_get_shmem();
+
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
+     if (connections[i].sock_path && strlen(connections[i].sock_path)) {
+         s = viaduct_connect_to_helper(connections[i].sock_path);
+         viaduct_conn_kill(s);
+     }
+   }
+   viaduct_release_shmem(connections);
+
+   viaduct_destroy_shmem();
+}
 
 static void
 ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)

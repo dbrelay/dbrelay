@@ -11,6 +11,7 @@
 
 #ifndef CMDLINE
 #include <ngx_core.h>
+#include <ngx_config.h>
 #endif
 
 #include <sybdb.h>
@@ -34,6 +35,7 @@
 #define VIADUCT_LOG_LVL_CRIT    6
 
 #ifdef CMDLINE
+   #define NGX_PREFIX "/tmp/viaduct"
    typedef struct ngx_log_s {} ngx_log_t;
    typedef unsigned char u_char;
 #endif
@@ -91,6 +93,7 @@ void viaduct_free_request(viaduct_request_t *request);
 void viaduct_create_shmem();
 viaduct_connection_t *viaduct_get_shmem();
 void viaduct_release_shmem(viaduct_connection_t *connections);
+void viaduct_destroy_shmem();
 
 char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_conn_send_string(int s, char *str);

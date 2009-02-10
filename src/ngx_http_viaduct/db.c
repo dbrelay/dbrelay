@@ -48,9 +48,12 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
 
    conn->connection_timeout = request->connection_timeout ? request->connection_timeout : 60;
 
-   if (IS_SET(request->connection_name) &&
-       !strcmp(request->connection_name, "helper")) {
+   //viaduct_log_debug(request, "prefix %s", NGX_PREFIX);
+   if (IS_SET(request->connection_name)) {
+      //&& !strcmp(request->connection_name, "helper")) {
       tmpnam(conn->sock_path);
+      //strcpy(conn->sock_path, NGX_PREFIX);
+      //strcat(conn->sock_path, "/connector");
       viaduct_log_debug(request, "socket name %s", conn->sock_path);
       viaduct_conn_launch_connector(conn->sock_path);
       conn->tm_create = time(NULL);
@@ -363,6 +366,7 @@ u_char *viaduct_db_status(viaduct_request_t *request)
         json_add_number(json, "connection_timeout", tmpstr);
         sprintf(tmpstr, "%u", conn->in_use);
         json_add_number(json, "in_use", tmpstr);
+        json_add_string(json, "sock_path", conn->sock_path);
         json_end_object(json);
      }
    }
@@ -392,7 +396,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    char *newsql;
    int i = 0;
    char tmp[20];
-   char *sock_path;
+   char sock_path[100];
 
    error_string[0]='\0';
 
@@ -428,13 +432,13 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    connections = viaduct_get_shmem();
    dbproc = connections[slot].dbproc;
-   sock_path = connections[slot].sock_path;
+   strcpy(sock_path, connections[slot].sock_path);
    viaduct_release_shmem(connections);
 
    viaduct_log_debug(request, "Allocated connection for query");
 
-   if (IS_SET(request->connection_name) &&
-       !strcmp(request->connection_name, "helper")) 
+   if (IS_SET(request->connection_name)) 
+// && !strcmp(request->connection_name, "helper")) 
    {
       viaduct_log_debug(request, "connecting to connection helper");
       viaduct_log_debug(request, "socket address %s", sock_path);
@@ -444,7 +448,9 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_log_debug(request, "back");
       json_add_json(json, ", ");
       json_add_json(json, (char *) ret);
+      viaduct_log_debug(request, "closing");
       viaduct_conn_close(s);
+      viaduct_log_debug(request, "after close");
    } else {
       if (dbproc==NULL) {
 	//strcpy(error_string, "Failed to login");

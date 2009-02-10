@@ -9,6 +9,7 @@
 
 #define SOCK_PATH "/tmp/viaduct/connector"
 #define DEBUG 0
+#define GDB 0
 
 #define OK 1
 #define QUIT 2
@@ -45,6 +46,7 @@ main(int argc, char **argv)
    int done = 0, ret;
    char *results;
    char *sock_path;
+   int on = 1;
 
    if (DEBUG) printf("in %s\n", argv[1]);
    if (argc>1) {
@@ -69,12 +71,14 @@ main(int argc, char **argv)
    listen(s, 5);
 
    // fork and die so parent knows we are ready
-   if (fork()) exit(0);
+   if (!GDB && fork()) exit(0);
 
    len = sizeof(struct sockaddr_un);
    for (;;) {
       s2 = accept(s, &remote, &len);
       done = 0;
+
+      setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
 
       while (!done && (len = recv(s2, &buf, 100, 0), len > 0)) {
         //send(s2, &buf, len, 0);

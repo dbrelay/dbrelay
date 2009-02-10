@@ -4,7 +4,7 @@ OBJS=db.o log.o json.o stringbuf.o shmem.o client.o
 MAINOBJS=main.o $(OBJS)
 LOCKOBJS=locktime.o $(OBJS)
 CONNOBJS=connector.o $(OBJS)
-CLTOBJS=client.o $(OBJS)
+CLTOBJS=clientmain.o $(OBJS)
 
 viaduct: $(MAINOBJS)
 	echo $(CC) -o $@ $(MAINOBJS)
