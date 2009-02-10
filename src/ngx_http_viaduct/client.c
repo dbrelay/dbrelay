@@ -118,7 +118,9 @@ viaduct_connect_to_helper(char *sock_path)
    }
    if (DEBUG) printf("Connected.\n");
 
+#if NGX_DARWIN
    setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
+#endif
 
    return s;
 }
@@ -140,7 +142,7 @@ void viaduct_conn_launch_connector(char *sock_path)
 void
 viaduct_conn_send_string(int s, char *str)
 {
-   if (send(s, str, strlen(str), 0) == -1) {
+   if (send(s, str, strlen(str), NET_FLAGS) == -1) {
 	perror("send");
 	exit(1);
    }
@@ -154,7 +156,7 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
 
    //printf("\nptr %d\n", *in_ptr);
    if (*in_ptr==0) {
-      if ((t=recv(s, in_buf, 4096, 0))<=0) {
+      if ((t=recv(s, in_buf, 4096, NET_FLAGS))<=0) {
 	if (t < 0) perror("recv");
         else if (DEBUG) printf("Server closed connection\n");
 	exit(1);

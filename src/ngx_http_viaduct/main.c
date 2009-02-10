@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     request->sql = strdup(SQL);
     strcpy(request->query_tag, "example");
     strcpy(request->sql_password, PASSWORD);
-    strcpy(request->connection_name, "test1");
+    //strcpy(request->connection_name, "test1");
     request->connection_timeout = 600;
     if (mode) json_output = (u_char *) viaduct_db_status(request);
     else { 

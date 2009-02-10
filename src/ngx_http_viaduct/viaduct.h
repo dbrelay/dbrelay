@@ -40,6 +40,12 @@
    typedef unsigned char u_char;
 #endif
 
+#if NGX_DARWIN
+#define NET_FLAGS 0
+#else
+#define NET_FLAGS MSG_NOSIGNAL
+#endif
+
 typedef struct {
    int status;
    char sql_server[VIADUCT_NAME_SZ];

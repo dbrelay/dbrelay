@@ -78,16 +78,18 @@ main(int argc, char **argv)
       s2 = accept(s, &remote, &len);
       done = 0;
 
+#if NGX_DARWIN
       setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
+#endif
 
-      while (!done && (len = recv(s2, &buf, 100, 0), len > 0)) {
+      while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
         //send(s2, &buf, len, 0);
         if (get_line(buf, len, line, &pos)) {
 	   if (DEBUG) printf("line = %s\n", line);
            ret = process_line(line);
            
            if (ret == QUIT) {
-              send(s2, ":BYE\n", 5, 0);
+              send(s2, ":BYE\n", 5, NET_FLAGS);
               close(s2);
               done = 1;
            } else if (ret == RUN) {
@@ -101,20 +103,20 @@ main(int argc, char **argv)
                  dbproc = dbopen(login, sql_server);
               }
               results = viaduct_exec_query(dbproc, sql_database, sql);
-              send(s2, ":RESULTS BEGIN\n", 15, 0);
-              send(s2, results, strlen(results), 0);
-              send(s2, "\n", 1, 0);
-              send(s2, ":RESULTS END\n", 13, 0);
-              send(s2, ":OK\n", 4, 0);
+              send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
+              send(s2, results, strlen(results), NET_FLAGS);
+              send(s2, "\n", 1, NET_FLAGS);
+              send(s2, ":RESULTS END\n", 13, NET_FLAGS);
+              send(s2, ":OK\n", 4, NET_FLAGS);
               free(results);
            } else if (ret == DIE) {
-              send(s2, ":BYE\n", 5, 0);
+              send(s2, ":BYE\n", 5, NET_FLAGS);
               close(s2);
               exit(0);
            } else if (ret == OK) {
-              send(s2, ":OK\n", 4, 0);
+              send(s2, ":OK\n", 4, NET_FLAGS);
            } else {
-              send(s2, ":ERR\n", 5, 0);
+              send(s2, ":ERR\n", 5, NET_FLAGS);
            }
         }
       }
