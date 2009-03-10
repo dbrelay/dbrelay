@@ -365,7 +365,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    viaduct_connection_t *conn;
    viaduct_connection_t *connections;
    //DBPROCESS *dbproc = NULL;
-   int s;
+   int s = 0;
    int slot = -1;
    char *newsql;
    int i = 0;
@@ -401,25 +401,33 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    
    newsql = viaduct_resolve_params(request, request->sql);
 
-   viaduct_log_debug(request, "calling get_connection");
-   slot = viaduct_db_get_connection(request);
-   viaduct_log_debug(request, "using slot %d", slot);
+   do {
+      viaduct_log_debug(request, "calling get_connection");
+      slot = viaduct_db_get_connection(request);
+      viaduct_log_debug(request, "using slot %d", slot);
 
-   connections = viaduct_get_shmem();
-   conn = (viaduct_connection_t *) malloc(sizeof(viaduct_connection_t));
-   memcpy(conn, &connections[slot], sizeof(viaduct_connection_t));
-   //dbproc = connections[slot].dbproc;
-   //strcpy(sock_path, connections[slot].sock_path);
-   viaduct_release_shmem(connections);
+      connections = viaduct_get_shmem();
+      conn = (viaduct_connection_t *) malloc(sizeof(viaduct_connection_t));
+      memcpy(conn, &connections[slot], sizeof(viaduct_connection_t));
+      viaduct_release_shmem(connections);
+
+      if (IS_SET(request->connection_name)) {
+         viaduct_log_debug(request, "connecting to connection helper");
+         viaduct_log_debug(request, "socket address %s", conn->sock_path);
+         s = viaduct_connect_to_helper(conn->sock_path);
+         // if connect fails, remove connector from list
+         if (s==-1) {
+            connections = viaduct_get_shmem();
+            connections[slot].pid=0;
+            viaduct_release_shmem(connections);
+         }
+      }
+  } while (s==-1);
 
    viaduct_log_debug(request, "Allocated connection for query");
 
    if (IS_SET(request->connection_name)) 
-// && !strcmp(request->connection_name, "helper")) 
    {
-      viaduct_log_debug(request, "connecting to connection helper");
-      viaduct_log_debug(request, "socket address %s", conn->sock_path);
-      s = viaduct_connect_to_helper(conn->sock_path);
       viaduct_log_debug(request, "sending request");
       ret = (u_char *) viaduct_conn_send_request(s, request);
       viaduct_log_debug(request, "back");
@@ -448,6 +456,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    	viaduct_log_debug(request, "Done filling JSON output");
       }
    } // !named connection
+   free(conn);
 
    free(newsql);
    json_add_key(json, "log");

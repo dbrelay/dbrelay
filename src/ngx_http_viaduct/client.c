@@ -117,7 +117,7 @@ viaduct_connect_to_helper(char *sock_path)
 
    if (connect(s, (struct sockaddr *)&remote, len) == -1) {
       perror("connect");
-      exit(1);
+      return -1;
    }
    if (DEBUG) printf("Connected.\n");
 
