@@ -123,7 +123,7 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
             viaduct_log_debug(request, "found connection match for request at slot %d", i);
             conn->tm_accessed = time(NULL);
             conn->in_use = TRUE;
-            viaduct_mssql_assign_request(conn->db, request);
+            //viaduct_mssql_assign_request(conn->db, request);
             viaduct_release_shmem(connections);		
             return i;
          }
@@ -403,6 +403,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    viaduct_log_debug(request, "calling get_connection");
    slot = viaduct_db_get_connection(request);
+   viaduct_log_debug(request, "using slot %d", slot);
 
    connections = viaduct_get_shmem();
    conn = (viaduct_connection_t *) malloc(sizeof(viaduct_connection_t));
