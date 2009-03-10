@@ -340,7 +340,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     /* FUTURE: change to application/json */
     r->headers_out.content_type.data = (u_char *) "text/plain";
     r->headers_out.status = NGX_HTTP_OK;
-    r->headers_out.content_length_n = ngx_strlen(json_output);
+    r->headers_out.content_length_n = len;
     r->headers_out.last_modified_time = 23349600;
     r->allow_ranges = 1;
 
@@ -407,6 +407,8 @@ write_value(viaduct_request_t *request, char *key, char *value)
 
    if (!strcmp(key, "status")) {
       request->status = 1;
+   } else if (!strcmp(key, "sql_dbtype")) {
+      copy_value(request->sql_dbtype, value, VIADUCT_OBJ_SZ);
    } else if (!strcmp(key, "sql_database")) {
       copy_value(request->sql_database, value, VIADUCT_OBJ_SZ);
    } else if (!strcmp(key, "sql_server")) {

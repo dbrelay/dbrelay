@@ -14,7 +14,6 @@ char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_conn_send_string(int s, char *str);
 char *viaduct_conn_send_request(int s, viaduct_request_t *request);
 void viaduct_conn_set_option(int s, char *option, char *value);
-void viaduct_conn_launch_connector(char *sock_path);
 int viaduct_connect_to_helper(char *sock_path);
 
 void
@@ -48,11 +47,15 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
    char out_buf[4096];
    char in_buf[4096];
    int in_ptr = 0;
+   char tmp[20];
 
    viaduct_conn_set_option(s, "SERVER", request->sql_server);
    viaduct_conn_set_option(s, "DATABASE", request->sql_database);
    viaduct_conn_set_option(s, "USER", request->sql_user);
    //viaduct_conn_set_option(s, "PASSWORD", request->sql_password);
+   sprintf(tmp, "%ld\n", request->connection_timeout);
+   viaduct_log_debug(request, "timeout %s", tmp);
+   viaduct_conn_set_option(s, "TIMEOUT", tmp);
 
    viaduct_conn_send_string(s, ":SQL BEGIN\n");
    viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
@@ -124,20 +127,36 @@ viaduct_connect_to_helper(char *sock_path)
 
    return s;
 }
-void viaduct_conn_launch_connector(char *sock_path)
+pid_t viaduct_conn_launch_connector(char *sock_path)
 {
-   char *argv[] = {"viaduct-connector", sock_path, NULL};
-   pid_t child;
+   //char *argv[] = {"viaduct-connector", sock_path, NULL};
+   pid_t child = 0;
    char connector_path[256]; 
+   char line[256]; 
+   FILE *connector;
 
-   if ((child = fork())==0) {
+   //if ((child = fork())==0) {
      strcpy(connector_path, NGX_PREFIX);
      strcat(connector_path, "/sbin/connector");
-     execv(connector_path, argv);
-   } else {
+     strcat(connector_path, " ");
+     strcat(connector_path, sock_path);
+     //execv(connector_path, argv);
+     printf("cmd = %s\n", connector_path);
+     connector = popen(connector_path, "r");
+     //printf("popen\n");
+   //} else {
      /* wait for connector to be ready, signaled by dead parent */
-     waitpid(child, NULL, 0);
-   }
+     //waitpid(child, NULL, 0);
+   //}
+     while (fgets(line, 256, connector)!=NULL) {
+        printf("line = %s\n", line);
+        if (strlen(line)>4 && !strncmp(line, ":PID", 4)) {
+           child = atol(&line[5]);
+	}
+     }
+     pclose(connector);
+
+     return child;
 }
 void
 viaduct_conn_send_string(int s, char *str)

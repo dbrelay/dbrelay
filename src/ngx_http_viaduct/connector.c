@@ -5,7 +5,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/time.h>
 #include "viaduct.h"
+#include "mssql.h"
 
 #define SOCK_PATH "/tmp/viaduct/connector"
 #define DEBUG 0
@@ -35,6 +37,24 @@ int receive_sql;
 stringbuf_t *sb_sql;
 char *sql;
 
+void timeout(int i)
+{
+   printf("Timeout reached. Exiting.\n");
+   exit(0);
+}
+
+int set_timer(int secs)
+{
+  struct itimerval it;
+  
+  it.it_interval.tv_sec = 0;
+  it.it_interval.tv_usec = 0;
+  it.it_value.tv_sec = secs; 
+  it.it_value.tv_usec = 0;
+  setitimer(ITIMER_REAL, &it,0);
+  signal(SIGALRM,timeout); 
+}
+
 int
 main(int argc, char **argv)
 {
@@ -47,6 +67,9 @@ main(int argc, char **argv)
    char *results;
    char *sock_path;
    int on = 1;
+   viaduct_connection_t conn;
+   mssql_db_t mssql;
+   pid_t pid;
 
    if (DEBUG) printf("in %s\n", argv[1]);
    if (argc>1) {
@@ -71,7 +94,13 @@ main(int argc, char **argv)
    listen(s, 5);
 
    // fork and die so parent knows we are ready
-   if (!GDB && fork()) exit(0);
+   if (!GDB && (pid=fork())) {
+      fprintf(stdout, ":PID %lu\n", pid);
+      exit(0);
+   }
+   // allow control to return to the (grand)parent process
+   fclose(stdout);
+   //kill(getppid(), SIGURG);
 
    len = sizeof(struct sockaddr_un);
    for (;;) {
@@ -102,19 +131,27 @@ main(int argc, char **argv)
                  else DBSETLAPP(login, "viaduct");
                  dbproc = dbopen(login, sql_server);
               }
-              results = viaduct_exec_query(dbproc, sql_database, sql);
+              // dummy up a connection
+              mssql.login = login;
+              mssql.dbproc = dbproc;
+              conn.db = (void *) &mssql;
+		
+              results = viaduct_exec_query(&conn, sql_database, sql);
+
               send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
               send(s2, results, strlen(results), NET_FLAGS);
               send(s2, "\n", 1, NET_FLAGS);
               send(s2, ":RESULTS END\n", 13, NET_FLAGS);
               send(s2, ":OK\n", 4, NET_FLAGS);
               free(results);
+              if (connection_timeout) set_timer(connection_timeout);
            } else if (ret == DIE) {
               send(s2, ":BYE\n", 5, NET_FLAGS);
               close(s2);
               exit(0);
            } else if (ret == OK) {
               send(s2, ":OK\n", 4, NET_FLAGS);
+              if (connection_timeout) set_timer(connection_timeout);
            } else {
               send(s2, ":ERR\n", 5, NET_FLAGS);
            }

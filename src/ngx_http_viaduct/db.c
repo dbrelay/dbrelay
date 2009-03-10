@@ -5,32 +5,22 @@
 
 #include "viaduct.h"
 #include "stringbuf.h"
+#include "mssql.h"
 
 #define IS_SET(x) (x && strlen(x)>0)
 #define IS_EMPTY(x) (!x || strlen(x)==0)
 
-static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc);
+static int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn);
 static int viaduct_db_get_connection(viaduct_request_t *request);
 static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
-u_char *viaduct_exec_query(DBPROCESS *dbproc, char *database, char *sql);
-
-/* I'm not particularly happy with this, in order to return a detailed message 
- * from the msg handler, we have to use a static buffer because there is no
- * dbproc to dbsetuserdata() on.  This will go away when we change out the 
- * dblib API.
- */
-static char login_error[500];
-static int login_msgno;
+u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql);
 
 static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_connection_t *conn)
 {
-   char tmpbuf[30];
-   int len; 
    memset(conn, '\0', sizeof(viaduct_connection_t));
 
-   dberrhandle(viaduct_db_err_handler);
-   dbmsghandle(viaduct_db_msg_handler);
+   viaduct_mssql_init();
 
    /* copy parameters necessary to do connection hash match */
    if (IS_SET(request->sql_server)) 
@@ -46,7 +36,8 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
    if (IS_SET(request->connection_name))
       strcpy(conn->connection_name, request->connection_name);
 
-   conn->connection_timeout = request->connection_timeout ? request->connection_timeout : 60;
+   if (!request->connection_timeout) request->connection_timeout = 60;
+   conn->connection_timeout = request->connection_timeout;
 
    //viaduct_log_debug(request, "prefix %s", NGX_PREFIX);
    if (IS_SET(request->connection_name)) {
@@ -55,7 +46,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
       //strcpy(conn->sock_path, NGX_PREFIX);
       //strcat(conn->sock_path, "/connector");
       viaduct_log_debug(request, "socket name %s", conn->sock_path);
-      viaduct_conn_launch_connector(conn->sock_path);
+      conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
       conn->tm_create = time(NULL);
       conn->in_use = TRUE;
       conn->pid = getpid();
@@ -63,29 +54,10 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
       return;
    }
 
-   conn->login = dblogin();
-   if (IS_SET(request->sql_password)) 
-    DBSETLPWD(conn->login, request->sql_password); 
-   else
-        DBSETLPWD(conn->login, NULL);
-   DBSETLUSER(conn->login, request->sql_user);
-   if (IS_SET(request->connection_name)) {
-      memset(tmpbuf, '\0', sizeof(tmpbuf));
-      strcpy(tmpbuf, "viaduct (");
-      len = strlen("viaduct (");
-      strncat(tmpbuf, request->connection_name, sizeof(tmpbuf) - len - 3);
-      strcat(tmpbuf, ")");
-      DBSETLAPP(conn->login, tmpbuf);
-   } else {
-      DBSETLAPP(conn->login, "viaduct");
-   }
-   //DBSETLHOST(conn->login, request->sql_server);
- 
-   conn->dbproc = dbopen(conn->login, request->sql_server);
+   conn->db = viaduct_mssql_connect(request);
       
    conn->tm_create = time(NULL);
    conn->in_use = TRUE;
-   dbsetuserdata(conn->dbproc, (BYTE *)request);
 
    conn->pid = getpid();
 }
@@ -151,7 +123,7 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
             viaduct_log_debug(request, "found connection match for request at slot %d", i);
             conn->tm_accessed = time(NULL);
             conn->in_use = TRUE;
-            dbsetuserdata(conn->dbproc, (BYTE *) request);
+            viaduct_mssql_assign_request(conn->db, request);
             viaduct_release_shmem(connections);		
             return i;
          }
@@ -171,7 +143,7 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
 
    viaduct_log_debug(request, "closing connection %d", conn->slot);
 
-   if (conn->dbproc) dbclose(conn->dbproc);
+   viaduct_mssql_close(conn->db);
    conn->sql_server[0]='\0';
    conn->sql_user[0]='\0';
    conn->sql_database[0]='\0';
@@ -209,7 +181,7 @@ static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_reque
    conn->in_use = FALSE;
    
    if (IS_EMPTY(conn->connection_name)) {
-      dbsetuserdata(conn->dbproc,NULL);
+      viaduct_mssql_assign_request(conn->db, NULL);
       viaduct_db_close_connection(conn, request);
    }
 }
@@ -367,6 +339,8 @@ u_char *viaduct_db_status(viaduct_request_t *request)
         sprintf(tmpstr, "%u", conn->in_use);
         json_add_number(json, "in_use", tmpstr);
         json_add_string(json, "sock_path", conn->sock_path);
+        sprintf(tmpstr, "%u", conn->helper_pid);
+        json_add_number(json, "helper_pid", tmpstr);
         json_end_object(json);
      }
    }
@@ -390,13 +364,13 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    u_char *ret;
    viaduct_connection_t *conn;
    viaduct_connection_t *connections;
-   DBPROCESS *dbproc = NULL;
+   //DBPROCESS *dbproc = NULL;
    int s;
    int slot = -1;
    char *newsql;
    int i = 0;
    char tmp[20];
-   char sock_path[100];
+   //char sock_path[100];
 
    error_string[0]='\0';
 
@@ -431,8 +405,10 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    slot = viaduct_db_get_connection(request);
 
    connections = viaduct_get_shmem();
-   dbproc = connections[slot].dbproc;
-   strcpy(sock_path, connections[slot].sock_path);
+   conn = (viaduct_connection_t *) malloc(sizeof(viaduct_connection_t));
+   memcpy(conn, &connections[slot], sizeof(viaduct_connection_t));
+   //dbproc = connections[slot].dbproc;
+   //strcpy(sock_path, connections[slot].sock_path);
    viaduct_release_shmem(connections);
 
    viaduct_log_debug(request, "Allocated connection for query");
@@ -441,8 +417,8 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 // && !strcmp(request->connection_name, "helper")) 
    {
       viaduct_log_debug(request, "connecting to connection helper");
-      viaduct_log_debug(request, "socket address %s", sock_path);
-      s = viaduct_connect_to_helper(sock_path);
+      viaduct_log_debug(request, "socket address %s", conn->sock_path);
+      s = viaduct_connect_to_helper(conn->sock_path);
       viaduct_log_debug(request, "sending request");
       ret = (u_char *) viaduct_conn_send_request(s, request);
       viaduct_log_debug(request, "back");
@@ -452,17 +428,18 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_conn_close(s);
       viaduct_log_debug(request, "after close");
    } else {
-      if (dbproc==NULL) {
+      if (!viaduct_mssql_connected(conn->db)) {
 	//strcpy(error_string, "Failed to login");
-        if (login_msgno == 18452 && IS_EMPTY(request->sql_password)) {
+        //if (login_msgno == 18452 && IS_EMPTY(request->sql_password)) {
+        if (IS_EMPTY(request->sql_password)) {
 	    strcpy(error_string, "Login failed and no password was set, please check.\n");
-	    strcat(error_string, login_error);
+	    strcat(error_string, viaduct_mssql_error(conn->db));
         } else {
-	    strcpy(error_string, login_error);
+	    strcpy(error_string, viaduct_mssql_error(conn->db));
         }
       } else {
    	viaduct_log_debug(request, "Sending sql query");
-        ret = viaduct_exec_query(dbproc, request->sql_database, newsql);
+        ret = viaduct_exec_query(conn, request->sql_database, newsql);
         if (ret==NULL) strcpy(error_string, request->error_message);
         json_add_json(json, ", ");
         json_add_json(json, (char *) ret);
@@ -505,57 +482,56 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 }
 
 u_char *
-viaduct_exec_query(DBPROCESS *dbproc, char *database, char *sql)
+viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql)
 {
   json_t *json = json_new();
   u_char *ret;
-  RETCODE rc;
+ 
+  viaduct_mssql_change_db(conn->db, database);
+  if (viaduct_mssql_exec(conn->db, sql))
+  {
+     viaduct_db_fill_data(json, conn);
+  } else {
+     return NULL;
+  }
+  ret = (u_char *) json_to_string(json);
+  json_free(json);
 
-  rc = dbuse(dbproc, database);
-  rc = dbcmd(dbproc, sql);
-  rc = dbsqlexec(dbproc);
-  if (rc==SUCCEED) {
-   viaduct_db_fill_data(json, dbproc);
-   } else {
-      return NULL;
-      //strcpy(error_string, request->error_message);
-   }
-   ret = (u_char *) json_to_string(json);
-   json_free(json);
-   return ret;
+  return ret;
 }
-static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
+int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 {
    int numcols, colnum;
-   RETCODE rc;
-   char tmp[100];
-   char colval[256][31];
-   int colnull[256];
-   DBTYPEINFO *typeinfo;
+   char tmp[256], *colname;
+   int l;
 
    json_add_key(json, "data");
    json_new_array(json);
-   while ((rc = dbresults(dbproc)) != NO_MORE_RESULTS) 
+   while (viaduct_mssql_has_results(conn->db)) 
    {
 	json_new_object(json);
 	json_add_key(json, "fields");
 	json_new_array(json);
 
-	numcols = dbnumcols(dbproc);
+	numcols = viaduct_mssql_numcols(conn->db);
 	for (colnum=1; colnum<=numcols; colnum++) {
 	    json_new_object(json);
-	    json_add_string(json, "name", dbcolname(dbproc, colnum));
-            viaduct_db_get_sqltype_string(tmp, dbcoltype(dbproc, colnum), dbcollen(dbproc, colnum));
+	    json_add_string(json, "name", viaduct_mssql_colname(conn->db, colnum));
+            viaduct_mssql_coltype(conn->db, colnum, tmp);
 	    json_add_string(json, "sql_type", tmp);
-            if (viaduct_db_has_length(dbcoltype(dbproc, colnum))) {
-            	sprintf(tmp, "%d", dbcollen(dbproc, colnum));
+            l = viaduct_mssql_collen(conn->db, colnum);
+            if (l!=0) {
+            	sprintf(tmp, "%d", l);
 	    	json_add_string(json, "length", tmp);
             }
-            if (viaduct_db_has_prec(dbcoltype(dbproc, colnum))) {
-               typeinfo = dbcoltypeinfo(dbproc, colnum);
-               sprintf(tmp, "%d", typeinfo->precision);
+            l = viaduct_mssql_colprec(conn->db, colnum);
+            if (l!=0) {
+               sprintf(tmp, "%d", l);
 	       json_add_string(json, "precision", tmp);
-               sprintf(tmp, "%d", typeinfo->scale);
+            }
+            l = viaduct_mssql_colscale(conn->db, colnum);
+            if (l!=0) {
+               sprintf(tmp, "%d", l);
 	       json_add_string(json, "scale", tmp);
             }
 	    json_end_object(json);
@@ -564,27 +540,24 @@ static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
 	json_add_key(json, "rows");
 	json_new_array(json);
 
-	for (colnum=1; colnum<=numcols; colnum++) {
-        	dbbind(dbproc, colnum, NTBSTRINGBIND, 0, (BYTE *) &colval[colnum-1]);
-        	dbnullbind(dbproc, colnum, (DBINT *) &colnull[colnum-1]);
-	}
-        while (dbnextrow(dbproc)!=NO_MORE_ROWS) { 
+        while (viaduct_mssql_fetch_row(conn->db)) { 
 	   json_new_object(json);
 	   for (colnum=1; colnum<=numcols; colnum++) {
-	      if (colnull[colnum-1]==-1) 
-              	json_add_null(json, dbcolname(dbproc, colnum));
-	      else if (viaduct_db_is_quoted(dbcoltype(dbproc, colnum))) 
-              	json_add_string(json, dbcolname(dbproc, colnum), colval[colnum-1]);
+              colname = viaduct_mssql_colname(conn->db, colnum);
+              if (viaduct_mssql_colvalue(conn->db, colnum, tmp)==NULL) 
+              	json_add_null(json, colname);
+	      else if (viaduct_mssql_is_quoted(conn->db, colnum)) 
+              	json_add_string(json, colname, tmp);
               else
-              	json_add_number(json, dbcolname(dbproc, colnum), colval[colnum-1]);
+              	json_add_number(json, colname, tmp);
            }
            json_end_object(json);
         }
         json_end_array(json);
-        if (dbcount(dbproc)==-1) {
+        if (viaduct_mssql_rowcount(conn->db)==-1) {
            json_add_null(json, "count");
         } else {
-           sprintf(tmp, "%d", dbcount(dbproc));
+           sprintf(tmp, "%d", viaduct_mssql_rowcount(conn->db));
            json_add_number(json, "count", tmp);
         }
         json_end_object(json);
@@ -593,37 +566,6 @@ static int viaduct_db_fill_data(json_t *json, DBPROCESS *dbproc)
    json_end_array(json);
 
    return 0;
-}
-
-int
-viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line)
-{
-   if (dbproc!=NULL) {
-      if (msgno==5701 || msgno==5703 || msgno==5704) return 0;
-
-      viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(dbproc);
-      if (request!=NULL) {
-         if (IS_SET(msgtext)) 
-            strcat(request->error_message, "\n");
-         strcat(request->error_message, msgtext);
-      } else {
-         login_msgno = msgno;
-         strcpy(login_error, msgtext);
-      }
-   }
-
-   return 0;
-}
-int
-viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr)
-{
-   //db_error = strdup(dberrstr);
-   if (dbproc!=NULL) {
-      //viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(dbproc);
-      //strcat(request->error_message, dberrstr);
-   }
-
-   return INT_CANCEL;
 }
 
 viaduct_request_t *

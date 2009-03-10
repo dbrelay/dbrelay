@@ -63,6 +63,7 @@ typedef struct {
    ngx_log_t *log;
    char error_message[4000];
    char *params[VIADUCT_MAX_PARAMS];
+   char sql_dbtype[VIADUCT_OBJ_SZ];
 } viaduct_request_t;
 
 typedef struct {
@@ -75,15 +76,26 @@ typedef struct {
    long connection_timeout;
    time_t tm_create;
    time_t tm_accessed;
-   LOGINREC *login;
-   DBPROCESS *dbproc;
    unsigned char in_use;
    unsigned int slot;
    pid_t pid;
-   pid_t child;
+   pid_t helper_pid;
    char sock_path[VIADUCT_NAME_SZ];
+   void *db;
 } viaduct_connection_t;
 
+/*
+
+typedef struct {
+   set_param(char *param, void *value);
+   connect();
+   execute(char *sql);
+   fetch_results();
+   fetch_row();
+   close();
+   void *private_data;
+} viaduct_dbapi_t;
+*/
 
 u_char *viaduct_db_run_query(viaduct_request_t *request);
 u_char *viaduct_db_status(viaduct_request_t *request);
@@ -105,7 +117,7 @@ char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_conn_send_string(int s, char *str);
 char *viaduct_conn_send_request(int s, viaduct_request_t *request);
 void viaduct_conn_set_option(int s, char *option, char *value);
-void viaduct_conn_launch_connector(char *sock_path);
+pid_t viaduct_conn_launch_connector(char *sock_path);
 int viaduct_connect_to_helper(char *sock_path);
 
 void viaduct_conn_kill(int s);

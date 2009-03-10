@@ -1,7 +1,7 @@
 CC=gcc -g
 CFLAGS=-DCMDLINE -I ../freetds-0.82/include
-#CFLAGS+=-DNGX_DARWIN=1
-OBJS=db.o log.o json.o stringbuf.o shmem.o client.o
+CFLAGS+=-DNGX_DARWIN=1
+OBJS=db.o log.o json.o stringbuf.o shmem.o client.o mssql.o
 MAINOBJS=main.o $(OBJS)
 LOCKOBJS=locktime.o $(OBJS)
 CONNOBJS=connector.o $(OBJS)
