@@ -417,6 +417,8 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
          s = viaduct_connect_to_helper(conn->sock_path);
          // if connect fails, remove connector from list
          if (s==-1) {
+            unlink(conn->sock_path);
+            free(conn);
             connections = viaduct_get_shmem();
             connections[slot].pid=0;
             viaduct_release_shmem(connections);
