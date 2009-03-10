@@ -96,6 +96,7 @@
         $( '<th>' ).html( 'Timeout' ).appendTo( tr );
         $( '<th>' ).html( 'In Use?' ).appendTo( tr );
         $( '<th>' ).html( 'Socket' ).appendTo( tr );
+        $( '<th>' ).html( 'Helper Pid' ).appendTo( tr );
         for ( conn_id in conns ) {
           conn = conns[ conn_id ];
           tr = $( '<tr>' ).appendTo( table );
@@ -114,6 +115,8 @@
           $( '<td>' ).text( conn.in_use.toString() ).
           appendTo( tr );
           $( '<td>' ).text( conn.sock_path.toString() ).
+          appendTo( tr );
+          $( '<td>' ).text( conn.helper_pid.toString() ).
           appendTo( tr );
         };
         table.appendTo( '#results' );
