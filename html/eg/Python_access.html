@@ -20,18 +20,21 @@
   <body>
     <h1>Python example</h1>
     <ol>
-      <li><a href="simplejson-2.0.3.tar.gz">Download the simplejson package by clicking here</a></li>
+      <li><a href="http://pypi.python.org/pypi/simplejson">Download the simplejson package from here</a></li>
       <li>
-        <p>Install the simplejson package, like this:</p>
-        <pre>tar xzf simplejson-2.0.3.tar.gz
-cd simplejson-2.0.3
+        <p>Install the simplejson package, like this (use the correct version):</p>
+        <pre>tar xzf simplejson-2.0.9.tar.gz
+cd simplejson-2.0.9
 sudo python setup.py install</pre>
       </li>
       <li>
         <p>Run the emaple Python script with your values:</p>
-        <pre>import urllib, urllib2, simplejson
+        <pre>import urllib, urllib2, simplejson, os
 
-del os.environ['HTTP_PROXY']    # Unless your architecture needs it
+try:
+  del os.environ['HTTP_PROXY']
+except:
+  pass
 
 params = {
   'http_keepalive': '0',        # Python urllib2 in 2.5 breaks HTTP1.1 persistent connections

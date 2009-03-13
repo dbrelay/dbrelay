@@ -55,12 +55,12 @@ cd src/ngx_http_viaduct
 echo "s#FREETDS#$BUILD/src/$TDSDIR#g" > /tmp/sedfile.$$
 if [ `uname` = "Darwin" ]
 then
-echo "s#VIADUCT_EXTRA_LIBS#-liconv#g" >> /tmp/sedfile.$$
+  echo "s#VIADUCT_EXTRA_LIBS#-liconv#g" >> /tmp/sedfile.$$
 elif [ `uname` = "Linux" ]
 then
-echo "s#VIADUCT_EXTRA_LIBS#-lrt#g" >> /tmp/sedfile.$$
+  echo "s#VIADUCT_EXTRA_LIBS#-lrt#g" >> /tmp/sedfile.$$
 else
-echo "s#VIADUCT_EXTRA_LIBS##g" >> /tmp/sedfile.$$
+  echo "s#VIADUCT_EXTRA_LIBS##g" >> /tmp/sedfile.$$
 fi
 cat config.in | sed -f /tmp/sedfile.$$ > config
 rm -f /tmp/sedfile.$$

@@ -449,6 +449,7 @@
           <p>The SQL Bridge module should be configurable to be invoked on one or many URIs. By default it must respond to get and post requests at the <code>/sql</code> path.</p>
           <p>HTTP request carries information in the HTTP header and parameter <code>key=value</code> pairs. The application <span class="em">must not</span> expect request information in HTTP headers. Only request parameters must be used. All defaults are configured in the build header files. The parameters below are grouped for the clarity:</p>
           <h4 id="http_request_db">Database server</h4>
+          <p><span class="term done">sql_dbtype</span>Database driver name in viaduct. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; . The &laquo;mssql&raquo;  value is default, if the field is missing.</p>
           <p><span class="term done">sql_server</span>Hostname on which the SQL server is running.</p>
           <p><span class="term done">sql_port</span>Optional port number, on which the SQL server is listening. 1433 is the default.</p>
           <p><span class="term done">sql_database</span>Optional name of the primary database for the connection. User's default database is used, if not specified.</p>
@@ -456,7 +457,7 @@
           <p><span class="term done">sql_password</span>Optional password for the sql_user.</p>
           <h4 id="http_request_conn">Connection lifecycle</h4>
           <p><span class="term done">connection_name</span>Optional name to persist this connection under.</p>
-          <p><span class="term done">connection_timeout</span>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours). <span class="todo">Due to a not-yet-fixed bug the connections are not shutdown after the expiration time.</span></p>
+          <p><span class="term done">connection_timeout</span>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
           <p><span class="term done">http_keepalive</span>Optional flag to support broken HTTP clients.  When set to <span>0</span> Viaduct will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></p>
           <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
           <p><span class="term todo">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
