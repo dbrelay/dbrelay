@@ -21,7 +21,7 @@
 +#include <ngx_core.h>
 +#include <nginx.h>
 +#include <getopt.h>
-+#include "../../../../ngx_http_viaduct/viaduct.h"
++#include "../../../../ngx_http_viaduct/src/viaduct.h"
 +
 +int ngx_cdecl ngx_main(int argc, char *const *argv);
 +void ngx_http_viaduct_exit_master(ngx_cycle_t *cycle);

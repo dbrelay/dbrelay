@@ -1,9 +1,12 @@
 /*
- *  * Copyright (C) Getco LLC
- *   */
+ * Copyright (C) Getco LLC
+ */
 
 #ifndef _VIADUCTDMSSQL_H_INCLUDED_
 #define _VIADUCTMSSQL_H_INCLUDED_
+
+#include "viaduct.h"
+#include <sybdb.h>
 
 typedef struct mssql_db_s {
     LOGINREC *login;

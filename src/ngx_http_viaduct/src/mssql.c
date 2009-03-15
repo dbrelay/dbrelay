@@ -9,6 +9,29 @@
 
 #define IS_SET(x) (x && strlen(x)>0)
 
+viaduct_dbapi_t viaduct_mssql_api = 
+{
+   &viaduct_mssql_init,
+   &viaduct_mssql_connect,
+   &viaduct_mssql_close,
+   &viaduct_mssql_assign_request,
+   &viaduct_mssql_is_quoted,
+   &viaduct_mssql_connected,
+   &viaduct_mssql_change_db,
+   &viaduct_mssql_exec,
+   &viaduct_mssql_rowcount,
+   &viaduct_mssql_has_results,
+   &viaduct_mssql_numcols,
+   &viaduct_mssql_colname,
+   &viaduct_mssql_coltype,
+   &viaduct_mssql_collen,
+   &viaduct_mssql_colprec,
+   &viaduct_mssql_colscale,
+   &viaduct_mssql_fetch_row,
+   &viaduct_mssql_colvalue,
+   &viaduct_mssql_error
+};
+
 int viaduct_mssql_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line);
 int viaduct_mssql_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
 

@@ -121,7 +121,7 @@ viaduct_connect_to_helper(char *sock_path)
    }
    if (DEBUG) printf("Connected.\n");
 
-#if NGX_DARWIN
+#if HAVE_SO_NOSIGPIPE
    setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
 #endif
 

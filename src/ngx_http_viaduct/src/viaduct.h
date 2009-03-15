@@ -8,13 +8,13 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include "../include/config.h"
 
 #ifndef CMDLINE
 #include <ngx_core.h>
 #include <ngx_config.h>
 #endif
 
-#include <sybdb.h>
 #include "stringbuf.h"
 #include "json.h"
 
@@ -40,10 +40,10 @@
    typedef unsigned char u_char;
 #endif
 
-#if NGX_DARWIN
-#define NET_FLAGS 0
-#else
+#if HAVE_MSG_NOSIGNAL
 #define NET_FLAGS MSG_NOSIGNAL
+#else
+#define NET_FLAGS 0
 #endif
 
 typedef struct {
@@ -84,24 +84,50 @@ typedef struct {
    void *db;
 } viaduct_connection_t;
 
-/*
+typedef void (*viaduct_db_init)(void);
+typedef void *(*viaduct_db_connect)(viaduct_request_t *request);
+typedef void (*viaduct_db_close)(void *db);
+typedef void (*viaduct_db_assign_request)(void *db, viaduct_request_t *request);
+typedef int (*viaduct_db_is_quoted)(void *db, int colnum);;
+typedef int (*viaduct_db_connected)(void *db);
+typedef int (*viaduct_db_change_db)(void *db, char *database);
+typedef int (*viaduct_db_exec)(void *db, char *sql);
+typedef int (*viaduct_db_rowcount)(void *db);
+typedef int (*viaduct_db_has_results)(void *db);
+typedef int (*viaduct_db_numcols)(void *db);
+typedef char *(*viaduct_db_colname)(void *db, int colnum);
+typedef void (*viaduct_db_coltype)(void *db, int colnum, char *dest);
+typedef int (*viaduct_db_collen)(void *db, int colnum);
+typedef int (*viaduct_db_colprec)(void *db, int colnum);
+typedef int (*viaduct_db_colscale)(void *db, int colnum);
+typedef int (*viaduct_db_fetch_row)(void *db);
+typedef char *(*viaduct_db_colvalue)(void *db, int colnum, char *dest);
+typedef char *(*viaduct_db_error)(void *db);
 
 typedef struct {
-   set_param(char *param, void *value);
-   connect();
-   execute(char *sql);
-   fetch_results();
-   fetch_row();
-   close();
-   void *private_data;
+   viaduct_db_init init;
+   viaduct_db_connect connect;
+   viaduct_db_close close;
+   viaduct_db_assign_request assign_request;
+   viaduct_db_is_quoted is_quoted;
+   viaduct_db_connected connected;
+   viaduct_db_change_db change_db;
+   viaduct_db_exec exec;
+   viaduct_db_rowcount rowcount;
+   viaduct_db_has_results has_results;
+   viaduct_db_numcols numcols;
+   viaduct_db_colname colname;
+   viaduct_db_coltype coltype;
+   viaduct_db_collen collen;
+   viaduct_db_colprec colprec;
+   viaduct_db_colscale colscale;
+   viaduct_db_fetch_row fetch_row;
+   viaduct_db_colvalue colvalue;
+   viaduct_db_error error;
 } viaduct_dbapi_t;
-*/
 
 u_char *viaduct_db_run_query(viaduct_request_t *request);
 u_char *viaduct_db_status(viaduct_request_t *request);
-int viaduct_db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
-int
-viaduct_db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line);
 
 void viaduct_log_debug(viaduct_request_t *request, const char *fmt, ...);
 

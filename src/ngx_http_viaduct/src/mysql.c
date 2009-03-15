@@ -8,6 +8,29 @@
 
 #define IS_SET(x) (x && strlen(x)>0)
 
+viaduct_dbapi_t viaduct_mysql_api = 
+{
+   &viaduct_mysql_init,
+   &viaduct_mysql_connect,
+   &viaduct_mysql_close,
+   &viaduct_mysql_assign_request,
+   &viaduct_mysql_is_quoted,
+   &viaduct_mysql_connected,
+   &viaduct_mysql_change_db,
+   &viaduct_mysql_exec,
+   &viaduct_mysql_rowcount,
+   &viaduct_mysql_has_results,
+   &viaduct_mysql_numcols,
+   &viaduct_mysql_colname,
+   &viaduct_mysql_coltype,
+   &viaduct_mysql_collen,
+   &viaduct_mysql_colprec,
+   &viaduct_mysql_colscale,
+   &viaduct_mysql_fetch_row,
+   &viaduct_mysql_colvalue,
+   &viaduct_mysql_error
+};
+
 void viaduct_mysql_init()
 {
 }
@@ -131,14 +154,16 @@ static char *viaduct_mysql_get_sqltype_string(char *dest, int coltype, int colle
 }
 static unsigned char viaduct_mysql_has_length(int coltype)
 {
-	if (coltype==SYBVARCHAR || coltype==SYBCHAR)
+	if (coltype==MYSQL_TYPE_VARCHAR ||
+            coltype==MYSQL_TYPE_STRING ||
+            coltype==MYSQL_TYPE_VAR_STRING)
 		return 1;
 	else
 		return 0;
 }
 static unsigned char viaduct_mysql_has_prec(int coltype)
 {
-	if (coltype==SYBDECIMAL || coltype==SYBNUMERIC)
+	if (coltype==MYSQL_TYPE_DECIMAL || MYSQL_TYPE_NEWDECIMAL)
 		return 1;
 	else
 		return 0;

@@ -2,10 +2,10 @@
 #include "stdio.h"
 
 #define DATABASE "getco"
-#define SERVER "192.168.16.128"
-#define USERNAME "sa"
+#define SERVER "localhost"
+#define USERNAME "devapp"
 #define PASSWORD ""
-#define SQL "SELECT * FROM viaduct2"
+#define SQL "SELECT * FROM brian"
 
 int main(int argc, char **argv)
 {

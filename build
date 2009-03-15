@@ -51,7 +51,7 @@ patch -N -p0 < ../../patches/freetds.patch
 
 # Viaduct module configuration
 cd $BUILD
-cd src/ngx_http_viaduct
+cd src/ngx_http_viaduct/src
 echo "s#FREETDS#$BUILD/src/$TDSDIR#g" > /tmp/sedfile.$$
 if [ `uname` = "Darwin" ]
 then
@@ -64,6 +64,11 @@ else
 fi
 cat config.in | sed -f /tmp/sedfile.$$ > config
 rm -f /tmp/sedfile.$$
+
+# VIADUCT configuration
+cd $BUILD
+cd src/ngx_http_viaduct
+./configure --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
 
 # NGINX configuration
 cd $BUILD
@@ -78,11 +83,11 @@ head -$HEAD src/core/ngx_default_conf.h.in > src/core/ngx_default_conf.h
 cat $CONFPATH | sed -e 's/^/"/' | sed -e 's/$/"/' >> src/core/ngx_default_conf.h
 tail -$TAIL src/core/ngx_default_conf.h.in >> src/core/ngx_default_conf.h
 
-./configure --prefix=$PREFIX --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_http_viaduct
+./configure --prefix=$PREFIX --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_http_viaduct/src
 
 make
 make install
-cd ../ngx_http_viaduct
+cd ../ngx_http_viaduct/src
 make connector
 cp connector $PREFIX/sbin
 

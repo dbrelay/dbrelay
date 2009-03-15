@@ -1,7 +1,4 @@
-CLEANUP : separate database stuff into own file
-CLEANUP : move json generation stuff to own file
 CLEANUP : implement automatic tabbing of json results
-CLEANUP : remove static allocated buffers and strcpy, sprintf, etc...
 CLEANUP : more robust error handling of database code
 CLEANUP : run_query() is a god awful mess, restructure it
 TODO : move to upstream provider
@@ -13,7 +10,10 @@ TODO : log_level
 TODO : split sql type name from length information
 TODO : signal handlers
 FIX ME : list of datatypes not complete
-FIX ME : use ngx_unescape_uri if possible (may work only for GET, jquery encodes POST body as well)
-FIX ME : dbcoltype() returns char instead of varchar
 FIX ME : add check of passed query string for completeness
 FIX ME : implement dbmsghandle, dberrhandle and log to error_log
+DONE : separate database stuff into own file
+DONE : move json generation stuff to own file
+DONE : remove static allocated buffers and strcpy, sprintf, etc...
+DONE : use ngx_unescape_uri if possible (may work only for GET, jquery encodes POST body as well)
+DONE : dbcoltype() returns char instead of varchar

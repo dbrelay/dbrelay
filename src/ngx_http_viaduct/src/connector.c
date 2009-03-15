@@ -7,7 +7,13 @@
 #include <sys/un.h>
 #include <sys/time.h>
 #include "viaduct.h"
+
+#if HAVE_FREETDS
 #include "mssql.h"
+#endif
+#if HAVE_MYSQL
+#include "vmysql.h"
+#endif
 
 #define SOCK_PATH "/tmp/viaduct/connector"
 #define DEBUG 0
@@ -19,23 +25,12 @@
 #define DIE 4
 #define RUN 5
 
-int db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line);
-int db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr);
-
-char sql_server[VIADUCT_NAME_SZ];
-char sql_port[6];
-char sql_database[VIADUCT_OBJ_SZ];
-char sql_user[VIADUCT_OBJ_SZ];
-char sql_password[VIADUCT_OBJ_SZ];
-char connection_name[VIADUCT_NAME_SZ];
 char app_name[VIADUCT_NAME_SZ];
-long connection_timeout;
 char timeout_str[10];
-LOGINREC *login;
-DBPROCESS *dbproc;
 int receive_sql;
 stringbuf_t *sb_sql;
-char *sql;
+
+viaduct_request_t request;
 
 void timeout(int i)
 {
@@ -68,7 +63,6 @@ main(int argc, char **argv)
    char *sock_path;
    int on = 1;
    viaduct_connection_t conn;
-   mssql_db_t mssql;
    pid_t pid;
 
    if (DEBUG) printf("in %s\n", argv[1]);
@@ -78,9 +72,12 @@ main(int argc, char **argv)
       sock_path = SOCK_PATH;
    }
 
-   dbinit();
-   dberrhandle(db_err_handler);
-   dbmsghandle(db_msg_handler);
+#if HAVE_FREETDS
+   viaduct_mssql_init();
+#endif
+#if HAVE_MYSQL
+   viaduct_mysql_init();
+#endif
 
    s = socket(AF_UNIX, SOCK_STREAM, 0);
 
@@ -122,21 +119,13 @@ main(int argc, char **argv)
               close(s2);
               done = 1;
            } else if (ret == RUN) {
-              if (dbproc==NULL) {
-                 login = dblogin();
-                 if (sql_password && strlen(sql_password))
-                    DBSETLPWD(login, sql_password);
-                 DBSETLUSER(login, sql_user);
-                 if (app_name) DBSETLAPP(login, app_name);
-                 else DBSETLAPP(login, "viaduct");
-                 dbproc = dbopen(login, sql_server);
-              }
-              // dummy up a connection
-              mssql.login = login;
-              mssql.dbproc = dbproc;
-              conn.db = (void *) &mssql;
-		
-              results = viaduct_exec_query(&conn, sql_database, sql);
+#if HAVE_FREETDS
+              conn.db = viaduct_mssql_connect(&request);
+#endif
+#if HAVE_MYSQL
+              conn.db = viaduct_mysql_connect(&request);
+#endif
+              results = viaduct_exec_query(&conn, &request.sql_database, request.sql);
 
               send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
               send(s2, results, strlen(results), NET_FLAGS);
@@ -144,14 +133,14 @@ main(int argc, char **argv)
               send(s2, ":RESULTS END\n", 13, NET_FLAGS);
               send(s2, ":OK\n", 4, NET_FLAGS);
               free(results);
-              if (connection_timeout) set_timer(connection_timeout);
+              if (request.connection_timeout) set_timer(request.connection_timeout);
            } else if (ret == DIE) {
               send(s2, ":BYE\n", 5, NET_FLAGS);
               close(s2);
               exit(0);
            } else if (ret == OK) {
               send(s2, ":OK\n", 4, NET_FLAGS);
-              if (connection_timeout) set_timer(connection_timeout);
+              if (request.connection_timeout) set_timer(request.connection_timeout);
            } else {
               send(s2, ":ERR\n", 5, NET_FLAGS);
            }
@@ -197,28 +186,28 @@ process_line(char *line)
    if (check_command(line, "QUIT", NULL)) return QUIT;
    else if (check_command(line, "RUN", NULL)) return RUN;
    else if (check_command(line, "DIE", NULL)) return DIE;
-   else if (check_command(line, "SET NAME", connection_name)) return OK;
-   else if (check_command(line, "SET PORT", sql_port)) return OK;
-   else if (check_command(line, "SET SERVER", sql_server)) return OK;
-   else if (check_command(line, "SET DATABASE", sql_database)) return OK;
-   else if (check_command(line, "SET USER", sql_user)) return OK;
-   else if (check_command(line, "SET PASSWORD", sql_password)) return OK;
+   else if (check_command(line, "SET NAME", &request.connection_name)) return OK;
+   else if (check_command(line, "SET PORT", &request.sql_port)) return OK;
+   else if (check_command(line, "SET SERVER", &request.sql_server)) return OK;
+   else if (check_command(line, "SET DATABASE", &request.sql_database)) return OK;
+   else if (check_command(line, "SET USER", &request.sql_user)) return OK;
+   else if (check_command(line, "SET PASSWORD", &request.sql_password)) return OK;
    else if (check_command(line, "SET APPNAME", app_name)) return OK;
    else if (check_command(line, "SET TIMEOUT", timeout_str)) {
-      connection_timeout = atol(timeout_str);
+      request.connection_timeout = atol(timeout_str);
       return OK;
    }
    else if (check_command(line, "SQL", arg)) {
       if (!strcmp(arg, "BEGIN")) {
          if (DEBUG) printf("sql mode on\n");
          receive_sql = 1;
-         if (sql) free(sql);
-         sql = NULL;
+         if (request.sql) free(request.sql);
+         request.sql = NULL;
          sb_sql = sb_new(NULL);
       } else if (!strcmp(arg, "END")) {
          if (DEBUG) printf("sql mode off\n");
          receive_sql = 0;
-         sql = sb_to_char(sb_sql);
+         request.sql = sb_to_char(sb_sql);
          sb_free(sb_sql);
       } else return ERR;
       return OK;
@@ -245,6 +234,7 @@ check_command(char *line, char *command, char *dest)
    }
 }
 
+#if HAVE_FREETDS
 int
 db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line)
 {
@@ -268,3 +258,4 @@ db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dbe
 
    return INT_CANCEL;
 }
+#endif

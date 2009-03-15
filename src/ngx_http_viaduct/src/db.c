@@ -5,10 +5,21 @@
 
 #include "viaduct.h"
 #include "stringbuf.h"
-#include "mssql.h"
+
+#ifdef HAVE_FREETDS
+extern viaduct_dbapi_t viaduct_mssql_api;
+viaduct_dbapi_t *api = &viaduct_mssql_api;
+#endif
+
+#ifdef HAVE_MYSQL
+extern viaduct_dbapi_t viaduct_mysql_api;
+viaduct_dbapi_t *api = &viaduct_mysql_api;
+#endif
 
 #define IS_SET(x) (x && strlen(x)>0)
 #define IS_EMPTY(x) (!x || strlen(x)==0)
+#define TRUE 1
+#define FALSE 0
 
 static int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn);
 static int viaduct_db_get_connection(viaduct_request_t *request);
@@ -20,7 +31,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
 {
    memset(conn, '\0', sizeof(viaduct_connection_t));
 
-   viaduct_mssql_init();
+   api->init();
 
    /* copy parameters necessary to do connection hash match */
    if (IS_SET(request->sql_server)) 
@@ -54,7 +65,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
       return;
    }
 
-   conn->db = viaduct_mssql_connect(request);
+   conn->db = api->connect(request);
       
    conn->tm_create = time(NULL);
    conn->in_use = TRUE;
@@ -123,7 +134,7 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
             viaduct_log_debug(request, "found connection match for request at slot %d", i);
             conn->tm_accessed = time(NULL);
             conn->in_use = TRUE;
-            //viaduct_mssql_assign_request(conn->db, request);
+            //api->assign_request(conn->db, request);
             viaduct_release_shmem(connections);		
             return i;
          }
@@ -143,7 +154,7 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
 
    viaduct_log_debug(request, "closing connection %d", conn->slot);
 
-   viaduct_mssql_close(conn->db);
+   api->close(conn->db);
    conn->sql_server[0]='\0';
    conn->sql_user[0]='\0';
    conn->sql_database[0]='\0';
@@ -181,7 +192,7 @@ static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_reque
    conn->in_use = FALSE;
    
    if (IS_EMPTY(conn->connection_name)) {
-      viaduct_mssql_assign_request(conn->db, NULL);
+      api->assign_request(conn->db, NULL);
       viaduct_db_close_connection(conn, request);
    }
 }
@@ -207,94 +218,6 @@ static int viaduct_db_get_connection(viaduct_request_t *request)
    return slot;
 }
 
-static int viaduct_db_is_quoted(int coltype)
-{
-   if (coltype == SYBVARCHAR ||
-       coltype == SYBCHAR ||
-       coltype == SYBTEXT ||
-       coltype == SYBDATETIMN ||
-       coltype == SYBDATETIME ||
-       coltype == SYBDATETIME4) 
-          return 1;
-   else return 0;
-}
-static char *viaduct_db_get_sqltype_string(char *dest, int coltype, int collen)
-{
-	switch (coltype) {
-		case SYBVARCHAR : 
-			sprintf(dest, "varchar");
-			break;
-		case SYBCHAR : 
-			sprintf(dest, "char");
-			break;
-		case SYBINT4 : 
-		case SYBINT2 : 
-		case SYBINT1 : 
-		case SYBINTN : 
-			if (collen==1)
-				sprintf(dest, "tinyint");
-			else if (collen==2)
-				sprintf(dest, "smallint");
-			else if (collen==4)
-				sprintf(dest, "int");
-			break;
-		case SYBFLT8 : 
-		case SYBREAL : 
-		case SYBFLTN : 
-			if (collen==4) 
-			    sprintf(dest, "real");
-			else if (collen==8) 
-			    sprintf(dest, "float");
-			break;
-		case SYBMONEY : 
-			    sprintf(dest, "money");
-			break;
-		case SYBMONEY4 : 
-			    sprintf(dest, "smallmoney");
-			break;
-		case SYBIMAGE : 
-			    sprintf(dest, "image");
-			break;
-		case SYBTEXT : 
-			    sprintf(dest, "text");
-			break;
-		case SYBBIT : 
-			    sprintf(dest, "bit");
-			break;
-		case SYBDATETIME4 : 
-		case SYBDATETIME : 
-		case SYBDATETIMN : 
-			if (collen==4)
-				sprintf(dest, "smalldatetime");
-			else if (collen==8)
-				sprintf(dest, "datetime");
-			break;
-		case SYBNUMERIC : 
-			sprintf(dest, "numeric");
-			break;
-		case SYBDECIMAL : 
-			sprintf(dest, "decimal");
-			break;
-		default : 
-			sprintf(dest, "unknown type %d", coltype);
-			break;
-	}
-	return dest;
-}
-static unsigned char viaduct_db_has_length(int coltype)
-{
-	if (coltype==SYBVARCHAR || coltype==SYBCHAR)
-		return 1;
-	else
-		return 0;
-}
-static unsigned char viaduct_db_has_prec(int coltype)
-{
-	if (coltype==SYBDECIMAL || coltype==SYBNUMERIC)
-		return 1;
-	else
-		return 0;
-}
 u_char *viaduct_db_status(viaduct_request_t *request)
 {
    viaduct_connection_t *connections;
@@ -439,14 +362,14 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_conn_close(s);
       viaduct_log_debug(request, "after close");
    } else {
-      if (!viaduct_mssql_connected(conn->db)) {
+      if (!api->connected(conn->db)) {
 	//strcpy(error_string, "Failed to login");
         //if (login_msgno == 18452 && IS_EMPTY(request->sql_password)) {
         if (IS_EMPTY(request->sql_password)) {
 	    strcpy(error_string, "Login failed and no password was set, please check.\n");
-	    strcat(error_string, viaduct_mssql_error(conn->db));
+	    strcat(error_string, api->error(conn->db));
         } else {
-	    strcpy(error_string, viaduct_mssql_error(conn->db));
+	    strcpy(error_string, api->error(conn->db));
         }
       } else {
    	viaduct_log_debug(request, "Sending sql query");
@@ -499,8 +422,8 @@ viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql)
   json_t *json = json_new();
   u_char *ret;
  
-  viaduct_mssql_change_db(conn->db, database);
-  if (viaduct_mssql_exec(conn->db, sql))
+  api->change_db(conn->db, database);
+  if (api->exec(conn->db, sql))
   {
      viaduct_db_fill_data(json, conn);
   } else {
@@ -519,29 +442,29 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 
    json_add_key(json, "data");
    json_new_array(json);
-   while (viaduct_mssql_has_results(conn->db)) 
+   while (api->has_results(conn->db)) 
    {
 	json_new_object(json);
 	json_add_key(json, "fields");
 	json_new_array(json);
 
-	numcols = viaduct_mssql_numcols(conn->db);
+	numcols = api->numcols(conn->db);
 	for (colnum=1; colnum<=numcols; colnum++) {
 	    json_new_object(json);
-	    json_add_string(json, "name", viaduct_mssql_colname(conn->db, colnum));
-            viaduct_mssql_coltype(conn->db, colnum, tmp);
+	    json_add_string(json, "name", api->colname(conn->db, colnum));
+            api->coltype(conn->db, colnum, tmp);
 	    json_add_string(json, "sql_type", tmp);
-            l = viaduct_mssql_collen(conn->db, colnum);
+            l = api->collen(conn->db, colnum);
             if (l!=0) {
             	sprintf(tmp, "%d", l);
 	    	json_add_string(json, "length", tmp);
             }
-            l = viaduct_mssql_colprec(conn->db, colnum);
+            l = api->colprec(conn->db, colnum);
             if (l!=0) {
                sprintf(tmp, "%d", l);
 	       json_add_string(json, "precision", tmp);
             }
-            l = viaduct_mssql_colscale(conn->db, colnum);
+            l = api->colscale(conn->db, colnum);
             if (l!=0) {
                sprintf(tmp, "%d", l);
 	       json_add_string(json, "scale", tmp);
@@ -552,13 +475,13 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 	json_add_key(json, "rows");
 	json_new_array(json);
 
-        while (viaduct_mssql_fetch_row(conn->db)) { 
+        while (api->fetch_row(conn->db)) { 
 	   json_new_object(json);
 	   for (colnum=1; colnum<=numcols; colnum++) {
-              colname = viaduct_mssql_colname(conn->db, colnum);
-              if (viaduct_mssql_colvalue(conn->db, colnum, tmp)==NULL) 
+              colname = api->colname(conn->db, colnum);
+              if (api->colvalue(conn->db, colnum, tmp)==NULL) 
               	json_add_null(json, colname);
-	      else if (viaduct_mssql_is_quoted(conn->db, colnum)) 
+	      else if (api->is_quoted(conn->db, colnum)) 
               	json_add_string(json, colname, tmp);
               else
               	json_add_number(json, colname, tmp);
@@ -566,10 +489,10 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
            json_end_object(json);
         }
         json_end_array(json);
-        if (viaduct_mssql_rowcount(conn->db)==-1) {
+        if (api->rowcount(conn->db)==-1) {
            json_add_null(json, "count");
         } else {
-           sprintf(tmp, "%d", viaduct_mssql_rowcount(conn->db));
+           sprintf(tmp, "%d", api->rowcount(conn->db));
            json_add_number(json, "count", tmp);
         }
         json_end_object(json);

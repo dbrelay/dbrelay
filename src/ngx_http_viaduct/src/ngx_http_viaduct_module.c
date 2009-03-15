@@ -8,6 +8,9 @@
 #include <ngx_http.h>
 #include <ngx_http_upstream.h>
 #include "viaduct.h"
+#if HAVE_FREETDS
+#include <sybdb.h>
+#endif
 
 typedef struct {
     ngx_http_upstream_conf_t   upstream;
@@ -370,7 +373,9 @@ ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf)
 {
     ngx_http_viaduct_loc_conf_t  *conf;
 
+#if HAVE_FREETDS
     dbinit();
+#endif
 
     conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_viaduct_loc_conf_t));
     if (conf == NULL) {

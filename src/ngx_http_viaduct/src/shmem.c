@@ -6,8 +6,7 @@
 
 #define MAX_PATH_SZ 256
 
-#if NGX_DARWIN
-#else
+#if !HAVE_SEMUN
 union semun {
    int              val;    /* Value for SETVAL */
    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */

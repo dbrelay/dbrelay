@@ -115,7 +115,7 @@
           $( '<td>' ).text( conn.in_use.toString() ).
           appendTo( tr );
           $( '<td>' ).text( conn.sock_path.toString() ).
-          appendTo( tr );
+          appendTo( tr ).bind('click', function() { $('#menu').show()});
           $( '<td>' ).text( conn.helper_pid.toString() ).
           appendTo( tr );
         };
@@ -175,6 +175,9 @@
       </p>
     </form>
     <div id="results">
+    </div>
+    <div id="menu" style="display:none;background:lightsteelblue;">
+Kill Connector
     </div>
   </body>
 </html>
