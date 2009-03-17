@@ -52,7 +52,7 @@ am_viaduct_OBJECTS = db.$(OBJEXT) log.$(OBJEXT) json.$(OBJEXT) \
 	main.$(OBJEXT)
 viaduct_OBJECTS = $(am_viaduct_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)/include@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/../../depcomp
+depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
