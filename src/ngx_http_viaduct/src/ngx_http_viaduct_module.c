@@ -401,14 +401,15 @@ write_value(viaduct_request_t *request, char *key, char *value)
    char *log_levels[] = { "debug", "informational", "notice", "warning", "error", "critical" };
    char *log_level_scopes[] = { "server", "connection", "query" };
 
-   dst = (u_char *) value; src = (u_char *) value;
-   ngx_unescape_uri(&dst, &src, strlen(value), 0);
-   *dst = '\0';
 
-   /* simple unescape of '+' for now, replace with ngx_unescape_uri */
+   /* simple unescape of '+', ngx_unescape_uri doesn't do this for us */
    for (i=0;i<strlen(value);i++) {
       if (value[i]=='+') value[i]=' ';
    }
+
+   dst = (u_char *) value; src = (u_char *) value;
+   ngx_unescape_uri(&dst, &src, strlen(value), 0);
+   *dst = '\0';
 
    if (!strcmp(key, "status")) {
       request->status = 1;
