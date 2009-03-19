@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/time.h>
+#include <sys/signal.h>
 #include "viaduct.h"
 
 #if HAVE_FREETDS
