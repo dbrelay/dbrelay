@@ -260,5 +260,7 @@ char *viaduct_mysql_colvalue(void *db, int colnum, char *dest)
 
 char *viaduct_mysql_error(void *db)
 {
-    return NULL;
+   mysql_db_t *mydb = (mysql_db_t *) db;
+
+   return (char *) mysql_error(mydb->mysql);
 }

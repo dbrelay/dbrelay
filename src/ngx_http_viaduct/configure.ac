@@ -49,7 +49,7 @@ if test "$with_mysql"; then
 	mysql=true
         DB_INCS="-I $with_mysql/include"
         #CPPFLAGS="$CPPFLAGS $DB_INCS"
-        DB_LIBS="-L $with_mysql/lib/ -lmysqlclient"
+        DB_LIBS="$with_mysql/lib/libmysqlclient.a -lssl"
         #LDFLAGS="$LDFLAGS $DB_LIBS"
         AC_DEFINE(HAVE_MYSQL, 1, [Define to 1 if building with MySQL support.])
         AC_SUBST(DB_LIBS)
@@ -58,6 +58,23 @@ if test "$with_mysql"; then
         AC_SUBST(DB_MODULE)
 fi
 AM_CONDITIONAL(MYSQL, test "$mysql" = "true")
+
+AC_ARG_WITH(odbc,
+AS_HELP_STRING([--with-odbc=DIR], [build with support for ODBC in DIR]))
+if test "$with_odbc"; then
+        if echo "$with_odbc" | grep -v '^/'; then
+                with_odbc="$PWD/$with_odbc"
+        fi
+        odbc=true
+        DB_INCS="-I$with_odbc/include"
+        DB_LIBS="$with_odbc/odbc/.libs/libtdsodbc.a"
+        AC_DEFINE(HAVE_ODBC, 1, [Define to 1 if building with ODBC support.])
+        AC_SUBST(DB_LIBS)
+        AC_SUBST(DB_INCS)
+        DB_MODULE="odbc.c"
+        AC_SUBST(DB_MODULE)
+fi
+AM_CONDITIONAL(ODBC, test "$odbc" = "true")
 
 
 AC_CHECK_TYPES([semun])
