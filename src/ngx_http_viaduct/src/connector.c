@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <sys/signal.h>
 #include "viaduct.h"
+#include "../include/viaduct_config.h"
 
 #if HAVE_FREETDS
 #include "mssql.h"
@@ -26,16 +27,23 @@
 #define DIE 4
 #define RUN 5
 
+void log_open();
+void log_close();
+void log_msg(char *msg);
+
 char app_name[VIADUCT_NAME_SZ];
 char timeout_str[10];
 int receive_sql;
 stringbuf_t *sb_sql;
+char logfilename[256];
 
 viaduct_request_t request;
 
+static FILE *logfile;
+
 void timeout(int i)
 {
-   printf("Timeout reached. Exiting.\n");
+   log_msg("Timeout reached. Exiting.\n");
    exit(0);
 }
 
@@ -68,7 +76,6 @@ main(int argc, char **argv)
    viaduct_connection_t conn;
    pid_t pid;
 
-   if (DEBUG) printf("in %s\n", argv[1]);
    if (argc>1) {
       sock_path = argv[1];
    } else {
@@ -102,6 +109,8 @@ main(int argc, char **argv)
    fclose(stdout);
    //kill(getppid(), SIGURG);
 
+   log_open();
+
    len = sizeof(struct sockaddr_un);
    for (;;) {
       s2 = accept(s, &remote, &len);
@@ -118,10 +127,12 @@ main(int argc, char **argv)
            ret = process_line(line);
            
            if (ret == QUIT) {
+              log_msg("disconnect.\n"); 
               send(s2, ":BYE\n", 5, NET_FLAGS);
               close(s2);
               done = 1;
            } else if (ret == RUN) {
+              log_msg("running\n"); 
 #if HAVE_FREETDS
               conn.db = viaduct_mssql_connect(&request);
 #endif
@@ -130,14 +141,20 @@ main(int argc, char **argv)
 #endif
               results = viaduct_exec_query(&conn, &request.sql_database, request.sql);
 
+             
+              log_msg("sending results\n"); 
               send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
+              log_msg(results);
               send(s2, results, strlen(results), NET_FLAGS);
               send(s2, "\n", 1, NET_FLAGS);
               send(s2, ":RESULTS END\n", 13, NET_FLAGS);
               send(s2, ":OK\n", 4, NET_FLAGS);
+              log_msg("done\n"); 
               free(results);
-              if (request.connection_timeout) set_timer(request.connection_timeout);
+		      if (request.connection_timeout) set_timer(request.connection_timeout);
            } else if (ret == DIE) {
+              log_msg("exiting.\n"); 
+              log_close();
               send(s2, ":BYE\n", 5, NET_FLAGS);
               close(s2);
               exit(0);
@@ -176,9 +193,8 @@ process_line(char *line)
 
 
    if (receive_sql) {
-      if (DEBUG) printf("sql mode\n");
+      log_msg("sql mode\n");
       if (!line || strlen(line)<8 || strncmp(line, ":SQL END", 8)) {
-        if (DEBUG) printf("appending\n");
       	sb_append(sb_sql, line);
         return OK;
       }
@@ -189,7 +205,11 @@ process_line(char *line)
    if (check_command(line, "QUIT", NULL)) return QUIT;
    else if (check_command(line, "RUN", NULL)) return RUN;
    else if (check_command(line, "DIE", NULL)) return DIE;
-   else if (check_command(line, "SET NAME", &request.connection_name)) return OK;
+   else if (check_command(line, "SET NAME", &request.connection_name)) {
+      log_msg("connection name");
+      log_msg(request.connection_name);
+      return OK;
+   }
    else if (check_command(line, "SET PORT", &request.sql_port)) return OK;
    else if (check_command(line, "SET SERVER", &request.sql_server)) return OK;
    else if (check_command(line, "SET DATABASE", &request.sql_database)) return OK;
@@ -202,13 +222,13 @@ process_line(char *line)
    }
    else if (check_command(line, "SQL", arg)) {
       if (!strcmp(arg, "BEGIN")) {
-         if (DEBUG) printf("sql mode on\n");
+         log_msg("sql mode on\n");
          receive_sql = 1;
          if (request.sql) free(request.sql);
          request.sql = NULL;
          sb_sql = sb_new(NULL);
       } else if (!strcmp(arg, "END")) {
-         if (DEBUG) printf("sql mode off\n");
+         log_msg("sql mode off\n");
          receive_sql = 0;
          request.sql = sb_to_char(sb_sql);
          sb_free(sb_sql);
@@ -229,7 +249,6 @@ check_command(char *line, char *command, char *dest)
    if (strlen(line)>=cmdlen+1 && !strncmp(&line[1], command, cmdlen)) {
       if (dest && strlen(line)>cmdlen+1) {
          strcpy(dest, &line[cmdlen+2]);
-         //printf("dest = !%s!\n", dest);
       }
       return 1;
    } else {
@@ -262,3 +281,35 @@ db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dbe
    return INT_CANCEL;
 }
 #endif
+void log_open()
+{
+#if DEBUG
+   char logdir[256];
+
+   sprintf(logdir, "%s/logs", VIADUCT_PREFIX);
+   sprintf(logfilename, "%s/connector%ld.log", logdir, getpid());
+   logfile = fopen(logfilename, "w");
+
+#endif
+}
+void log_msg(char *msg)
+{
+#if DEBUG
+   time_t t;
+   struct tm *tm;
+   char today[256];
+
+   time(&t);
+   tm = localtime(&t);
+
+   strftime(today, sizeof(today), "%Y-%m-%d %H:%M:%S", tm);
+   fprintf(logfile, "%s: %s", today, msg);
+#endif
+}
+void log_close(FILE *log)
+{
+#if DEBUG
+   fclose(logfile);
+#endif
+}
+

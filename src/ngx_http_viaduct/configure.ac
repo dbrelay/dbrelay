@@ -1,7 +1,10 @@
+
 AC_INIT(ngx_http_viaduct_module, 0.01)
 AC_CONFIG_SRCDIR(src/ngx_http_viaduct_module.c)
 AC_PREREQ(2.53)
 AC_REVISION($Revision: 1.0 $)
+
+AC_PREFIX_DEFAULT(/usr/local)
 
 # ------------------------------------------------------------
 # Checks for programs.
@@ -11,6 +14,7 @@ AC_PROG_CC
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS(include/config.h)
 AC_CONFIG_FILES( Makefile \
+        include/Makefile \
         src/Makefile \
 )
 

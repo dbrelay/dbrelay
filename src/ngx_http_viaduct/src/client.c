@@ -67,6 +67,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
 
    viaduct_conn_send_string(s, ":RUN\n");
    sb_rslt = sb_new(NULL);
+   viaduct_log_debug(request, "receiving results");
    while (viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf) && 
       strcmp(out_buf, ":BYE") &&
       strcmp(out_buf, ":OK") &&
@@ -79,6 +80,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
       }
       if (!strcmp(out_buf, ":RESULTS BEGIN")) results = 1;
    }
+   viaduct_log_debug(request, "finished receiving results");
    json_output = sb_to_char(sb_rslt);
    sb_free(sb_rslt);
    return json_output;

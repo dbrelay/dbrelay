@@ -15,6 +15,9 @@
 /* Define to 1 if building with MySQL support. */
 #undef HAVE_MYSQL
 
+/* Define to 1 if building with ODBC support. */
+#undef HAVE_ODBC
+
 /* Define to 1 if the system has the type `semun'. */
 #undef HAVE_SEMUN
 
