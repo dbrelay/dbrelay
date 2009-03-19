@@ -102,7 +102,9 @@ viaduct_connect_to_helper(char *sock_path)
 {
    int s, len;
    struct sockaddr_un remote;
+#if HAVE_SO_NOSIGPIPE
    int on = 1;
+#endif
 
    if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
        perror("socket");

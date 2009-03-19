@@ -62,7 +62,9 @@ main(int argc, char **argv)
    int done = 0, ret;
    char *results;
    char *sock_path;
+#if HAVE_SO_NOSIGPIPE
    int on = 1;
+#endif
    viaduct_connection_t conn;
    pid_t pid;
 
@@ -105,7 +107,7 @@ main(int argc, char **argv)
       s2 = accept(s, &remote, &len);
       done = 0;
 
-#if NGX_DARWIN
+#if HAVE_SO_NOSIGPIPE
       setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
 #endif
 
