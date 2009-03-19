@@ -32,14 +32,15 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = viaduct$(EXEEXT) connector$(EXEEXT)
 subdir = src
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = config
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
@@ -77,6 +78,9 @@ CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DB_INCS = @DB_INCS@
+DB_LIBS = @DB_LIBS@
+DB_MODULE = @DB_MODULE@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -108,6 +112,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VIADUCT_EXTRA_LIBS = @VIADUCT_EXTRA_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -149,8 +154,8 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -DCMDLINE $(FREETDS_INC) $(MYSQL_INC)
-AM_LDFLAGS = $(FREETDS_LIB) $(MYSQL_LIB)
+AM_CPPFLAGS = -DCMDLINE $(DB_INCS)
+AM_LDFLAGS = $(DB_LIBS) @VIADUCT_EXTRA_LIBS@
 viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c main.c libsybdb.a libtds.a
 connector_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c connector.c 
 EXTRA_viaduct_SOURCES = mssql.h mssql.c vmysql.h mysql.c
@@ -195,6 +200,8 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+config: $(top_builddir)/config.status $(srcdir)/config.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"

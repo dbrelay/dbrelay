@@ -689,6 +689,9 @@ AMDEPBACKSLASH
 CCDEPMODE
 am__fastdepCC_TRUE
 am__fastdepCC_FALSE
+DB_LIBS
+DB_INCS
+DB_MODULE
 FREETDS_TRUE
 FREETDS_FALSE
 MYSQL_TRUE
@@ -696,6 +699,7 @@ MYSQL_FALSE
 CPP
 GREP
 EGREP
+VIADUCT_EXTRA_LIBS
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -3339,15 +3343,19 @@ if test "$with_freetds"; then
         if echo "$with_freetds" | grep -v '^/'; then
                 with_freetds="$PWD/$with_freetds"
         fi
-        FREETDS_INC="-I$with_freetds/include"
-        CPPFLAGS="$CPPFLAGS $FREETDS_INC"
-        FREETDS_LIB="-L$with_freetds/src/dblib/.libs/ -L$with_freetds/src/tds/.libs/ -lsybdb -ltds"
-        LDFLAGS="$LDFLAGS $FREETDS_LIB"
 	freetds=true
+        DB_INCS="-I $with_freetds/include"
+        #CPPFLAGS="$CPPFLAGS $DB_INCS"
+        DB_LIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
+        #LDFLAGS="$LDFLAGS $DB_LIBS"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_FREETDS 1
 _ACEOF
+
+
+
+        DB_MODULE="mssql.c"
 
 fi
  if test "$freetds" = "true"; then
@@ -3369,15 +3377,19 @@ if test "$with_mysql"; then
         if echo "$with_mysql" | grep -v '^/'; then
                 with_mysql="$PWD/$with_mysql"
         fi
-        MYSQL_INC="-I$with_mysql/include"
-        CPPFLAGS="$CPPFLAGS $MYSQL_INC"
-        MYSQL_LIB="-L$with_mysql/lib/ -lmysqlclient"
-        LDFLAGS="$LDFLAGS $MYSQL_LIB"
 	mysql=true
+        DB_INCS="-I $with_mysql/include"
+        #CPPFLAGS="$CPPFLAGS $DB_INCS"
+        DB_LIBS="-L $with_mysql/lib/ -lmysqlclient"
+        #LDFLAGS="$LDFLAGS $DB_LIBS"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_MYSQL 1
 _ACEOF
+
+
+
+        DB_MODULE="mysql.c"
 
 fi
  if test "$mysql" = "true"; then
@@ -4142,6 +4154,74 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
+VIADUCT_EXTRA_LIBS=
+{ echo "$as_me:$LINENO: checking for iconv_open in -liconv" >&5
+echo $ECHO_N "checking for iconv_open in -liconv... $ECHO_C" >&6; }
+if test "${ac_cv_lib_iconv_iconv_open+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-liconv  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char iconv_open ();
+int
+main ()
+{
+return iconv_open ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_iconv_iconv_open=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_iconv_iconv_open=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_iconv_iconv_open" >&5
+echo "${ECHO_T}$ac_cv_lib_iconv_iconv_open" >&6; }
+if test $ac_cv_lib_iconv_iconv_open = yes; then
+  VIADUCT_EXTRA_LIBS="-liconv"
+fi
+
+
+
 { echo "$as_me:$LINENO: checking for SO_NOSIGPIPE" >&5
 echo $ECHO_N "checking for SO_NOSIGPIPE... $ECHO_C" >&6; }
 cat >conftest.$ac_ext <<_ACEOF
@@ -4199,6 +4279,8 @@ rm -f conftest*
 
 { echo "$as_me:$LINENO: result: $haveMSG_NOSIGNAL" >&5
 echo "${ECHO_T}$haveMSG_NOSIGNAL" >&6; }
+
+ac_config_files="$ac_config_files src/config"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -4795,6 +4877,7 @@ do
     "include/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "src/config") CONFIG_FILES="$CONFIG_FILES src/config" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -4932,6 +5015,9 @@ AMDEPBACKSLASH!$AMDEPBACKSLASH$ac_delim
 CCDEPMODE!$CCDEPMODE$ac_delim
 am__fastdepCC_TRUE!$am__fastdepCC_TRUE$ac_delim
 am__fastdepCC_FALSE!$am__fastdepCC_FALSE$ac_delim
+DB_LIBS!$DB_LIBS$ac_delim
+DB_INCS!$DB_INCS$ac_delim
+DB_MODULE!$DB_MODULE$ac_delim
 FREETDS_TRUE!$FREETDS_TRUE$ac_delim
 FREETDS_FALSE!$FREETDS_FALSE$ac_delim
 MYSQL_TRUE!$MYSQL_TRUE$ac_delim
@@ -4939,11 +5025,12 @@ MYSQL_FALSE!$MYSQL_FALSE$ac_delim
 CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
+VIADUCT_EXTRA_LIBS!$VIADUCT_EXTRA_LIBS$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 88; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

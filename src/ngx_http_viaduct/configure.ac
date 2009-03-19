@@ -27,12 +27,16 @@ if test "$with_freetds"; then
         if echo "$with_freetds" | grep -v '^/'; then
                 with_freetds="$PWD/$with_freetds"
         fi
-        FREETDS_INC="-I$with_freetds/include"
-        CPPFLAGS="$CPPFLAGS $FREETDS_INC"
-        FREETDS_LIB="-L$with_freetds/src/dblib/.libs/ -L$with_freetds/src/tds/.libs/ -lsybdb -ltds"
-        LDFLAGS="$LDFLAGS $FREETDS_LIB"
 	freetds=true
+        DB_INCS="-I $with_freetds/include"
+        #CPPFLAGS="$CPPFLAGS $DB_INCS"
+        DB_LIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
+        #LDFLAGS="$LDFLAGS $DB_LIBS"
         AC_DEFINE(HAVE_FREETDS, 1, [Define to 1 if building with FreeTDS support.])
+        AC_SUBST(DB_LIBS)
+        AC_SUBST(DB_INCS)
+        DB_MODULE="mssql.c"
+        AC_SUBST(DB_MODULE)
 fi
 AM_CONDITIONAL(FREETDS, test "$freetds" = "true")
 
@@ -42,12 +46,16 @@ if test "$with_mysql"; then
         if echo "$with_mysql" | grep -v '^/'; then
                 with_mysql="$PWD/$with_mysql"
         fi
-        MYSQL_INC="-I$with_mysql/include"
-        CPPFLAGS="$CPPFLAGS $MYSQL_INC"
-        MYSQL_LIB="-L$with_mysql/lib/ -lmysqlclient"
-        LDFLAGS="$LDFLAGS $MYSQL_LIB"
 	mysql=true
+        DB_INCS="-I $with_mysql/include"
+        #CPPFLAGS="$CPPFLAGS $DB_INCS"
+        DB_LIBS="-L $with_mysql/lib/ -lmysqlclient"
+        #LDFLAGS="$LDFLAGS $DB_LIBS"
         AC_DEFINE(HAVE_MYSQL, 1, [Define to 1 if building with MySQL support.])
+        AC_SUBST(DB_LIBS)
+        AC_SUBST(DB_INCS)
+        DB_MODULE="mysql.c"
+        AC_SUBST(DB_MODULE)
 fi
 AM_CONDITIONAL(MYSQL, test "$mysql" = "true")
 
@@ -62,6 +70,10 @@ if test "$ac_cv_type_semun" = "no"; then
   [ac_cv_type_semun=yes AC_DEFINE(HAVE_SEMUN) AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 fi
+
+VIADUCT_EXTRA_LIBS=
+AC_CHECK_LIB(iconv, iconv_open, [VIADUCT_EXTRA_LIBS="-liconv"])
+AC_SUBST(VIADUCT_EXTRA_LIBS)
 
 AC_MSG_CHECKING([for SO_NOSIGPIPE])
 AC_EGREP_CPP(we_have_sonosigpipe,
@@ -81,5 +93,5 @@ we_have_MSG_NOSIGNAL
 ], AC_DEFINE([HAVE_MSG_NOSIGNAL], [1], [Define to 1 if you have the MSG_NOSIGNAL socket flag.]) haveMSG_NOSIGNAL=yes, haveMSG_NOSIGNAL=no)
 AC_MSG_RESULT([$haveMSG_NOSIGNAL])
 
-AC_OUTPUT
+AC_OUTPUT([src/config])
 

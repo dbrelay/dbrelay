@@ -49,26 +49,11 @@ cd src/$TDSDIR
 patch -N -p0 < ../../patches/freetds.patch
 ./configure --prefix=$BUILD/$TDSDIR --with-tdsver=8.0; make
 
-# Viaduct module configuration
-cd $BUILD
-cd src/ngx_http_viaduct/src
-echo "s#FREETDS#$BUILD/src/$TDSDIR#g" > /tmp/sedfile.$$
-if [ `uname` = "Darwin" ]
-then
-  echo "s#VIADUCT_EXTRA_LIBS#-liconv#g" >> /tmp/sedfile.$$
-elif [ `uname` = "Linux" ]
-then
-  echo "s#VIADUCT_EXTRA_LIBS#-lrt#g" >> /tmp/sedfile.$$
-else
-  echo "s#VIADUCT_EXTRA_LIBS##g" >> /tmp/sedfile.$$
-fi
-cat config.in | sed -f /tmp/sedfile.$$ > config
-rm -f /tmp/sedfile.$$
-
 # VIADUCT configuration
 cd $BUILD
 cd src/ngx_http_viaduct
 ./configure --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
+#./configure --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
 
 # NGINX configuration
 cd $BUILD

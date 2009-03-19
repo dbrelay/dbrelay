@@ -1,5 +1,5 @@
-AM_CPPFLAGS     = -DCMDLINE $(FREETDS_INC) $(MYSQL_INC)
-AM_LDFLAGS     = $(FREETDS_LIB) $(MYSQL_LIB)
+AM_CPPFLAGS     = -DCMDLINE $(DB_INCS)
+AM_LDFLAGS     = $(DB_LIBS) @VIADUCT_EXTRA_LIBS@
 bin_PROGRAMS = viaduct connector
 viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c main.c libsybdb.a libtds.a
 connector_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c connector.c 
