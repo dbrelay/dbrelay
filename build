@@ -72,9 +72,9 @@ tail -$TAIL src/core/ngx_default_conf.h.in >> src/core/ngx_default_conf.h
 
 make
 make install
-cd ../ngx_http_viaduct/src
-make connector
-cp connector $PREFIX/sbin
+cd ../ngx_http_viaduct
+make 
+cp src/connector $PREFIX/sbin
 
 cd $PREFIX
 patch -N -p0 -i $BUILD/patches/nginx.conf.patch

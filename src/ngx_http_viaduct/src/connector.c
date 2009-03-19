@@ -110,6 +110,9 @@ main(int argc, char **argv)
    //kill(getppid(), SIGURG);
 
    log_open();
+   log_msg("Using socket path\n");
+   log_msg(sock_path);
+   log_msg("\n");
 
    len = sizeof(struct sockaddr_un);
    for (;;) {
