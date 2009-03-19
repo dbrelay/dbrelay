@@ -72,7 +72,8 @@ if test "$ac_cv_type_semun" = "no"; then
 fi
 
 VIADUCT_EXTRA_LIBS=
-AC_CHECK_LIB(iconv, iconv_open, [VIADUCT_EXTRA_LIBS="-liconv"])
+AC_CHECK_LIB(iconv, iconv_open, [VIADUCT_EXTRA_LIBS="$VIADUCT_EXTRA_LIBS -liconv"])
+AC_CHECK_LIB(rt, clock_gettime, [VIADUCT_EXTRA_LIBS="$VIADUCT_EXTRA_LIBS -lrt"])
 AC_SUBST(VIADUCT_EXTRA_LIBS)
 
 AC_MSG_CHECKING([for SO_NOSIGPIPE])
