@@ -15,6 +15,7 @@ typedef struct mysql_db_s {
    MYSQL *mysql;
    MYSQL_RES *result;
    MYSQL_ROW row;
+   MYSQL_FIELD *field;
 } mysql_db_t;
 
 void viaduct_mysql_init();

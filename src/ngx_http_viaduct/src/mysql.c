@@ -53,15 +53,13 @@ void viaduct_mysql_close(void *db)
 }
 void viaduct_mysql_assign_request(void *db, viaduct_request_t *request)
 {
-   mysql_db_t *mysql = (mysql_db_t *) db;
 }
 int viaduct_mysql_is_quoted(void *db, int colnum)
 {
    mysql_db_t *mydb = (mysql_db_t *) db;
-   MYSQL_FIELD *field;
    
-   field = mysql_fetch_field_direct(mydb->result, colnum-1);
-   int coltype = field->type;
+   mydb->field = mysql_fetch_field_direct(mydb->result, colnum-1);
+   int coltype = mydb->field->type;
 
    if (coltype == MYSQL_TYPE_VARCHAR ||
        coltype == MYSQL_TYPE_VAR_STRING ||
@@ -211,43 +209,37 @@ int viaduct_mysql_numcols(void *db)
 char *viaduct_mysql_colname(void *db, int colnum)
 {
    mysql_db_t *mydb = (mysql_db_t *) db;
-   MYSQL_FIELD *field;
 
-   field = mysql_fetch_field_direct(mydb->result, colnum-1);
-   return field->name;
+   mydb->field = mysql_fetch_field_direct(mydb->result, colnum-1);
+   return mydb->field->name;
 }
 void viaduct_mysql_coltype(void *db, int colnum, char *dest)
 {
    mysql_db_t *mydb = (mysql_db_t *) db;
-   MYSQL_FIELD *field;
 
-   field = mysql_fetch_field_direct(mydb->result, colnum-1);
-   switch (field->type) {
-   }
+   mydb->field = mysql_fetch_field_direct(mydb->result, colnum-1);
+   viaduct_mysql_get_sqltype_string(dest, mydb->field->type, mydb->field->length);
 }
 int viaduct_mysql_collen(void *db, int colnum)
 {
    mysql_db_t *mydb = (mysql_db_t *) db;
-   unsigned long *lengths;
 
-   lengths = mysql_fetch_lengths(mydb->result);
-   return lengths[colnum-1];
+   mydb->field = mysql_fetch_field_direct(mydb->result, colnum-1);
+   return mydb->field->length;
 }
 int viaduct_mysql_colprec(void *db, int colnum)
 {
    mysql_db_t *mydb = (mysql_db_t *) db;
-   MYSQL_FIELD *field;
 
-   field = mysql_fetch_field_direct(mydb->result, colnum-1);
-   return field->max_length;
+   mydb->field = mysql_fetch_field_direct(mydb->result, colnum-1);
+   return mydb->field->max_length;
 }
 int viaduct_mysql_colscale(void *db, int colnum)
 {
    mysql_db_t *mydb = (mysql_db_t *) db;
-   MYSQL_FIELD *field;
 
-   field = mysql_fetch_field_direct(mydb->result, colnum-1);
-   return field->decimals;
+   mydb->field = mysql_fetch_field_direct(mydb->result, colnum-1);
+   return mydb->field->decimals;
 }
 int viaduct_mysql_fetch_row(void *db)
 {
