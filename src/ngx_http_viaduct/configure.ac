@@ -34,13 +34,11 @@ if test "$with_freetds"; then
 	freetds=true
         DB_INCS="-I $with_freetds/include"
         #CPPFLAGS="$CPPFLAGS $DB_INCS"
-        DB_LIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
+        #DB_LIBS="-L $with_freetds/src/dblib/ -lsybdb -L $with_freetds/src/tds/.libs/ -ltds"
+        DB_STATICLIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
         #LDFLAGS="$LDFLAGS $DB_LIBS"
         AC_DEFINE(HAVE_FREETDS, 1, [Define to 1 if building with FreeTDS support.])
-        AC_SUBST(DB_LIBS)
-        AC_SUBST(DB_INCS)
         DB_MODULE="mssql.c"
-        AC_SUBST(DB_MODULE)
 fi
 AM_CONDITIONAL(FREETDS, test "$freetds" = "true")
 
@@ -53,14 +51,18 @@ if test "$with_mysql"; then
 	mysql=true
         DB_INCS="-I $with_mysql/include"
         #CPPFLAGS="$CPPFLAGS $DB_INCS"
-        DB_LIBS="$with_mysql/lib/libmysqlclient.a -lssl"
+        DB_LIBS="-lssl"
+        DB_STATICLIBS="$with_mysql/lib/libmysqlclient.a"
         #LDFLAGS="$LDFLAGS $DB_LIBS"
         AC_DEFINE(HAVE_MYSQL, 1, [Define to 1 if building with MySQL support.])
-        AC_SUBST(DB_LIBS)
-        AC_SUBST(DB_INCS)
         DB_MODULE="mysql.c"
-        AC_SUBST(DB_MODULE)
 fi
+
+AC_SUBST(DB_LIBS)
+AC_SUBST(DB_STATICLIBS)
+AC_SUBST(DB_INCS)
+AC_SUBST(DB_MODULE)
+
 AM_CONDITIONAL(MYSQL, test "$mysql" = "true")
 
 AC_ARG_WITH(odbc,

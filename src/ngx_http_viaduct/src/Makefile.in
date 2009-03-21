@@ -48,10 +48,14 @@ am_connector_OBJECTS = db.$(OBJEXT) log.$(OBJEXT) json.$(OBJEXT) \
 	stringbuf.$(OBJEXT) shmem.$(OBJEXT) client.$(OBJEXT) \
 	connector.$(OBJEXT)
 connector_OBJECTS = $(am_connector_OBJECTS)
+@FREETDS_FALSE@@MYSQL_TRUE@connector_DEPENDENCIES = mysql.o
+@FREETDS_TRUE@connector_DEPENDENCIES = mssql.o
 am_viaduct_OBJECTS = db.$(OBJEXT) log.$(OBJEXT) json.$(OBJEXT) \
 	stringbuf.$(OBJEXT) shmem.$(OBJEXT) client.$(OBJEXT) \
 	main.$(OBJEXT)
 viaduct_OBJECTS = $(am_viaduct_OBJECTS)
+@FREETDS_FALSE@@MYSQL_TRUE@viaduct_DEPENDENCIES = mysql.o
+@FREETDS_TRUE@viaduct_DEPENDENCIES = mssql.o
 DEFAULT_INCLUDES = -I. -I$(top_builddir)/include@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -81,6 +85,7 @@ CYGPATH_W = @CYGPATH_W@
 DB_INCS = @DB_INCS@
 DB_LIBS = @DB_LIBS@
 DB_MODULE = @DB_MODULE@
+DB_STATICLIBS = @DB_STATICLIBS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -154,19 +159,15 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -DCMDLINE $(DB_INCS)
-AM_LDFLAGS = $(DB_LIBS) @VIADUCT_EXTRA_LIBS@
+AM_CPPFLAGS = -DCMDLINE @DB_INCS@
+AM_LDFLAGS = @DB_LIBS@ @VIADUCT_EXTRA_LIBS@
 viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c main.c libsybdb.a libtds.a
 connector_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c connector.c 
 EXTRA_viaduct_SOURCES = mssql.h mssql.c vmysql.h mysql.c
-@FREETDS_TRUE@viaduct_LDADD = mssql.o
-@MYSQL_TRUE@viaduct_LDADD = mysql.o
-@FREETDS_TRUE@viaduct_DEPENDENCIES = mssql.o
-@MYSQL_TRUE@viaduct_DEPENDENCIES = mysql.o
-@FREETDS_TRUE@connector_LDADD = mssql.o
-@MYSQL_TRUE@connector_LDADD = mysql.o
-@FREETDS_TRUE@connector_DEPENDENCIES = mssql.o
-@MYSQL_TRUE@connector_DEPENDENCIES = mysql.o
+@FREETDS_TRUE@viaduct_LDADD = mssql.o @DB_STATICLIBS@
+@MYSQL_TRUE@viaduct_LDADD = mysql.o @DB_STATICLIBS@
+@FREETDS_TRUE@connector_LDADD = mssql.o @DB_STATICLIBS@
+@MYSQL_TRUE@connector_LDADD = mysql.o @DB_STATICLIBS@
 all: all-am
 
 .SUFFIXES:

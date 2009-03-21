@@ -690,11 +690,12 @@ AMDEPBACKSLASH
 CCDEPMODE
 am__fastdepCC_TRUE
 am__fastdepCC_FALSE
-DB_LIBS
-DB_INCS
-DB_MODULE
 FREETDS_TRUE
 FREETDS_FALSE
+DB_LIBS
+DB_STATICLIBS
+DB_INCS
+DB_MODULE
 MYSQL_TRUE
 MYSQL_FALSE
 ODBC_TRUE
@@ -3352,17 +3353,15 @@ if test "$with_freetds"; then
 	freetds=true
         DB_INCS="-I $with_freetds/include"
         #CPPFLAGS="$CPPFLAGS $DB_INCS"
-        DB_LIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
+        #DB_LIBS="-L $with_freetds/src/dblib/ -lsybdb -L $with_freetds/src/tds/.libs/ -ltds"
+        DB_STATICLIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
         #LDFLAGS="$LDFLAGS $DB_LIBS"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_FREETDS 1
 _ACEOF
 
-
-
         DB_MODULE="mssql.c"
-
 fi
  if test "$freetds" = "true"; then
   FREETDS_TRUE=
@@ -3386,18 +3385,22 @@ if test "$with_mysql"; then
 	mysql=true
         DB_INCS="-I $with_mysql/include"
         #CPPFLAGS="$CPPFLAGS $DB_INCS"
-        DB_LIBS="$with_mysql/lib/libmysqlclient.a -lssl"
+        DB_LIBS="-lssl"
+        DB_STATICLIBS="$with_mysql/lib/libmysqlclient.a"
         #LDFLAGS="$LDFLAGS $DB_LIBS"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_MYSQL 1
 _ACEOF
 
-
-
         DB_MODULE="mysql.c"
-
 fi
+
+
+
+
+
+
  if test "$mysql" = "true"; then
   MYSQL_TRUE=
   MYSQL_FALSE='#'
@@ -5126,11 +5129,12 @@ AMDEPBACKSLASH!$AMDEPBACKSLASH$ac_delim
 CCDEPMODE!$CCDEPMODE$ac_delim
 am__fastdepCC_TRUE!$am__fastdepCC_TRUE$ac_delim
 am__fastdepCC_FALSE!$am__fastdepCC_FALSE$ac_delim
-DB_LIBS!$DB_LIBS$ac_delim
-DB_INCS!$DB_INCS$ac_delim
-DB_MODULE!$DB_MODULE$ac_delim
 FREETDS_TRUE!$FREETDS_TRUE$ac_delim
 FREETDS_FALSE!$FREETDS_FALSE$ac_delim
+DB_LIBS!$DB_LIBS$ac_delim
+DB_STATICLIBS!$DB_STATICLIBS$ac_delim
+DB_INCS!$DB_INCS$ac_delim
+DB_MODULE!$DB_MODULE$ac_delim
 MYSQL_TRUE!$MYSQL_TRUE$ac_delim
 MYSQL_FALSE!$MYSQL_FALSE$ac_delim
 ODBC_TRUE!$ODBC_TRUE$ac_delim
@@ -5143,7 +5147,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 90; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 91; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
