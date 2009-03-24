@@ -48,6 +48,7 @@
 
 typedef struct {
    int status;
+   char cmd[VIADUCT_NAME_SZ];
    char sql_server[VIADUCT_NAME_SZ];
    char sql_port[6];
    char sql_database[VIADUCT_OBJ_SZ];

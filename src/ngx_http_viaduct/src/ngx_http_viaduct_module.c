@@ -315,6 +315,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     
     log->action = "sending response to client";
 
+    if (request->cmd) json_output = (u_char *) viaduct_db_cmd(request);
     if (request->status) json_output = (u_char *) viaduct_db_status(request);
     else json_output = (u_char *) viaduct_db_run_query(request);
     viaduct_free_request(request);
@@ -411,6 +412,8 @@ write_value(viaduct_request_t *request, char *key, char *value)
    ngx_unescape_uri(&dst, &src, strlen(value), 0);
    *dst = '\0';
 
+   if (!strcmp(key, "cmd")) {
+      copy_value(request->cmd, value, VIADUCT_OBJ_SZ);
    if (!strcmp(key, "status")) {
       request->status = 1;
    } else if (!strcmp(key, "sql_dbtype")) {
