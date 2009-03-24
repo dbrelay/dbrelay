@@ -1,6 +1,27 @@
+--- include/sybdb.h	2007-12-02 18:01:37.000000000 -0500
++++ include/sybdb.h	2009-03-24 15:18:34.000000000 -0400
+@@ -1070,6 +1070,7 @@
+ #define DBSETLLABELED(x,y)	dbsetlbool((x), (y), DBSETLABELED)
+ #define BCP_SETLABELED(x,y)	dbsetlbool((x), (y), DBSETLABELED)
+ #define DBSETLVERSION(login, version) dbsetlversion((login), (version))
++#define DBSETPORT		99
+ 
+ RETCODE bcp_init(DBPROCESS * dbproc, const char *tblname, const char *hfile, const char *errfile, int direction);
+ RETCODE bcp_done(DBPROCESS * dbproc);
 --- src/dblib/dblib.c	2008-01-01 18:09:46.000000000 -0500
-+++ src/dblib/dblib.c	2008-11-07 20:14:51.000000000 -0500
-@@ -1113,7 +1113,7 @@
++++ src/dblib/dblib.c	2009-03-24 15:16:52.000000000 -0400
+@@ -769,6 +769,10 @@
+ 		tds_set_language(login->tds_login, value);
+ 		return SUCCEED;
+ 		break;
++	case DBSETPORT:
++		tds_set_port(login->tds_login, atoi(value));
++		return SUCCEED;
++		break;
+ 	case DBSETHID:
+ 	default:
+ 		dbperror(NULL, SYBEASUL, 0); /* Attempt to set unknown LOGINREC field */
+@@ -1113,7 +1117,7 @@
  	dbproc->tds_socket = tds_alloc_socket(dblib_get_tds_ctx(), 512);
  
  	tds_set_parent(dbproc->tds_socket, dbproc);
@@ -9,3 +30,4 @@
  	dbproc->tds_socket->env_chg_func = db_env_chg;
  	dbproc->envchange_rcv = 0;
  	dbproc->dbcurdb[0] = '\0';
+

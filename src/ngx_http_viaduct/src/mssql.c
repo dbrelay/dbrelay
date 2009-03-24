@@ -63,6 +63,7 @@ void *viaduct_mssql_connect(viaduct_request_t *request)
     DBSETLPWD(mssql->login, request->sql_password); 
    else
     DBSETLPWD(mssql->login, NULL);
+   dbsetlname(mssql->login, request->sql_port, DBSETPORT); 
    DBSETLUSER(mssql->login, request->sql_user);
    if (IS_SET(request->connection_name)) {
       memset(tmpbuf, '\0', sizeof(tmpbuf));
