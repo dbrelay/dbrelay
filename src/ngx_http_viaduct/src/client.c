@@ -76,7 +76,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
       //printf("%s\n", out_buf);
       if (results) {
          sb_append(sb_rslt, out_buf);
-         sb_append(sb_rslt, "\n");
+         //sb_append(sb_rslt, "\n");
       }
       if (!strcmp(out_buf, ":RESULTS BEGIN")) results = 1;
    }
