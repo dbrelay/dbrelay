@@ -368,6 +368,8 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
         if (IS_EMPTY(request->sql_password)) {
 	    strcpy(error_string, "Login failed and no password was set, please check.\n");
 	    strcat(error_string, api->error(conn->db));
+        } else if (!strlen(api->error(conn->db))) {
+	    strcpy(error_string, "Connection failed.\n");
         } else {
 	    strcpy(error_string, api->error(conn->db));
         }
