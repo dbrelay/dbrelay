@@ -422,7 +422,7 @@ write_value(viaduct_request_t *request, char *key, char *value)
    } else if (!strcmp(key, "sql_user")) {
       copy_value(request->sql_user, value, VIADUCT_OBJ_SZ);
    } else if (!strcmp(key, "sql_port")) {
-      copy_value(request->sql_user, value, 6);
+      copy_value(request->sql_port, value, 6);
    } else if (!strcmp(key, "sql")) {
       request->sql = strdup(value);
    } else if (!strcmp(key, "query_tag")) {
