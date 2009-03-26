@@ -72,15 +72,11 @@
       
       function processStatus( response ) {
         //$('<p>' + response.status.connections + '</p>').appendTo( '#results' );
-        t = makeTable( response.status.connections );
-        //for ( conn_id in response.status.connections ) {
-          //conn = response.status.connections[ conn_id ];
-	  //alert('slot ' + conn.slot);
-          //$('<p>' + conn.slot + '</p>').appendTo( '#results' );
-          //$('<p>' + conn.tm_accessed + '</p>').appendTo( '#results' );
-          //$('slot').appendTo( '#results' );
-          //$('<br/>').appendTo( '#results' );
-        //}
+        if (response.status.connections.length==0) {
+           $('<p>No active connections</p>').appendTo( '#results' );
+	} else {
+           t = makeTable( response.status.connections );
+        }
         land();
       };
 
