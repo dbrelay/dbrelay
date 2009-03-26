@@ -155,6 +155,7 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
    viaduct_log_debug(request, "closing connection %d", conn->slot);
 
    api->close(conn->db);
+   conn->pid=0;
    conn->sql_server[0]='\0';
    conn->sql_user[0]='\0';
    conn->sql_database[0]='\0';
