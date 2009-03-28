@@ -21,7 +21,7 @@ viaduct_conn_kill(int s)
 {
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr = 0;
+   int in_ptr = -1;
 
    viaduct_conn_send_string(s, ":DIE\n");
    viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
@@ -32,7 +32,7 @@ viaduct_conn_close(int s)
 {
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr = 0;
+   int in_ptr = -1;
 
    viaduct_conn_send_string(s, ":QUIT\n");
    viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
@@ -46,7 +46,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
    int results = 0;
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr = 0;
+   int in_ptr = -1;
    char tmp[20];
 
    viaduct_conn_set_option(s, "SERVER", request->sql_server);
@@ -72,6 +72,8 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
       strcmp(out_buf, ":BYE") &&
       strcmp(out_buf, ":OK") &&
       strcmp(out_buf, ":ERR")) { 
+      //viaduct_log_debug(request, "in %s", in_buf);
+      //viaduct_log_debug(request, "out %s", out_buf);
       if (!strcmp(out_buf, ":RESULTS END")) results = 0;
       //printf("%s\n", out_buf);
       if (results) {
@@ -91,7 +93,7 @@ viaduct_conn_set_option(int s, char *option, char *value)
 {
    char out_buf[4096];
    char in_buf[4096];
-   int in_ptr = 0;
+   int in_ptr = -1;
    char set_string[100];
 
    sprintf(set_string, ":SET %s %s\n", option, value);
@@ -153,7 +155,6 @@ pid_t viaduct_conn_launch_connector(char *sock_path)
      //waitpid(child, NULL, 0);
    //}
      while (fgets(line, 256, connector)!=NULL) {
-        printf("line = %s\n", line);
         if (strlen(line)>4 && !strncmp(line, ":PID", 4)) {
            child = atol(&line[5]);
 	}
@@ -178,13 +179,14 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
    int len;
 
    //printf("\nptr %d\n", *in_ptr);
-   if (*in_ptr==0) {
+   if (*in_ptr==-1) {
       if ((t=recv(s, in_buf, 4096, NET_FLAGS))<=0) {
 	if (t < 0) perror("recv");
         else if (DEBUG) printf("Server closed connection\n");
 	exit(1);
       }
       in_buf[t] = '\0';
+      *in_ptr=0;
    } else (*in_ptr)++;
    len = strlen(in_buf);
    //printf("\nptr %d len %d i %d\n", *in_ptr, len, i);
@@ -192,7 +194,7 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
    strncpy(out_buf, &in_buf[*in_ptr], i - *in_ptr); 
    out_buf[i - *in_ptr]='\0';
    //printf("\nout_buf = %s\n", out_buf);
-   if (i>=len-1) *in_ptr=0;
+   if (i>=len-1) *in_ptr=-1;
    else *in_ptr=i; 
    if (DEBUG) printf("echo> %s\n", out_buf);
    if (*in_ptr>4096) exit(1);
