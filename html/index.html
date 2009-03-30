@@ -45,14 +45,14 @@
           viaductQuery(
             '/sql',
             {
-              'sql_server'   : $('#sql_server')[0].value,
-              'sql_port'     : $('#sql_port')[0].value,
-              'sql_database' : $('#sql_database')[0].value,
-              'sql_user'     : $('#sql_user')[0].value,
-              'sql_password' : $('#sql_password')[0].value,
-              'connection_name' : $('#connection_name')[0].value
+              'sql_server'   : $('#sql_server').val(),
+              'sql_port'     : $('#sql_port').val(),
+              'sql_database' : $('#sql_database').val(),
+              'sql_user'     : $('#sql_user').val(),
+              'sql_password' : $('#sql_password').val(),
+              'connection_name' : $('#connection_name').val()
             },
-            $('#sql')[0].value,
+            $('#sql').val(),
             processRowSets,
             'Example'
           );

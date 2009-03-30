@@ -38,25 +38,6 @@
           transparent: true
         });
 
-        $('#go').click(function(){
-          if ( ! launch() ) { return false ; };
-          $('#results').empty();
-          viaductStatusQuery(
-            'http://' + $('#viaduct_server')[0].value + ':' + $('#viaduct_port')[0].value + '/sql',
-            {
-              'status'   : 1,
-              'sql_server'   : ' ',
-              'sql_port'     : ' ',
-              'sql_database' : ' ',
-              'sql_user'     : ' ',
-              'sql_password' : ' '
-            },
-            ' ',
-            processStatus,
-            'Example'
-          );
-        });
-        
         $.get( "/eg/", function (data) {
           $(data).find('a')
           .filter('[href$=".html"]:not("[href^=.]"):not("[href^=?]")')
@@ -68,6 +49,19 @@
           });
         });
         
+        $('#go').click(function(){
+          if ( ! launch() ) { return false ; };
+          $('#results').empty();
+          viaductStatusQuery(
+            location.protocol + '//' + location.host + '/sql',
+            { 'status'   : 1 },
+            ' ',
+            processStatus,
+            'Example'
+          );
+        });
+        
+        $('#go').click();
       });
       
       function processStatus( response ) {
@@ -96,26 +90,20 @@
         for ( conn_id in conns ) {
           conn = conns[ conn_id ];
           tr = $( '<tr>' ).appendTo( table );
-          $( '<td>' ).text( conn.slot.toString() ).
-          appendTo( tr );
-          $( '<td>' ).text( conn.pid.toString() ).
-          appendTo( tr );
-          $( '<td>' ).text( conn.name.toString() ).
-          appendTo( tr );
-          $( '<td>' ).text( conn.tm_created.toString() ).
-          appendTo( tr );
-          $( '<td>' ).text( conn.tm_accessed.toString() ).
-          appendTo( tr );
-          $( '<td>' ).text( conn.connection_timeout.toString() ).
-          appendTo( tr );
-          $( '<td>' ).text( conn.in_use.toString() ).
-          appendTo( tr );
-          $( '<td>' ).text( conn.sock_path.toString() ).
-          appendTo( tr ).bind('click', function() { $('#menu').show()});
-          $( '<td>' ).text( conn.helper_pid.toString() ).
-          appendTo( tr );
+          $( '<td>' ).text( conn.slot.toString() ).appendTo( tr );
+          $( '<td>' ).text( conn.pid.toString() ).appendTo( tr );
+          $( '<td>' ).text( conn.name.toString() ).appendTo( tr );
+          $( '<td>' ).text( conn.tm_created.toString() ).appendTo( tr );
+          $( '<td>' ).text( conn.tm_accessed.toString() ).appendTo( tr );
+          $( '<td>' ).text( conn.connection_timeout.toString() ).appendTo( tr );
+          $( '<td>' ).text( conn.in_use.toString() ).appendTo( tr );
+          $( '<td>' ).text( conn.sock_path.toString() ).appendTo( tr ).bind('click', function() { $('#menu').show()});
+          $( '<td>' ).text( conn.helper_pid.toString() ).appendTo( tr );
         };
         table.appendTo( '#results' );
+        if (conns.length == 0) {
+          $( '<tbody>' ).appendTo( table );
+        };
         table.addClass('tablesorter').tablesorter({
           cssHeader: 'header',
           cssAsc:    'headerSortUp',
@@ -162,14 +150,10 @@
       <p><a href="doc/viaduct_specification.html">Specifications</a></p>
       <p><a href="doc/viaduct_architecture.pdf">Architecture</a></p>
     </div>
-    <form id=accept-charset="utf-8">
-      <label for="viaduct_server">Server</label><input type="text" name="viaduct_server" value="localhost" id="viaduct_server"><br />
-      <label for="viaduct_port">Port</label><input type="text" name="viaduct_port" value="1433" id="viaduct_port"><br />
-      <p>
-        <input type="button" id="go" value="GO&nbsp;&nbsp;&gt;&nbsp;&gt;&nbsp;&gt;">
-        <img id="spinner" src="img/spinner.gif" />
-      </p>
-    </form>
+    <p>
+      <input type="button" id="go" value="REFRESH" />
+      <img id="spinner" src="img/spinner.gif" />
+    </p>
     <div id="results">
     </div>
     <div id="menu" style="display:none;background:lightsteelblue;">
