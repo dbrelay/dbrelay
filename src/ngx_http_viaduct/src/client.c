@@ -7,6 +7,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include "viaduct.h"
+#include "../include/viaduct_config.h"
 
 #define DEBUG 0
 
@@ -142,7 +143,7 @@ pid_t viaduct_conn_launch_connector(char *sock_path)
    FILE *connector;
 
    //if ((child = fork())==0) {
-     strcpy(connector_path, NGX_PREFIX);
+     strcpy(connector_path, VIADUCT_PREFIX);
      strcat(connector_path, "/sbin/connector");
      strcat(connector_path, " ");
      strcat(connector_path, sock_path);

@@ -5,6 +5,7 @@
 
 #include "viaduct.h"
 #include "stringbuf.h"
+#include "../include/viaduct_config.h"
 
 #ifdef HAVE_FREETDS
 extern viaduct_dbapi_t viaduct_mssql_api;
@@ -50,11 +51,11 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
    if (!request->connection_timeout) request->connection_timeout = 60;
    conn->connection_timeout = request->connection_timeout;
 
-   //viaduct_log_debug(request, "prefix %s", NGX_PREFIX);
+   //viaduct_log_debug(request, "prefix %s", VIADUCT_PREFIX);
    if (IS_SET(request->connection_name)) {
       //&& !strcmp(request->connection_name, "helper")) {
       tmpnam(conn->sock_path);
-      //strcpy(conn->sock_path, NGX_PREFIX);
+      //strcpy(conn->sock_path, VIADUCT_PREFIX);
       //strcat(conn->sock_path, "/connector");
       viaduct_log_debug(request, "socket name %s", conn->sock_path);
       conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
