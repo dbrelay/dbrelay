@@ -35,7 +35,6 @@
 #define VIADUCT_LOG_LVL_CRIT    6
 
 #ifdef CMDLINE
-   #define NGX_PREFIX "/tmp/viaduct"
    typedef struct ngx_log_s {} ngx_log_t;
    typedef unsigned char u_char;
 #endif

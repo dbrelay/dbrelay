@@ -3,6 +3,7 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include "viaduct.h"
+#include "../include/viaduct_config.h"
 
 #define MAX_PATH_SZ 256
 
@@ -20,7 +21,7 @@ viaduct_connection_t *buf;
 
 static char *get_path(char *path, char *fname)
 {
-   strcpy(path, NGX_PREFIX);
+   strcpy(path, VIADUCT_PREFIX);
    strcat(path, "/");
    strcat(path, fname);
 
