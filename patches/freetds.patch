@@ -1,6 +1,15 @@
 --- include/sybdb.h	2007-12-02 18:01:37.000000000 -0500
 +++ include/sybdb.h	2009-03-24 15:18:34.000000000 -0400
-@@ -1070,6 +1070,7 @@
+@@ -172,6 +172,8 @@
+ #define SYBTEXT	SYBTEXT
+ 	SYBIMAGE = 34,		/* 0x22 */
+ #define SYBIMAGE	SYBIMAGE
++	SYBUNIQUE = 36,		/* 0x22 */
++#define SYBUNIQUE	SYBUNIQUE
+ 	SYBMONEY4 = 122,	/* 0x7A */
+ #define SYBMONEY4	SYBMONEY4
+ 	SYBMONEY = 60,		/* 0x3C */
+@@ -1070,6 +1072,7 @@
  #define DBSETLLABELED(x,y)	dbsetlbool((x), (y), DBSETLABELED)
  #define BCP_SETLABELED(x,y)	dbsetlbool((x), (y), DBSETLABELED)
  #define DBSETLVERSION(login, version) dbsetlversion((login), (version))
@@ -30,4 +39,11 @@
  	dbproc->tds_socket->env_chg_func = db_env_chg;
  	dbproc->envchange_rcv = 0;
  	dbproc->dbcurdb[0] = '\0';
-
+--- src/tds/tds_willconvert.h	2008-05-07 19:21:37.000000000 -0400
++++ src/tds/tds_willconvert.h	2009-04-03 16:59:43.000000000 -0400
+@@ -365,3 +365,5 @@
+ 	, { SYBDATETIME4, SYBMONEY4     , 0 }
+ 	, { SYBDATETIME4, SYBDATETIME   , 1 }
+ 	, { SYBDATETIME4, SYBDATETIME4  , 1 }
++	, { SYBUNIQUE, SYBCHAR  , 1 }
++	, { SYBUNIQUE, SYBVARCHAR  , 1 }

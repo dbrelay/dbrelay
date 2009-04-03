@@ -106,7 +106,8 @@ int viaduct_mssql_is_quoted(void *db, int colnum)
        coltype == SYBTEXT ||
        coltype == SYBDATETIMN ||
        coltype == SYBDATETIME ||
-       coltype == SYBDATETIME4) 
+       coltype == SYBDATETIME4 || 
+       coltype == SYBUNIQUE) 
           return 1;
    else return 0;
 }
@@ -166,6 +167,9 @@ static char *viaduct_mssql_get_sqltype_string(char *dest, int coltype, int colle
 			break;
 		case SYBDECIMAL : 
 			sprintf(dest, "decimal");
+			break;
+		case SYBUNIQUE : 
+			sprintf(dest, "guid");
 			break;
 		default : 
 			sprintf(dest, "unknown type %d", coltype);
