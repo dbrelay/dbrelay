@@ -17,7 +17,7 @@ typedef struct {
 } ngx_http_viaduct_loc_conf_t;
 
 void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request);
-void parse_get_query_string(u_char *data, viaduct_request_t *request);
+void parse_get_query_string(ngx_str_t args, viaduct_request_t *request);
 static char *ngx_http_viaduct_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_viaduct_create_request(ngx_http_request_t *r);
 static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
@@ -267,6 +267,13 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
     ngx_log_error(NGX_LOG_ALERT, log, 0, "here2");
+    if (r->method == NGX_HTTP_GET || r->method == NGX_HTTP_HEAD) {
+        rc = ngx_http_discard_request_body(r);
+        if (rc != NGX_OK) return rc;
+        return ngx_http_viaduct_send_response(r);
+    }
+    /* else POST method */
+
     rc = ngx_http_read_client_request_body(r, ngx_http_viaduct_request_body_handler);
 
     if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
@@ -297,9 +304,9 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
 
     ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
     /* is GET method? */
-    if (r->args.len>0) {
-	parse_get_query_string(r->args.data, request);
-    }
+    if (r->method==NGX_HTTP_GET || r->method==NGX_HTTP_HEAD) { //r->args.len>0) {
+	parse_get_query_string(r->args, request);
+    } else
     /* is POST method? */
     if (r->request_body->buf && r->request_body->buf->pos!=NULL) {
 	parse_post_query_string(r->request_body->bufs, request);
@@ -505,14 +512,14 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    write_value(request, key, value);
    free(value);
 }
-void parse_get_query_string(u_char *data, viaduct_request_t *request)
+void parse_get_query_string(ngx_str_t args, viaduct_request_t *request)
 {
    char key[100];
    char value[4000];
    char *s, *k = key, *v = value;
    int target = 0;
 
-   for (s=(char *)data; *s; s++)
+   for (s=(char *)args.data; *s && s < (((char *)args.data) + args.len); s++)
    { 
       if (*s=='&') {
          *k='\0';
