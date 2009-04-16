@@ -99,7 +99,7 @@ main(int argc, char **argv)
    len = strlen(local.sun_path) + sizeof(local.sun_family) + 1;
    ret = bind(s, (struct sockaddr *)&local, len);
 
-   listen(s, 10);
+   listen(s, 30);
 
    // fork and die so parent knows we are ready
    if (!GDB && (pid=fork())) {
