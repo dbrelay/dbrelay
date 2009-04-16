@@ -57,7 +57,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
       tmpnam(conn->sock_path);
       //strcpy(conn->sock_path, VIADUCT_PREFIX);
       //strcat(conn->sock_path, "/connector");
-      viaduct_log_debug(request, "socket name %s", conn->sock_path);
+      viaduct_log_info(request, "socket name %s", conn->sock_path);
       conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
       conn->tm_create = time(NULL);
       conn->in_use = TRUE;
@@ -89,7 +89,7 @@ static int viaduct_db_alloc_connection(viaduct_request_t *request)
 
    /* we have exhausted the pool, log something sensible and return null */
    if (slot==-1) {
-      viaduct_log_debug(request, "No free connections available!");
+      viaduct_log_error(request, "No free connections available!");
       viaduct_release_shmem(connections);
       return -1;
    }
@@ -132,7 +132,7 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
       conn = &connections[i];
       if (conn->pid!=0 && conn->in_use==FALSE) {
          if (viaduct_db_match(conn, request)) {
-            viaduct_log_debug(request, "found connection match for request at slot %d", i);
+            viaduct_log_info(request, "found connection match for request at slot %d", i);
             conn->tm_accessed = time(NULL);
             conn->in_use = TRUE;
             //api->assign_request(conn->db, request);
@@ -149,11 +149,11 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
    unsigned int slot;
 
    if (!conn) {
-      viaduct_log_debug(request, "attempt to close null connection ");
+      viaduct_log_warn(request, "attempt to close null connection ");
       return;
    }
 
-   viaduct_log_debug(request, "closing connection %d", conn->slot);
+   viaduct_log_info(request, "closing connection %d", conn->slot);
 
    api->close(conn->db);
    conn->pid=0;
@@ -183,7 +183,7 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
       conn = &connections[i];
       if (!conn->pid || conn->in_use) continue;
       if (conn->tm_accessed + conn->connection_timeout < now) {
-         viaduct_log_debug(request, "timing out conection %ud", conn->slot);
+         viaduct_log_notice(request, "timing out conection %ud", conn->slot);
          viaduct_db_close_connection(conn, request);
       }
    }
@@ -299,7 +299,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    error_string[0]='\0';
 
-   viaduct_log_debug(request, "run_query called");
+   viaduct_log_info(request, "run_query called");
 
    json_new_object(json);
 
@@ -337,8 +337,8 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_release_shmem(connections);
 
       if (IS_SET(request->connection_name)) {
-         viaduct_log_debug(request, "connecting to connection helper");
-         viaduct_log_debug(request, "socket address %s", conn->sock_path);
+         viaduct_log_info(request, "connecting to connection helper");
+         viaduct_log_info(request, "socket address %s", conn->sock_path);
          s = viaduct_connect_to_helper(conn->sock_path);
          // if connect fails, remove connector from list
          if (s==-1) {
@@ -355,7 +355,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    if (IS_SET(request->connection_name)) 
    {
-      viaduct_log_debug(request, "sending request");
+      viaduct_log_info(request, "sending request");
       ret = (u_char *) viaduct_conn_send_request(s, request);
       viaduct_log_debug(request, "back");
       json_add_json(json, ", ");

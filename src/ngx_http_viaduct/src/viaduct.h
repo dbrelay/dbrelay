@@ -27,12 +27,21 @@
 #define VIADUCT_LOG_SCOPE_CONN 2
 #define VIADUCT_LOG_SCOPE_QUERY 3
 
+#ifndef CMDLINE
+#define VIADUCT_LOG_LVL_DEBUG   NGX_LOG_DEBUG
+#define VIADUCT_LOG_LVL_INFO    NGX_LOG_INFO
+#define VIADUCT_LOG_LVL_NOTICE  NGX_LOG_NOTICE
+#define VIADUCT_LOG_LVL_WARN    NGX_LOG_WARN
+#define VIADUCT_LOG_LVL_ERROR   NGX_LOG_ERR
+#define VIADUCT_LOG_LVL_CRIT    NGX_LOG_CRIT
+#else
 #define VIADUCT_LOG_LVL_DEBUG   1
 #define VIADUCT_LOG_LVL_INFO    2
 #define VIADUCT_LOG_LVL_NOTICE  3
 #define VIADUCT_LOG_LVL_WARN    4
 #define VIADUCT_LOG_LVL_ERROR   5
 #define VIADUCT_LOG_LVL_CRIT    6
+#endif
 
 #ifdef CMDLINE
    typedef struct ngx_log_s {} ngx_log_t;
@@ -129,6 +138,10 @@ u_char *viaduct_db_run_query(viaduct_request_t *request);
 u_char *viaduct_db_status(viaduct_request_t *request);
 
 void viaduct_log_debug(viaduct_request_t *request, const char *fmt, ...);
+void viaduct_log_info(viaduct_request_t *request, const char *fmt, ...);
+void viaduct_log_notice(viaduct_request_t *request, const char *fmt, ...);
+void viaduct_log_warn(viaduct_request_t *request, const char *fmt, ...);
+void viaduct_log_error(viaduct_request_t *request, const char *fmt, ...);
 
 viaduct_request_t *viaduct_alloc_request();
 void viaduct_free_request(viaduct_request_t *request);

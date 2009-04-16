@@ -71,7 +71,10 @@ ngx_module_t  ngx_http_viaduct_module = {
 ngx_int_t
 ngx_http_viaduct_init_master(ngx_log_t *log)
 {
-   ngx_log_error(NGX_LOG_ALERT, log, 0, "in init master");
+#if HAVE_FREETDS
+    dbinit();
+#endif
+   ngx_log_error(NGX_LOG_INFO, log, 0, "in init master");
 
    return NGX_OK;
 }
@@ -111,15 +114,15 @@ ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)
 #if 0
     /* is GET method? */
     if (r->args.len>0) {
-    	ngx_log_error(NGX_LOG_ALERT, log, 0, "args len: %d", r->args.len);
+    	ngx_log_error(NGX_LOG_INFO, log, 0, "args len: %d", r->args.len);
     }
     /* is POST method? */
     if (r->request_body->buf && r->request_body->buf->pos!=NULL) {
-       ngx_log_error(NGX_LOG_ALERT, log, 0,
+       ngx_log_error(NGX_LOG_DEBUG, log, 0,
             "buf: \"%s\"", r->request_body->buf->pos);
     } 
 #endif
-    ngx_log_error(NGX_LOG_ALERT, log, 0,
+    ngx_log_error(NGX_LOG_DEBUG, log, 0,
         "buf: \"%s\"", r->request_body->bufs->buf->pos);
     rc = ngx_http_viaduct_send_response(r);
 }
@@ -245,10 +248,10 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
     ngx_http_core_loc_conf_t  *clcf;
 
     log = r->connection->log;
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "viaduct_handler called");
+    ngx_log_error(NGX_LOG_INFO, log, 0, "viaduct_handler called");
 
     if (!(r->method & (NGX_HTTP_GET|NGX_HTTP_HEAD|NGX_HTTP_POST))) {
-        ngx_log_error(NGX_LOG_ALERT, log, 0, "unsupported method, returning not allowed");
+        ngx_log_error(NGX_LOG_WARN, log, 0, "unsupported method, returning not allowed");
         return NGX_HTTP_NOT_ALLOWED;
     }
 
@@ -263,10 +266,10 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
 
     r->root_tested = 1;
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "here1");
+    ngx_log_error(NGX_LOG_DEBUG, log, 0, "here1");
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "here2");
+    ngx_log_error(NGX_LOG_DEBUG, log, 0, "here2");
     if (r->method == NGX_HTTP_GET || r->method == NGX_HTTP_HEAD) {
         rc = ngx_http_discard_request_body(r);
         if (rc != NGX_OK) return rc;
@@ -277,7 +280,7 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
     rc = ngx_http_read_client_request_body(r, ngx_http_viaduct_request_body_handler);
 
     if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
-        ngx_log_error(NGX_LOG_ALERT, log, 0, "failed to read client request body");
+        ngx_log_error(NGX_LOG_ERR, log, 0, "failed to read client request body");
         return rc;
     }
 
@@ -302,7 +305,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     request->log = log;
     request->log_level = 0;
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
+    ngx_log_error(NGX_LOG_INFO, log, 0, "parsing query_string");
     /* is GET method? */
     if (r->method==NGX_HTTP_GET || r->method==NGX_HTTP_HEAD) { //r->args.len>0) {
 	parse_get_query_string(r->args, request);
@@ -317,8 +320,8 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
        r->keepalive = 0;
     }
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql_server: \"%s\"", request->sql_server);
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql: \"%s\"", request->sql);
+    ngx_log_error(NGX_LOG_INFO, log, 0, "sql_server: \"%s\"", request->sql_server);
+    ngx_log_error(NGX_LOG_DEBUG, log, 0, "sql: \"%s\"", request->sql);
     
     log->action = "sending response to client";
 
@@ -452,7 +455,7 @@ write_value(viaduct_request_t *request, char *key, char *value)
    } else if (!strncmp(key, "param", 5)) {
       i = atoi(&key[5]);
       if (i>VIADUCT_MAX_PARAMS) {
-         viaduct_log_debug(request, "param%d exceeds VIADUCT_MAX_PARAMS", i);
+         viaduct_log_error(request, "param%d exceeds VIADUCT_MAX_PARAMS", i);
       } else if (i>0) {
          request->params[i-1] = strdup(value);
       }
@@ -473,7 +476,7 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    ngx_chain_t *chain;
    unsigned long bufsz = 0;
 
-   ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "parsing post data");
+   ngx_log_error(NGX_LOG_INFO, request->log, 0, "parsing post data");
    viaduct_log_debug(request, "parsing post data");
 
    for (chain = bufs; chain!=NULL; chain = chain->next) 
@@ -483,7 +486,7 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    }
    value = (char *) malloc(bufsz);
    v = value;
-   ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "post data %l bytes", bufsz);
+   ngx_log_error(NGX_LOG_DEBUG, request->log, 0, "post data %l bytes", bufsz);
 
    for (chain = bufs; chain!=NULL; chain = chain->next) 
    {
