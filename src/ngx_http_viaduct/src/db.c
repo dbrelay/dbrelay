@@ -60,7 +60,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
       viaduct_log_info(request, "socket name %s", conn->sock_path);
       conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
       conn->tm_create = time(NULL);
-      conn->in_use = TRUE;
+      conn->in_use++;
       conn->pid = getpid();
 
       return;
@@ -69,7 +69,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
    conn->db = api->connect(request);
       
    conn->tm_create = time(NULL);
-   conn->in_use = TRUE;
+   conn->in_use++;
 
    conn->pid = getpid();
 }
@@ -110,7 +110,7 @@ static unsigned int match(char *s1, char *s2)
 static unsigned int viaduct_db_match(viaduct_connection_t *conn, viaduct_request_t *request)
 {
    viaduct_log_debug(request, "comparing %s and %s", conn->connection_name, request->connection_name);
-   if (conn->pid != getpid()) return FALSE;
+   //if (conn->pid != getpid()) return FALSE;
    if (match(conn->sql_server, request->sql_server) &&
        match(conn->sql_port, request->sql_port) &&
        match(conn->sql_database, request->sql_database) &&
@@ -130,11 +130,11 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
    connections = viaduct_get_shmem();
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
       conn = &connections[i];
-      if (conn->pid!=0 && conn->in_use==FALSE) {
+      if (conn->pid!=0) {
          if (viaduct_db_match(conn, request)) {
             viaduct_log_info(request, "found connection match for request at slot %d", i);
+            conn->in_use++;
             conn->tm_accessed = time(NULL);
-            conn->in_use = TRUE;
             //api->assign_request(conn->db, request);
             viaduct_release_shmem(connections);		
             return i;
@@ -191,7 +191,7 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
 }
 static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
-   conn->in_use = FALSE;
+   conn->in_use--;
    
    if (IS_EMPTY(conn->connection_name)) {
       api->assign_request(conn->db, NULL);
