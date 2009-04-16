@@ -170,7 +170,7 @@ viaduct_conn_send_string(int s, char *str)
 {
    if (send(s, str, strlen(str), NET_FLAGS) == -1) {
 	perror("send");
-	exit(1);
+	//exit(1);
    }
 }
 char * 
