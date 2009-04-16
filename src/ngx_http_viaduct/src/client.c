@@ -10,6 +10,7 @@
 #include "../include/viaduct_config.h"
 
 #define DEBUG 0
+#define BUFSIZE 4096
 
 char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_conn_send_string(int s, char *str);
@@ -20,8 +21,8 @@ int viaduct_connect_to_helper(char *sock_path);
 void
 viaduct_conn_kill(int s)
 {
-   char out_buf[4096];
-   char in_buf[4096];
+   char out_buf[BUFSIZE];
+   char in_buf[BUFSIZE];
    int in_ptr = -1;
 
    viaduct_conn_send_string(s, ":DIE\n");
@@ -31,8 +32,8 @@ viaduct_conn_kill(int s)
 void
 viaduct_conn_close(int s)
 {
-   char out_buf[4096];
-   char in_buf[4096];
+   char out_buf[BUFSIZE];
+   char in_buf[BUFSIZE];
    int in_ptr = -1;
 
    viaduct_conn_send_string(s, ":QUIT\n");
@@ -45,8 +46,8 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
    stringbuf_t *sb_rslt;
    char *json_output;
    int results = 0;
-   char out_buf[4096];
-   char in_buf[4096];
+   char out_buf[BUFSIZE];
+   char in_buf[BUFSIZE];
    int in_ptr = -1;
    char tmp[20];
 
@@ -92,8 +93,8 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
 void
 viaduct_conn_set_option(int s, char *option, char *value)
 {
-   char out_buf[4096];
-   char in_buf[4096];
+   char out_buf[BUFSIZE];
+   char in_buf[BUFSIZE];
    int in_ptr = -1;
    char set_string[100];
 
@@ -181,7 +182,7 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
 
    //printf("\nptr %d\n", *in_ptr);
    if (*in_ptr==-1) {
-      if ((t=recv(s, in_buf, 4096, NET_FLAGS))<=0) {
+      if ((t=recv(s, in_buf, BUFSIZE - 1, NET_FLAGS))<=0) {
 	if (t < 0) perror("recv");
         else if (DEBUG) printf("Server closed connection\n");
 	exit(1);
@@ -198,7 +199,7 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
    if (i>=len-1) *in_ptr=-1;
    else *in_ptr=i; 
    if (DEBUG) printf("echo> %s\n", out_buf);
-   if (*in_ptr>4096) exit(1);
+   if (*in_ptr>=BUFSIZE) exit(1);
 
    //printf("returning %s\n", out_buf);
    return out_buf; 
