@@ -74,6 +74,7 @@ main(int argc, char **argv)
    int on = 1;
 #endif
    viaduct_connection_t conn;
+   unsigned char connected = 0;
    pid_t pid;
 
    if (argc>1) {
@@ -136,12 +137,15 @@ main(int argc, char **argv)
               done = 1;
            } else if (ret == RUN) {
               log_msg("running\n"); 
+              if (!connected) {
 #if HAVE_FREETDS
-              conn.db = viaduct_mssql_connect(&request);
+                  conn.db = viaduct_mssql_connect(&request);
 #endif
 #if HAVE_MYSQL
-              conn.db = viaduct_mysql_connect(&request);
+                  conn.db = viaduct_mysql_connect(&request);
 #endif
+                  connected = 1;
+              }
               results = viaduct_exec_query(&conn, &request.sql_database, request.sql);
 
              
