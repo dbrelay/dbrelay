@@ -11,20 +11,28 @@ if [ "${GIT_TAG}" = "" -o "${PKG_PATH}" = "" ]; then
   exit 1
 fi
 
-BUILD_FILE="${PKG_PATH}/viaduct_${GIT_TAG}"
-BUILD_TAR="${BUILD_FILE}.tar"
-BUILD_TGZ="${BUILD_FILE}.tgz"
-VER_FILE="html/version.json"
+BUILD_FILE="viaduct_${GIT_TAG}"
+BUILD_DIR="${PKG_PATH}/${BUILD_FILE}"
+
+mkdir ${BUILD_DIR} || {
+  echo "Unable to create the package directory: ${BUILD_DIR}"
+  exit 1
+}
+
+
+BUILD_TGZ="${BUILD_DIR}.tgz"
+VER_FILE="${BUILD_DIR}/html/version.json"
 
 pushd $(dirname ${0})/.. > /dev/null
 
-git archive --format=tar ${GIT_TAG} . > ${BUILD_TAR}
+git archive --format=tar ${GIT_TAG} . | (cd ${BUILD_DIR}; tar xfp -)
 
 git log -n 1 ${GIT_TAG} --pretty=format:"{ 'committer': '%an', 'tag': '${GIT_TAG}', 'revision': '%H', 'date_rfc': '%cD', 'date_epoc': '%ct' }" > ${VER_FILE}
 
-tar -rf ${BUILD_TAR} --owner=0 --group=0 --numeric-owner --remove-files ${VER_FILE}
+pushd ${PKG_PATH} > /dev/null
 
-gzip -c ${BUILD_TAR} > ${BUILD_TGZ}
-rm ${BUILD_TAR}
+tar -czf ${BUILD_TGZ} --owner=0 --group=0 --numeric-owner ./${BUILD_FILE}
+rm -rf ./${BUILD_FILE}
 
+popd > /dev/null
 popd > /dev/null
