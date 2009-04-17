@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# Init file for Viaduct DB access server
+#
+# chkconfig: 345 55 25
+# description: Viaduct DB access server
+#
+
+BUILD_PREFIX="/usr/local/viaduct"
+
+# echo "Config file is ${BUILD_PREFIX}/conf/nginx.conf"
+# echo "PID    file is ${BUILD_PREFIX}/logs/nginx.pid"
+
+#  ATTENTION!!!! Make sure, that the SUBSYS_NAME is unique or
+#                generates to a unique string of your system
+#                among all other subsys names  on the system
+
+SUBSYS_NAME=$(basename ${0})
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+RETVAL=0
+
+start()
+{
+	echo -n $"Starting Viaduct: "
+	su -l viaduct -c "cd ${BUILD_PREFIX}; ./sbin/nginx || ./sbin/nginx"
+	RETVAL=$?
+	[ "$RETVAL" = 0 ] && touch /var/lock/subsys/${SUBSYS_NAME}
+	echo
+}
+
+stop()
+{
+	echo -n $"Stopping Viaduct: "
+	kill $(cat ${BUILD_PREFIX}/logs/nginx.pid)
+	RETVAL=$?
+	[ "$RETVAL" = 0 ] && rm -f /var/lock/subsys/${SUBSYS_NAME}
+	echo
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart}"
+		RETVAL=1
+esac
+exit $RETVAL
