@@ -26,6 +26,7 @@ static int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn);
 static int viaduct_db_get_connection(viaduct_request_t *request);
 static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
+static int viaduct_check_request(viaduct_request_t *request);
 u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql);
 
 static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_connection_t *conn)
@@ -329,6 +330,20 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 */
 
    json_end_object(json);
+
+   if (!viaduct_check_request(request)) {
+        viaduct_log_info(request, "check_request failed.");
+   	json_add_key(json, "log");
+   	json_new_object(json);
+   	if (request->sql) json_add_string(json, "sql", request->sql);
+    	json_add_string(json, "error", "Not all required parameters submitted.");
+        json_end_object(json);
+        json_end_object(json);
+
+        ret = (u_char *) json_to_string(json);
+        json_free(json);
+        return ret;
+   }
    
    newsql = viaduct_resolve_params(request, request->sql);
 
@@ -394,6 +409,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    free(conn);
 
    free(newsql);
+
    json_add_key(json, "log");
    json_new_object(json);
    json_add_string(json, "sql", request->sql);
@@ -593,3 +609,11 @@ viaduct_find_placeholder(char *sql)
    if (!found) return -1;
    else return i-1;
 }
+static int
+viaduct_check_request(viaduct_request_t *request)
+{
+   if (!request->sql) return 0;
+   if (!IS_SET(request->sql_server)) return 0;
+   if (!IS_SET(request->sql_user)) return 0;
+   return 1;
+} 

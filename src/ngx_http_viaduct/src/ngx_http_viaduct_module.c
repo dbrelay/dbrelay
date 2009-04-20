@@ -334,7 +334,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     }
 
     ngx_log_error(NGX_LOG_INFO, log, 0, "sql_server: \"%s\"", request->sql_server);
-    ngx_log_error(NGX_LOG_DEBUG, log, 0, "sql: \"%s\"", request->sql);
+    if (request->sql) ngx_log_error(NGX_LOG_DEBUG, log, 0, "sql: \"%s\"", request->sql);
     
     log->action = "sending response to client";
 
@@ -534,6 +534,8 @@ void parse_get_query_string(ngx_str_t args, viaduct_request_t *request)
    char value[4000];
    char *s, *k = key, *v = value;
    int target = 0;
+
+   if (args.len==0) return;
 
    for (s=(char *)args.data; *s && s < (((char *)args.data) + args.len); s++)
    { 
