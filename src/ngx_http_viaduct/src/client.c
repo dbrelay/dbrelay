@@ -185,7 +185,8 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
       if ((t=recv(s, in_buf, BUFSIZE - 1, NET_FLAGS))<=0) {
 	if (t < 0) perror("recv");
         else if (DEBUG) printf("Server closed connection\n");
-	exit(1);
+	//exit(1);
+        return NULL;
       }
       in_buf[t] = '\0';
       *in_ptr=0;
