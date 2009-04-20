@@ -84,7 +84,7 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
 {
    viaduct_connection_t *connections;
    int i, s;
-   pid_t pid;
+   pid_t pid = 0;
 
    connections = viaduct_get_shmem();
 
@@ -105,13 +105,11 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
 
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
      if (connections[i].helper_pid) {
-	   if (!kill(pid, 0)) kill(pid, SIGKILL);
-        }
+        if (!kill(pid, 0)) kill(pid, SIGKILL);
      }
    }
 
    viaduct_release_shmem(connections);
-
    viaduct_destroy_shmem();
 }
 
