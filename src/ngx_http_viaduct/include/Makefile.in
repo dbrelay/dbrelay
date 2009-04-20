@@ -89,6 +89,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VIADUCT_BUILD = @VIADUCT_BUILD@
 VIADUCT_EXTRA_LIBS = @VIADUCT_EXTRA_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -311,6 +312,8 @@ uninstall-am:
 
 viaduct_config.h: Makefile
 	echo '#define VIADUCT_PREFIX "$(prefix)"' >$@
+#	git show --abbrev-commit | grep "^commit" | awk '{print "#define VIADUCT_BUILD \"" $$2 "\""}' >>$@
+	echo "#define VIADUCT_BUILD \"@VIADUCT_BUILD@\"" >>$@
 
 all-am: viaduct_config.h
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

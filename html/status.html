@@ -71,6 +71,7 @@
 	} else {
            t = makeTable( response.status.connections );
         }
+        $('<p>Viaduct build: ' + response.status.info.build + '</p>').appendTo( '#results' );
         land();
       };
 

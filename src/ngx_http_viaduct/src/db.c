@@ -234,6 +234,12 @@ u_char *viaduct_db_status(viaduct_request_t *request)
    json_new_object(json);
    json_add_key(json, "status");
    json_new_object(json);
+
+   json_add_key(json, "info");
+   json_new_object(json);
+   json_add_string(json, "build", VIADUCT_BUILD);
+   json_end_object(json);
+
    json_add_key(json, "connections");
    json_new_array(json);
 

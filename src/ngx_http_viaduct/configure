@@ -659,6 +659,7 @@ CPPFLAGS
 ac_ct_CC
 EXEEXT
 OBJEXT
+VIADUCT_BUILD
 INSTALL_PROGRAM
 INSTALL_SCRIPT
 INSTALL_DATA
@@ -2671,6 +2672,9 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+VIADUCT_BUILD=`git show --abbrev-commit | grep "^commit" | awk '{print $2}'`
+
+
 am__api_version='1.10'
 
 ac_aux_dir=
@@ -3440,7 +3444,6 @@ else
   ODBC_TRUE='#'
   ODBC_FALSE=
 fi
-
 
 
 
@@ -5098,6 +5101,7 @@ CPPFLAGS!$CPPFLAGS$ac_delim
 ac_ct_CC!$ac_ct_CC$ac_delim
 EXEEXT!$EXEEXT$ac_delim
 OBJEXT!$OBJEXT$ac_delim
+VIADUCT_BUILD!$VIADUCT_BUILD$ac_delim
 INSTALL_PROGRAM!$INSTALL_PROGRAM$ac_delim
 INSTALL_SCRIPT!$INSTALL_SCRIPT$ac_delim
 INSTALL_DATA!$INSTALL_DATA$ac_delim
@@ -5147,7 +5151,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 91; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 92; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -5744,5 +5748,4 @@ if test "$no_create" != yes; then
   # would make configure fail if this is the last instruction.
   $ac_cs_success || { (exit 1); exit 1; }
 fi
-
 

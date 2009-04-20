@@ -117,6 +117,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VIADUCT_BUILD = @VIADUCT_BUILD@
 VIADUCT_EXTRA_LIBS = @VIADUCT_EXTRA_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
