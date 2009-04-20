@@ -84,6 +84,7 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
 {
    viaduct_connection_t *connections;
    int i, s;
+   pid_t pid;
 
    connections = viaduct_get_shmem();
 
@@ -94,7 +95,21 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
          s = viaduct_connect_to_helper(connections[i].sock_path);
          viaduct_conn_kill(s);
      }
+     if (connections[i].helper_pid) {
+        pid = connections[i].helper_pid;
+	if (!kill(pid, 0)) kill(pid, SIGTERM);
+     }
    }
+
+   usleep(500000); // give graceful kills some time to work
+
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
+     if (connections[i].helper_pid) {
+	   if (!kill(pid, 0)) kill(pid, SIGKILL);
+        }
+     }
+   }
+
    viaduct_release_shmem(connections);
 
    viaduct_destroy_shmem();
