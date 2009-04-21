@@ -311,6 +311,7 @@ void log_msg(char *msg)
 
    strftime(today, sizeof(today), "%Y-%m-%d %H:%M:%S", tm);
    fprintf(logfile, "%s: %s", today, msg);
+   fflush(logfile);
 #endif
 }
 void log_close(FILE *log)
