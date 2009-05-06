@@ -113,7 +113,6 @@ viaduct_connect_to_helper(char *sock_path)
 #endif
 
    if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-       perror("socket");
        return -1;
    }
 
@@ -124,7 +123,6 @@ viaduct_connect_to_helper(char *sock_path)
    len = strlen(remote.sun_path) + sizeof(remote.sun_family) + 1;
 
    if (connect(s, (struct sockaddr *)&remote, len) == -1) {
-      perror("connect");
       return -1;
    }
    if (DEBUG) printf("Connected.\n");
@@ -168,10 +166,7 @@ pid_t viaduct_conn_launch_connector(char *sock_path)
 void
 viaduct_conn_send_string(int s, char *str)
 {
-   if (send(s, str, strlen(str), NET_FLAGS) == -1) {
-	perror("send");
-	//exit(1);
-   }
+   send(s, str, strlen(str), NET_FLAGS);
 }
 char * 
 viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
@@ -183,9 +178,11 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
    //printf("\nptr %d\n", *in_ptr);
    if (*in_ptr==-1) {
       if ((t=recv(s, in_buf, BUFSIZE - 1, NET_FLAGS))<=0) {
-	if (t < 0) perror("recv");
-        else if (DEBUG) printf("Server closed connection\n");
-	//exit(1);
+	if (t < 0) {
+          if (DEBUG) perror("recv"); 
+        } else {
+          if (DEBUG) printf("Server closed connection\n");
+        }
         return NULL;
       }
       in_buf[t] = '\0';
