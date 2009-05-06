@@ -71,7 +71,9 @@ main(int argc, char **argv)
    int done = 0, ret;
    char *results;
    char *sock_path;
+#if HAVE_SO_NOSIGPIPE
    int on = 1;
+#endif
    viaduct_connection_t conn;
    unsigned char connected = 0;
    pid_t pid;
@@ -120,9 +122,7 @@ main(int argc, char **argv)
       done = 0;
 
 #if HAVE_SO_NOSIGPIPE
-      setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE | SO_LINGER, (void *)&on, sizeof(on));
-#else
-      setsockopt(s2, SOL_SOCKET, SO_LINGER, (void *)&on, sizeof(on));
+      setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
 #endif
 
       while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {

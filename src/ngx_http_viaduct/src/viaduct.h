@@ -157,6 +157,7 @@ char *viaduct_conn_send_request(int s, viaduct_request_t *request);
 void viaduct_conn_set_option(int s, char *option, char *value);
 pid_t viaduct_conn_launch_connector(char *sock_path);
 int viaduct_connect_to_helper(char *sock_path);
+u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql); 
 
 void viaduct_conn_kill(int s);
 void viaduct_conn_close(int s);
