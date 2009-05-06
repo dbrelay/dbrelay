@@ -19,6 +19,7 @@
 
 #define SOCK_PATH "/tmp/viaduct/connector"
 #define DEBUG 0
+#define PERSISTENT_CONN 1
 #define GDB 0
 
 #define OK 1
@@ -137,7 +138,9 @@ main(int argc, char **argv)
               done = 1;
            } else if (ret == RUN) {
               log_msg("running\n"); 
+#if PERSISTENT_CONN
               if (!connected) {
+#endif
 #if HAVE_FREETDS
                   conn.db = viaduct_mssql_connect(&request);
 #endif
@@ -145,10 +148,12 @@ main(int argc, char **argv)
                   conn.db = viaduct_mysql_connect(&request);
 #endif
                   connected = 1;
+#if PERSISTENT_CONN
               }
-              results = viaduct_exec_query(&conn, &request.sql_database, request.sql);
+#endif
+              results = (char *) viaduct_exec_query(&conn, &request.sql_database, request.sql);
+              if (results == NULL) log_msg("results are null\n"); 
 
-             
               log_msg("sending results\n"); 
               send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
               log_msg(results);
@@ -157,6 +162,14 @@ main(int argc, char **argv)
               send(s2, ":RESULTS END\n", 13, NET_FLAGS);
               send(s2, ":OK\n", 4, NET_FLAGS);
               log_msg("done\n"); 
+#if !PERSISTENT_CONN
+#if HAVE_FREETDS
+              viaduct_mssql_close(conn.db);
+#endif
+#if HAVE_MYSQL
+              viaduct_mysql_close(conn.db);
+#endif
+#endif
               free(results);
 		      if (request.connection_timeout) set_timer(request.connection_timeout);
            } else if (ret == DIE) {
@@ -311,6 +324,7 @@ void log_msg(char *msg)
 
    strftime(today, sizeof(today), "%Y-%m-%d %H:%M:%S", tm);
    fprintf(logfile, "%s: %s", today, msg);
+   fflush(logfile);
 #endif
 }
 void log_close(FILE *log)

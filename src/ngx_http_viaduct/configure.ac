@@ -14,7 +14,7 @@ AC_PROG_CC
 VIADUCT_BUILD=`git show --abbrev-commit | grep "^commit" | awk '{print $2}'`
 AC_SUBST(VIADUCT_BUILD)
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_HEADERS(include/config.h)
 AC_CONFIG_FILES( Makefile \
         include/Makefile \
