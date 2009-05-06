@@ -399,9 +399,12 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       } else {
    	viaduct_log_debug(request, "Sending sql query");
         ret = viaduct_exec_query(conn, request->sql_database, newsql);
-        if (ret==NULL) strcpy(error_string, request->error_message);
-        json_add_json(json, ", ");
-        json_add_json(json, (char *) ret);
+        if (ret==NULL) {
+           strcpy(error_string, request->error_message);
+        } else {
+           json_add_json(json, ", ");
+           json_add_json(json, (char *) ret);
+        }
         //free(ret);
    	viaduct_log_debug(request, "Done filling JSON output");
       }
@@ -463,13 +466,15 @@ viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql)
 int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 {
    int numcols, colnum;
-   char tmp[256], *colname;
+   char tmp[256], *colname, tmpcolname[256];
+   int maxcolname;
    int l;
 
    json_add_key(json, "data");
    json_new_array(json);
    while (api->has_results(conn->db)) 
    {
+        maxcolname = 0;
 	json_new_object(json);
 	json_add_key(json, "fields");
 	json_new_array(json);
@@ -477,13 +482,23 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 	numcols = api->numcols(conn->db);
 	for (colnum=1; colnum<=numcols; colnum++) {
 	    json_new_object(json);
-	    json_add_string(json, "name", api->colname(conn->db, colnum));
+            colname = api->colname(conn->db, colnum);
+            if (!IS_SET(colname)) {
+               sprintf(tmpcolname, "%d", ++maxcolname);
+	       json_add_string(json, "name", tmpcolname);
+            } else {
+               l = atoi(colname); 
+               if (l>0 && l>maxcolname) {
+                  maxcolname=l;
+               }
+	       json_add_string(json, "name", colname);
+            }
             api->coltype(conn->db, colnum, tmp);
 	    json_add_string(json, "sql_type", tmp);
             l = api->collen(conn->db, colnum);
             if (l!=0) {
-            	sprintf(tmp, "%d", l);
-	    	json_add_string(json, "length", tmp);
+               sprintf(tmp, "%d", l);
+               json_add_string(json, "length", tmp);
             }
             l = api->colprec(conn->db, colnum);
             if (l!=0) {
@@ -502,15 +517,25 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 	json_new_array(json);
 
         while (api->fetch_row(conn->db)) { 
+           maxcolname = 0;
 	   json_new_object(json);
 	   for (colnum=1; colnum<=numcols; colnum++) {
               colname = api->colname(conn->db, colnum);
+              if (!IS_SET(colname)) {
+                 sprintf(tmpcolname, "%d", ++maxcolname);
+              } else {
+                 l = atoi(colname); 
+                 if (l>0 && l>maxcolname) {
+                    maxcolname=l;
+                 }
+                 strcpy(tmpcolname, colname);
+              }
               if (api->colvalue(conn->db, colnum, tmp)==NULL) 
               	json_add_null(json, colname);
 	      else if (api->is_quoted(conn->db, colnum)) 
-              	json_add_string(json, colname, tmp);
+              	json_add_string(json, tmpcolname, tmp);
               else
-              	json_add_number(json, colname, tmp);
+              	json_add_number(json, tmpcolname, tmp);
            }
            json_end_object(json);
         }
