@@ -151,7 +151,7 @@ main(int argc, char **argv)
 #if PERSISTENT_CONN
               }
 #endif
-              results = viaduct_exec_query(&conn, &request.sql_database, request.sql);
+              results = (char *) viaduct_exec_query(&conn, &request.sql_database, request.sql);
               if (results == NULL) log_msg("results are null\n"); 
 
               log_msg("sending results\n"); 

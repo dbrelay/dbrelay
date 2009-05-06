@@ -11,7 +11,7 @@ AC_PREFIX_DEFAULT(/usr/local)
 # ------------------------------------------------------------
 AC_PROG_CC
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_HEADERS(include/config.h)
 AC_CONFIG_FILES( Makefile \
         include/Makefile \
