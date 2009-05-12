@@ -60,10 +60,8 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
    viaduct_conn_set_option(s, "TIMEOUT", tmp);
 
    viaduct_conn_send_string(s, ":SQL BEGIN\n");
-   viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
    viaduct_conn_send_string(s, request->sql);
    viaduct_conn_send_string(s, "\n");
-   viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
    viaduct_conn_send_string(s, ":SQL END\n");
    viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
 
@@ -82,7 +80,10 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
          sb_append(sb_rslt, out_buf);
          //sb_append(sb_rslt, "\n");
       }
-      if (!strcmp(out_buf, ":RESULTS BEGIN")) results = 1;
+      if (!strcmp(out_buf, ":RESULTS BEGIN")) {
+         viaduct_log_debug(request, "results begun\n");
+         results = 1;
+      }
    }
    viaduct_log_debug(request, "finished receiving results");
    json_output = sb_to_char(sb_rslt);
@@ -175,7 +176,7 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
    int i;
    int len;
 
-   //printf("\nptr %d\n", *in_ptr);
+   //fprintf(stderr, "\nptr %d\n", *in_ptr);
    if (*in_ptr==-1) {
       if ((t=recv(s, in_buf, BUFSIZE - 1, NET_FLAGS))<=0) {
 	if (t < 0) {
@@ -189,16 +190,16 @@ viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
       *in_ptr=0;
    } else (*in_ptr)++;
    len = strlen(in_buf);
-   //printf("\nptr %d len %d i %d\n", *in_ptr, len, i);
+   //fprintf(stderr, "\nptr %d len %d\n", *in_ptr, len);
    for (i=*in_ptr;in_buf[i]!='\n' && i<len; i++);
    strncpy(out_buf, &in_buf[*in_ptr], i - *in_ptr); 
    out_buf[i - *in_ptr]='\0';
-   //printf("\nout_buf = %s\n", out_buf);
+   //fprintf(stderr, "\nout_buf = %s\n", out_buf);
    if (i>=len-1) *in_ptr=-1;
    else *in_ptr=i; 
    if (DEBUG) printf("echo> %s\n", out_buf);
    if (*in_ptr>=BUFSIZE) exit(1);
 
-   //printf("returning %s\n", out_buf);
+   //fprintf(stderr, "returning %s\n", out_buf);
    return out_buf; 
 }

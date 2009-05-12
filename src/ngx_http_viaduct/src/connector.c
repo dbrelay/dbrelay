@@ -18,7 +18,7 @@
 #endif
 
 #define SOCK_PATH "/tmp/viaduct/connector"
-#define DEBUG 0
+#define DEBUG 1
 #define PERSISTENT_CONN 1
 #define GDB 0
 
@@ -27,6 +27,7 @@
 #define ERR 3
 #define DIE 4
 #define RUN 5
+#define CONT 6
 
 void log_open();
 void log_close();
@@ -66,6 +67,7 @@ main(int argc, char **argv)
    unsigned int s, s2;
    struct sockaddr_un local, remote;
    char buf[100];
+   char tmp[100];
    char line[4096];
    int len, pos = 0;
    int done = 0, ret;
@@ -126,8 +128,9 @@ main(int argc, char **argv)
 #endif
 
       while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
+        pos = 0;
         //send(s2, &buf, len, 0);
-        if (get_line(buf, len, line, &pos)) {
+        while (get_line(buf, len, line, &pos)) {
 	   if (DEBUG) printf("line = %s\n", line);
            ret = process_line(line);
            
@@ -151,12 +154,17 @@ main(int argc, char **argv)
 #if PERSISTENT_CONN
               }
 #endif
+              log_msg(request.sql);
               results = (char *) viaduct_exec_query(&conn, &request.sql_database, request.sql);
+              sprintf(tmp, "addr = %lu\n", results);
+              log_msg(tmp);
               if (results == NULL) log_msg("results are null\n"); 
 
               log_msg("sending results\n"); 
               send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
               log_msg(results);
+              sprintf(tmp, "len = %d\n", strlen(results));
+              log_msg(tmp);
               send(s2, results, strlen(results), NET_FLAGS);
               send(s2, "\n", 1, NET_FLAGS);
               send(s2, ":RESULTS END\n", 13, NET_FLAGS);
@@ -181,7 +189,11 @@ main(int argc, char **argv)
            } else if (ret == OK) {
               send(s2, ":OK\n", 4, NET_FLAGS);
               if (request.connection_timeout) set_timer(request.connection_timeout);
+           } else if (ret == CONT) {
+              log_msg("(cont)\n"); 
            } else {
+              sprintf(tmp, "ret = %d.\n", ret); 
+              log_msg(tmp); 
               send(s2, ":ERR\n", 5, NET_FLAGS);
            }
         }
@@ -193,14 +205,16 @@ int
 get_line(char *buf, int buflen, char *line, int *pos)
 {
    int i;
+   int d = 0;
 
-   for (i=0; i<buflen; i++) {
+   for (i=*pos; i<buflen; i++) {
       if (buf[i]=='\n') {
-        line[*pos]='\0';
-        *pos=0;
+        line[d]='\0';
+        (*pos)++;
         return 1;
       } else {
-         line[(*pos)++]=buf[i];
+         line[d++]=buf[i];
+         (*pos)++;
       }      
    }
    return 0;
@@ -214,9 +228,13 @@ process_line(char *line)
 
    if (receive_sql) {
       log_msg("sql mode\n");
+      log_msg("line: ");
+      log_msg(line);
+      log_msg("\n");
       if (!line || strlen(line)<8 || strncmp(line, ":SQL END", 8)) {
       	sb_append(sb_sql, line);
-        return OK;
+      	sb_append(sb_sql, "\n");
+        return CONT;
       }
    } 
 
@@ -253,7 +271,8 @@ process_line(char *line)
          request.sql = sb_to_char(sb_sql);
          sb_free(sb_sql);
       } else return ERR;
-      return OK;
+      if (receive_sql) return CONT;
+      else return OK;
    }
    else if (check_command(line, "RUN", NULL)) {
       return RUN;
