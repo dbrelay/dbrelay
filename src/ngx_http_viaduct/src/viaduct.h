@@ -72,6 +72,7 @@ typedef struct {
    char error_message[4000];
    char *params[VIADUCT_MAX_PARAMS];
    char sql_dbtype[VIADUCT_OBJ_SZ];
+   char remote_addr[VIADUCT_OBJ_SZ];
 } viaduct_request_t;
 
 typedef struct {

@@ -253,7 +253,7 @@ process_line(char *line)
    else if (check_command(line, "SET DATABASE", &request.sql_database)) return OK;
    else if (check_command(line, "SET USER", &request.sql_user)) return OK;
    else if (check_command(line, "SET PASSWORD", &request.sql_password)) return OK;
-   else if (check_command(line, "SET APPNAME", app_name)) return OK;
+   else if (check_command(line, "SET APPNAME", &request.connection_name)) return OK;
    else if (check_command(line, "SET TIMEOUT", timeout_str)) {
       request.connection_timeout = atol(timeout_str);
       return OK;
