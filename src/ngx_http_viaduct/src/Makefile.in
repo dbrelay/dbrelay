@@ -35,7 +35,8 @@ subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/vl_lib_readline.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -165,8 +166,8 @@ AM_LDFLAGS = @DB_LIBS@ @VIADUCT_EXTRA_LIBS@
 viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c main.c libsybdb.a libtds.a
 connector_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c connector.c 
 EXTRA_viaduct_SOURCES = mssql.h mssql.c vmysql.h mysql.c
-@FREETDS_TRUE@viaduct_LDADD = mssql.o @DB_STATICLIBS@
-@MYSQL_TRUE@viaduct_LDADD = mysql.o @DB_STATICLIBS@
+@FREETDS_TRUE@viaduct_LDADD = mssql.o @DB_STATICLIBS@ @LIBS@
+@MYSQL_TRUE@viaduct_LDADD = mysql.o @DB_STATICLIBS@ @LIBS@
 @FREETDS_TRUE@connector_LDADD = mssql.o @DB_STATICLIBS@
 @MYSQL_TRUE@connector_LDADD = mysql.o @DB_STATICLIBS@
 all: all-am

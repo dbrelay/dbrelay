@@ -691,6 +691,9 @@ AMDEPBACKSLASH
 CCDEPMODE
 am__fastdepCC_TRUE
 am__fastdepCC_FALSE
+CPP
+GREP
+EGREP
 FREETDS_TRUE
 FREETDS_FALSE
 DB_LIBS
@@ -701,9 +704,6 @@ MYSQL_TRUE
 MYSQL_FALSE
 ODBC_TRUE
 ODBC_FALSE
-CPP
-GREP
-EGREP
 VIADUCT_EXTRA_LIBS
 LIBOBJS
 LTLIBOBJS'
@@ -3334,119 +3334,6 @@ ac_config_files="$ac_config_files Makefile include/Makefile src/Makefile"
 
 
 
-# Check whether --with-nginx was given.
-if test "${with_nginx+set}" = set; then
-  withval=$with_nginx;
-fi
-
-if test "$with_nginx"; then
-        NGINX_INC="-I$with_nginx/include"
-        CPPFLAGS="$CPPFLAGS $NGINX_INC"
-fi
-
-
-# Check whether --with-freetds was given.
-if test "${with_freetds+set}" = set; then
-  withval=$with_freetds;
-fi
-
-if test "$with_freetds"; then
-        if echo "$with_freetds" | grep -v '^/'; then
-                with_freetds="$PWD/$with_freetds"
-        fi
-	freetds=true
-        DB_INCS="-I $with_freetds/include"
-        #CPPFLAGS="$CPPFLAGS $DB_INCS"
-        #DB_LIBS="-L $with_freetds/src/dblib/ -lsybdb -L $with_freetds/src/tds/.libs/ -ltds"
-        DB_STATICLIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
-        #LDFLAGS="$LDFLAGS $DB_LIBS"
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_FREETDS 1
-_ACEOF
-
-        DB_MODULE="mssql.c"
-fi
- if test "$freetds" = "true"; then
-  FREETDS_TRUE=
-  FREETDS_FALSE='#'
-else
-  FREETDS_TRUE='#'
-  FREETDS_FALSE=
-fi
-
-
-
-# Check whether --with-mysql was given.
-if test "${with_mysql+set}" = set; then
-  withval=$with_mysql;
-fi
-
-if test "$with_mysql"; then
-        if echo "$with_mysql" | grep -v '^/'; then
-                with_mysql="$PWD/$with_mysql"
-        fi
-	mysql=true
-        DB_INCS="-I $with_mysql/include"
-        #CPPFLAGS="$CPPFLAGS $DB_INCS"
-        DB_LIBS="-lssl"
-        DB_STATICLIBS="$with_mysql/lib/libmysqlclient.a"
-        #LDFLAGS="$LDFLAGS $DB_LIBS"
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_MYSQL 1
-_ACEOF
-
-        DB_MODULE="mysql.c"
-fi
-
-
-
-
-
-
- if test "$mysql" = "true"; then
-  MYSQL_TRUE=
-  MYSQL_FALSE='#'
-else
-  MYSQL_TRUE='#'
-  MYSQL_FALSE=
-fi
-
-
-
-# Check whether --with-odbc was given.
-if test "${with_odbc+set}" = set; then
-  withval=$with_odbc;
-fi
-
-if test "$with_odbc"; then
-        if echo "$with_odbc" | grep -v '^/'; then
-                with_odbc="$PWD/$with_odbc"
-        fi
-        odbc=true
-        DB_INCS="-I$with_odbc/include"
-        DB_LIBS="$with_odbc/odbc/.libs/libtdsodbc.a"
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_ODBC 1
-_ACEOF
-
-
-
-        DB_MODULE="odbc.c"
-
-fi
- if test "$odbc" = "true"; then
-  ODBC_TRUE=
-  ODBC_FALSE='#'
-else
-  ODBC_TRUE='#'
-  ODBC_FALSE=
-fi
-
-
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4081,6 +3968,561 @@ _ACEOF
 fi
 
 done
+
+
+
+  { echo "$as_me:$LINENO: checking for a readline compatible library" >&5
+echo $ECHO_N "checking for a readline compatible library... $ECHO_C" >&6; }
+if test "${vl_cv_lib_readline+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+    ORIG_LIBS="$LIBS"
+    for readline_lib in readline edit editline; do
+      for termcap_lib in "" termcap curses ncurses; do
+        if test -z "$termcap_lib"; then
+          TRY_LIB="-l$readline_lib"
+        else
+          TRY_LIB="-l$readline_lib -l$termcap_lib"
+        fi
+        LIBS="$ORIG_LIBS $TRY_LIB"
+        cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char readline ();
+int
+main ()
+{
+return readline ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  vl_cv_lib_readline="$TRY_LIB"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+        if test -n "$vl_cv_lib_readline"; then
+          break
+        fi
+      done
+      if test -n "$vl_cv_lib_readline"; then
+        break
+      fi
+    done
+    if test -z "$vl_cv_lib_readline"; then
+      vl_cv_lib_readline="no"
+      LIBS="$ORIG_LIBS"
+    fi
+
+fi
+{ echo "$as_me:$LINENO: result: $vl_cv_lib_readline" >&5
+echo "${ECHO_T}$vl_cv_lib_readline" >&6; }
+
+  if test "$vl_cv_lib_readline" != "no"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_LIBREADLINE 1
+_ACEOF
+
+
+
+for ac_header in readline.h readline/readline.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  { echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+ac_res=`eval echo '${'$as_ac_Header'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+else
+  # Is the header compilable?
+{ echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_header_compiler=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (ac_try="$ac_cpp conftest.$ac_ext"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null && {
+	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       }; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+
+rm -f conftest.err conftest.$ac_ext
+{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+
+    ;;
+esac
+{ echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+ac_res=`eval echo '${'$as_ac_Header'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+    { echo "$as_me:$LINENO: checking whether readline supports history" >&5
+echo $ECHO_N "checking whether readline supports history... $ECHO_C" >&6; }
+if test "${vl_cv_lib_readline_history+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+      vl_cv_lib_readline_history="no"
+      cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char add_history ();
+int
+main ()
+{
+return add_history ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  vl_cv_lib_readline_history="yes"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ echo "$as_me:$LINENO: result: $vl_cv_lib_readline_history" >&5
+echo "${ECHO_T}$vl_cv_lib_readline_history" >&6; }
+    if test "$vl_cv_lib_readline_history" = "yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_READLINE_HISTORY 1
+_ACEOF
+
+
+
+for ac_header in history.h readline/history.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  { echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+ac_res=`eval echo '${'$as_ac_Header'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+else
+  # Is the header compilable?
+{ echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_header_compiler=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (ac_try="$ac_cpp conftest.$ac_ext"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null && {
+	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       }; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+
+rm -f conftest.err conftest.$ac_ext
+{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+
+    ;;
+esac
+{ echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6; }
+if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+ac_res=`eval echo '${'$as_ac_Header'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+    fi
+  fi
+
+
+
+# Check whether --with-nginx was given.
+if test "${with_nginx+set}" = set; then
+  withval=$with_nginx;
+fi
+
+if test "$with_nginx"; then
+        NGINX_INC="-I$with_nginx/include"
+        CPPFLAGS="$CPPFLAGS $NGINX_INC"
+fi
+
+
+# Check whether --with-freetds was given.
+if test "${with_freetds+set}" = set; then
+  withval=$with_freetds;
+fi
+
+if test "$with_freetds"; then
+        if echo "$with_freetds" | grep -v '^/'; then
+                with_freetds="$PWD/$with_freetds"
+        fi
+	freetds=true
+        DB_INCS="-I $with_freetds/include"
+        #CPPFLAGS="$CPPFLAGS $DB_INCS"
+        #DB_LIBS="-L $with_freetds/src/dblib/ -lsybdb -L $with_freetds/src/tds/.libs/ -ltds"
+        DB_STATICLIBS="$with_freetds/src/dblib/.libs/libsybdb.a $with_freetds/src/tds/.libs/libtds.a"
+        #LDFLAGS="$LDFLAGS $DB_LIBS"
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_FREETDS 1
+_ACEOF
+
+        DB_MODULE="mssql.c"
+fi
+ if test "$freetds" = "true"; then
+  FREETDS_TRUE=
+  FREETDS_FALSE='#'
+else
+  FREETDS_TRUE='#'
+  FREETDS_FALSE=
+fi
+
+
+
+# Check whether --with-mysql was given.
+if test "${with_mysql+set}" = set; then
+  withval=$with_mysql;
+fi
+
+if test "$with_mysql"; then
+        if echo "$with_mysql" | grep -v '^/'; then
+                with_mysql="$PWD/$with_mysql"
+        fi
+	mysql=true
+        DB_INCS="-I $with_mysql/include"
+        #CPPFLAGS="$CPPFLAGS $DB_INCS"
+        DB_LIBS="-lssl"
+        DB_STATICLIBS="$with_mysql/lib/libmysqlclient.a"
+        #LDFLAGS="$LDFLAGS $DB_LIBS"
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_MYSQL 1
+_ACEOF
+
+        DB_MODULE="mysql.c"
+fi
+
+
+
+
+
+
+ if test "$mysql" = "true"; then
+  MYSQL_TRUE=
+  MYSQL_FALSE='#'
+else
+  MYSQL_TRUE='#'
+  MYSQL_FALSE=
+fi
+
+
+
+# Check whether --with-odbc was given.
+if test "${with_odbc+set}" = set; then
+  withval=$with_odbc;
+fi
+
+if test "$with_odbc"; then
+        if echo "$with_odbc" | grep -v '^/'; then
+                with_odbc="$PWD/$with_odbc"
+        fi
+        odbc=true
+        DB_INCS="-I$with_odbc/include"
+        DB_LIBS="$with_odbc/odbc/.libs/libtdsodbc.a"
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_ODBC 1
+_ACEOF
+
+
+
+        DB_MODULE="odbc.c"
+
+fi
+ if test "$odbc" = "true"; then
+  ODBC_TRUE=
+  ODBC_FALSE='#'
+else
+  ODBC_TRUE='#'
+  ODBC_FALSE=
+fi
 
 
 { echo "$as_me:$LINENO: checking for semun" >&5
@@ -5133,6 +5575,9 @@ AMDEPBACKSLASH!$AMDEPBACKSLASH$ac_delim
 CCDEPMODE!$CCDEPMODE$ac_delim
 am__fastdepCC_TRUE!$am__fastdepCC_TRUE$ac_delim
 am__fastdepCC_FALSE!$am__fastdepCC_FALSE$ac_delim
+CPP!$CPP$ac_delim
+GREP!$GREP$ac_delim
+EGREP!$EGREP$ac_delim
 FREETDS_TRUE!$FREETDS_TRUE$ac_delim
 FREETDS_FALSE!$FREETDS_FALSE$ac_delim
 DB_LIBS!$DB_LIBS$ac_delim
@@ -5143,9 +5588,6 @@ MYSQL_TRUE!$MYSQL_TRUE$ac_delim
 MYSQL_FALSE!$MYSQL_FALSE$ac_delim
 ODBC_TRUE!$ODBC_TRUE$ac_delim
 ODBC_FALSE!$ODBC_FALSE$ac_delim
-CPP!$CPP$ac_delim
-GREP!$GREP$ac_delim
-EGREP!$EGREP$ac_delim
 VIADUCT_EXTRA_LIBS!$VIADUCT_EXTRA_LIBS$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim

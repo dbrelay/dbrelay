@@ -21,6 +21,8 @@ AC_CONFIG_FILES( Makefile \
         src/Makefile \
 )
 
+VL_LIB_READLINE
+
 AC_ARG_WITH(nginx,
 AS_HELP_STRING([--with-nginx=DIR], [build with support for nginx in DIR]))
 if test "$with_nginx"; then
