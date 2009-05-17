@@ -6,6 +6,7 @@ then
    exit 1
 fi
 
+
 OPTH="-h"`grep '^HOST=' PWD | cut -f2 -d=`
 OPTD="-d"`grep '^DATABASE=' PWD | cut -f2 -d=`
 if [ "$OPTD" = "-d" ]; then OPTD=""; fi
@@ -15,11 +16,16 @@ if [ "$OPTW" = "-w" ]; then OPTW=""; fi
 
 TESTNAME=$1
 
+#OPTC="-c${TESTNAME}"
+
 JS=`which js 2> /dev/null`
 if [ "$JS" = "" ]
 then
-   ../src/viaduct $OPTU $OPTH $OPTD -tunittest -f${TESTNAME}.sql 2> /dev/null | cat
+   ../src/viaduct $OPTU $OPTH $OPTD -tunittest -f${TESTNAME}.sql 2> /dev/null 
+   ../src/viaduct $OPTU $OPTH $OPTD -tunittest -f${TESTNAME}.sql -c${TESTNAME} 2> /dev/null 
 else
-   ../src/viaduct $OPTU $OPTH $OPTD -tunittest -f${TESTNAME}.sql 2> /dev/null | sed -e 's/^/ /' | $JS ${TESTNAME}.js
+   # spidermonkey's readline() doesn't differentiate between blank lines
+   # and EOF, so the sed here adds a space to the begining of each line.
+   ../src/viaduct $OPTU $OPTH $OPTD $OPTC -tunittest -f${TESTNAME}.sql 2> /dev/null | sed -e 's/^/ /' | $JS ${TESTNAME}.js
 fi
 

@@ -1,6 +1,6 @@
 load('jsonpath.js');
 
-print('Checking mulitline queyr with comment...');
+print('Checking mulitline query with comment...');
 
 var json = '';
 while (line = readline())
