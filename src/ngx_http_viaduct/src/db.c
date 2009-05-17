@@ -239,6 +239,8 @@ u_char *viaduct_db_status(viaduct_request_t *request)
    json_add_key(json, "info");
    json_new_object(json);
    json_add_string(json, "build", VIADUCT_BUILD);
+   sprintf(tmpstr, "0x%08x", viaduct_get_ipc_key());
+   json_add_string(json, "ipckey", tmpstr);
    json_end_object(json);
 
    json_add_key(json, "connections");

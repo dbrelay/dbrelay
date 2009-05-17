@@ -149,7 +149,7 @@ pid_t viaduct_conn_launch_connector(char *sock_path)
      strcat(connector_path, " ");
      strcat(connector_path, sock_path);
      //execv(connector_path, argv);
-     printf("cmd = %s\n", connector_path);
+     //printf("cmd = %s\n", connector_path);
      connector = popen(connector_path, "r");
      //printf("popen\n");
    //} else {

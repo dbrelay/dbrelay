@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/ipc.h>
 #include "../include/config.h"
 
 #ifndef CMDLINE
@@ -151,6 +152,7 @@ void viaduct_create_shmem();
 viaduct_connection_t *viaduct_get_shmem();
 void viaduct_release_shmem(viaduct_connection_t *connections);
 void viaduct_destroy_shmem();
+key_t viaduct_get_ipc_key();
 
 char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_conn_send_string(int s, char *str);
