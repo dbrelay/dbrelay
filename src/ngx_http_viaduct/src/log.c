@@ -25,7 +25,7 @@ viaduct_log(unsigned int log_level, viaduct_request_t *request, const char *fmt,
 
 #ifndef CMDLINE
    p = ngx_vsnprintf(buf, NGX_MAX_ERROR_STR, fmt, args);
-   ngx_log_error(log_level, request->log, 0, (char *)buf);
+   ngx_log_error(log_level, request->log, 0, "%s\n", (char *)buf);
 #else
    p = vsnprintf((char *)buf, NGX_MAX_ERROR_STR, fmt, args);
    fprintf(stderr, "%s\n", (char *)buf);
