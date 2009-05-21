@@ -340,7 +340,7 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
 
     strncpy(request->remote_addr, (char *) r->connection->addr_text.data, VIADUCT_OBJ_SZ);
 
-    if (request->cmd) json_output = (u_char *) viaduct_db_cmd(request);
+    if (strlen(request->cmd)) json_output = (u_char *) viaduct_db_cmd(request);
     else if (request->status) json_output = (u_char *) viaduct_db_status(request);
     else json_output = (u_char *) viaduct_db_run_query(request);
     viaduct_free_request(request);
