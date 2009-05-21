@@ -145,7 +145,7 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
    viaduct_release_shmem(connections);		
    return -1;
 }
-static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_request_t *request)
+void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
    unsigned int slot;
 

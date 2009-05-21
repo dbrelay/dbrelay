@@ -1,65 +1,109 @@
-
 /*
- * Copyright (C) Getco LLC
+ * Copyright (C) 2009 Getco LLC
  */
 
 #include "viaduct.h"
 #include "stringbuf.h"
 
-u_char *viaduct_db_status(viaduct_request_t *request)
+#define SUCCESS 0
+#define FAIL 1
+#define NOTFOUND 2
+
+u_char *viaduct_json_error(char *error_string);
+int viaduct_admin_kill(viaduct_request_t *request, char *sock_path);
+
+char *viaduct_admin_result_text(int ret)
 {
+   switch (ret) {
+      case SUCCESS: return "succeeded";
+      case FAIL: return "failed";
+      case NOTFOUND: return "not found";
+      default: return "unknown result";
+   }
+}
+u_char *viaduct_db_cmd(viaduct_request_t *request)
+{
+   json_t *json = json_new();
+   int ret = 0;
+   u_char *json_output;
+
+   if (!strcmp(request->cmd, "kill")) {
+      if (request->params[0]==NULL) {
+         return (u_char *) viaduct_json_error("No parameter specified");
+      }
+      ret = viaduct_admin_kill(request, request->params[0]);
+   } else {
+      return (u_char *) viaduct_json_error("Unknown admin command");
+   }
+
+   json_new_object(json);
+
+   json_add_key(json, "cmd");
+   json_new_object(json);
+   json_add_string(json, "status", viaduct_admin_result_text(ret));
+   json_end_object(json);
+
+   json_end_object(json);
+   json_output = (u_char *) json_to_string(json);
+   json_free(json);
+
+   return json_output;
+
+}
+
+int viaduct_admin_kill(viaduct_request_t *request, char *sock_path)
+{
+   pid_t pid = -1;
+   int slot = -1;
    viaduct_connection_t *connections;
    viaduct_connection_t *conn;
-   json_t *json = json_new();
    int i;
-   char tmpstr[100];
-   u_char *json_output;
-   struct tm *ts;
 
+   int s = viaduct_connect_to_helper(sock_path);
+   if (s==-1) return FAIL;
 
-   json_new_object(json);
-   json_add_key(json, "status");
-   json_new_object(json);
-   json_add_key(json, "connections");
-   json_new_array(json);
+   viaduct_conn_kill(s);
 
    connections = viaduct_get_shmem();
 
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
      conn = &connections[i];
-     if (connections[i].pid!=0) {
-        json_new_object(json);
-        sprintf(tmpstr, "%u", conn->slot);
-        json_add_number(json, "slot", tmpstr);
-        sprintf(tmpstr, "%u", conn->pid);
-        json_add_number(json, "pid", tmpstr);
-        json_add_string(json, "name", conn->connection_name ? conn->connection_name : "");
-        ts = localtime(&conn->tm_create);
-        strftime(tmpstr, sizeof(tmpstr), "%Y-%m-%d %H:%M:%S", ts);
-        json_add_string(json, "tm_created", tmpstr);
-        ts = localtime(&conn->tm_accessed);
-        strftime(tmpstr, sizeof(tmpstr), "%Y-%m-%d %H:%M:%S", ts);
-        json_add_string(json, "tm_accessed", tmpstr);
-        json_add_string(json, "sql_server", conn->sql_server ? conn->sql_server : "");
-        json_add_string(json, "sql_server", conn->sql_server ? conn->sql_server : "");
-        json_add_string(json, "sql_port", conn->sql_port ? conn->sql_port : "");
-        json_add_string(json, "sql_database", conn->sql_database ? conn->sql_database : "");
-        json_add_string(json, "sql_user", conn->sql_user ? conn->sql_user : "");
-        sprintf(tmpstr, "%ld", conn->connection_timeout);
-        json_add_number(json, "connection_timeout", tmpstr);
-        sprintf(tmpstr, "%u", conn->in_use);
-        json_add_number(json, "in_use", tmpstr);
-        json_add_string(json, "sock_path", conn->sock_path);
-        sprintf(tmpstr, "%u", conn->helper_pid);
-        json_add_number(json, "helper_pid", tmpstr);
-        json_end_object(json);
+     if (conn->pid!=0) {
+        if (!strcmp(conn->sock_path, sock_path))
+	{
+	   pid = conn->helper_pid;
+           slot = i;
+	}
      }
    }
 
    viaduct_release_shmem(connections);
 
-   json_end_array(json);
-   json_end_object(json);
+   if (pid==-1) return NOTFOUND;
+
+   if (kill(pid, 0)) kill(pid, SIGTERM);
+
+   if (slot!=-1) {
+      connections = viaduct_get_shmem();
+      conn = &connections[slot];
+      viaduct_db_close_connection(conn, request);
+      viaduct_release_shmem(connections);
+   }
+   return SUCCESS;
+}
+u_char *viaduct_json_error(char *error_string)
+{
+   u_char *json_output;
+   json_t *json = json_new();
+
+   json_new_object(json);
+
+   json_add_key(json, "log");
+   json_new_object(json);
+   json_add_string(json, "error", error_string);
+   
+   json_end_object(json); //log
+
    json_end_object(json);
 
    json_output = (u_char *) json_to_string(json);

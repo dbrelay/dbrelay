@@ -439,7 +439,7 @@ write_value(viaduct_request_t *request, char *key, char *value)
 
    if (!strcmp(key, "cmd")) {
       copy_value(request->cmd, value, VIADUCT_OBJ_SZ);
-   if (!strcmp(key, "status")) {
+   } else if (!strcmp(key, "status")) {
       request->status = 1;
    } else if (!strcmp(key, "sql_dbtype")) {
       copy_value(request->sql_dbtype, value, VIADUCT_OBJ_SZ);

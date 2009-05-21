@@ -139,6 +139,8 @@ typedef struct {
 
 u_char *viaduct_db_run_query(viaduct_request_t *request);
 u_char *viaduct_db_status(viaduct_request_t *request);
+void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_request_t *request);
+
 
 void viaduct_log_debug(viaduct_request_t *request, const char *fmt, ...);
 void viaduct_log_info(viaduct_request_t *request, const char *fmt, ...);
@@ -165,5 +167,8 @@ u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql
 
 void viaduct_conn_kill(int s);
 void viaduct_conn_close(int s);
+
+u_char *viaduct_db_cmd(viaduct_request_t *request);
+
 
 #endif /* _VIADUCT_H_INCLUDED_ */
