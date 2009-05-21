@@ -156,7 +156,7 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
 
    viaduct_log_info(request, "closing connection %d", conn->slot);
 
-   api->close(conn->db);
+   if (conn->db) api->close(conn->db);
    conn->pid=0;
    conn->sql_server[0]='\0';
    conn->sql_user[0]='\0';
@@ -184,7 +184,7 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
       conn = &connections[i];
       if (!conn->pid || conn->in_use) continue;
       if (conn->tm_accessed + conn->connection_timeout < now) {
-         viaduct_log_notice(request, "timing out conection %ud", conn->slot);
+         viaduct_log_notice(request, "timing out conection %u", conn->slot);
          viaduct_db_close_connection(conn, request);
       }
    }
@@ -216,7 +216,7 @@ static int viaduct_db_get_connection(viaduct_request_t *request)
       viaduct_log_debug(request, "no match allocating slot %d", slot);
    }
 
-   //viaduct_db_close_connections(request);
+   viaduct_db_close_connections(request);
 
    return slot;
 }
