@@ -74,6 +74,7 @@ typedef struct {
    char *params[VIADUCT_MAX_PARAMS];
    char sql_dbtype[VIADUCT_OBJ_SZ];
    char remote_addr[VIADUCT_OBJ_SZ];
+   char sock_path[256];  /* explicitly specify socket path */
 } viaduct_request_t;
 
 typedef struct {
@@ -156,7 +157,7 @@ key_t viaduct_get_ipc_key();
 
 char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_conn_send_string(int s, char *str);
-char *viaduct_conn_send_request(int s, viaduct_request_t *request);
+char *viaduct_conn_send_request(int s, viaduct_request_t *request, int *error);
 void viaduct_conn_set_option(int s, char *option, char *value);
 pid_t viaduct_conn_launch_connector(char *sock_path);
 int viaduct_connect_to_helper(char *sock_path);

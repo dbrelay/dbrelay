@@ -333,5 +333,15 @@ viaduct_mssql_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr
 }
 char *viaduct_mssql_error(void *db)
 {
-    return login_error;
+   mssql_db_t *mssql = (mssql_db_t *) db;
+   
+   if (mssql->dbproc) {
+      viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(mssql->dbproc);
+      if (request!=NULL) {
+         return request->error_message;
+      }
+      return NULL;
+   } else {
+      return login_error;
+   }
 }

@@ -54,12 +54,13 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
 
    //viaduct_log_debug(request, "prefix %s", VIADUCT_PREFIX);
    if (IS_SET(request->connection_name)) {
-      //&& !strcmp(request->connection_name, "helper")) {
-      tmpnam(conn->sock_path);
-      //strcpy(conn->sock_path, VIADUCT_PREFIX);
-      //strcat(conn->sock_path, "/connector");
+      if (IS_SET(request->sock_path)) {
+         strcpy(conn->sock_path, request->sock_path);
+      } else {
+         tmpnam(conn->sock_path);
+         conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
+      }
       viaduct_log_info(request, "socket name %s", conn->sock_path);
-      conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
       conn->tm_create = time(NULL);
       conn->in_use++;
       conn->pid = getpid();
@@ -304,7 +305,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    char *newsql;
    int i = 0;
    char tmp[20];
-   //char sock_path[100];
+   int have_error = 0;
 
    error_string[0]='\0';
 
@@ -379,10 +380,14 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    if (IS_SET(request->connection_name)) 
    {
       viaduct_log_info(request, "sending request");
-      ret = (u_char *) viaduct_conn_send_request(s, request);
+      ret = (u_char *) viaduct_conn_send_request(s, request, &have_error);
       viaduct_log_debug(request, "back");
-      json_add_json(json, ", ");
-      json_add_json(json, (char *) ret);
+      if (have_error) {
+         strcpy(error_string, (char *) ret);
+      } else {
+         json_add_json(json, ", ");
+         json_add_json(json, (char *) ret);
+      }
       viaduct_log_debug(request, "closing");
       viaduct_conn_close(s);
       viaduct_log_debug(request, "after close");
@@ -402,6 +407,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    	viaduct_log_debug(request, "Sending sql query");
         ret = viaduct_exec_query(conn, request->sql_database, newsql);
         if (ret==NULL) {
+   	   viaduct_log_debug(request, "error");
            strcpy(error_string, request->error_message);
         } else {
            json_add_json(json, ", ");

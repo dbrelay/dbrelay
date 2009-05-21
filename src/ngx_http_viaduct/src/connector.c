@@ -134,7 +134,7 @@ main(int argc, char **argv)
 
       //while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
       in_ptr = -1;
-      while (!done && recv_string(s2, &in_buf, &in_ptr, &line)!=NULL) {
+      while (!done && recv_string(s2, in_buf, &in_ptr, line)!=NULL) {
         //send(s2, &buf, len, 0);
 	   log_msg("line = ");
            log_msg(line);
@@ -164,16 +164,22 @@ main(int argc, char **argv)
               results = (char *) viaduct_exec_query(&conn, &request.sql_database, request.sql);
               sprintf(tmp, "addr = %lu\n", results);
               log_msg(tmp);
-              if (results == NULL) log_msg("results are null\n"); 
-
-              log_msg("sending results\n"); 
-              send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
-              log_msg(results);
-              sprintf(tmp, "len = %d\n", strlen(results));
-              log_msg(tmp);
-              send(s2, results, strlen(results), NET_FLAGS);
-              send(s2, "\n", 1, NET_FLAGS);
-              send(s2, ":RESULTS END\n", 13, NET_FLAGS);
+              if (results == NULL) {
+	         log_msg("results are null\n"); 
+                 send(s2, ":ERROR BEGIN\n", 13, NET_FLAGS);
+                 send(s2, request.error_message, strlen(request.error_message), NET_FLAGS);
+                 send(s2, "\n", 1, NET_FLAGS);
+                 send(s2, ":ERROR END\n", 11, NET_FLAGS);
+              } else {
+                 log_msg("sending results\n"); 
+                 send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
+                 log_msg(results);
+                 sprintf(tmp, "len = %d\n", strlen(results));
+                 log_msg(tmp);
+                 send(s2, results, strlen(results), NET_FLAGS);
+                 send(s2, "\n", 1, NET_FLAGS);
+                 send(s2, ":RESULTS END\n", 13, NET_FLAGS);
+              }
               send(s2, ":OK\n", 4, NET_FLAGS);
               log_msg("done\n"); 
 #if !PERSISTENT_CONN
@@ -286,31 +292,6 @@ check_command(char *line, char *command, char *dest)
    }
 }
 
-#if HAVE_FREETDS
-int
-db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line)
-{
-   if (dbproc!=NULL) {
-      if (msgno==5701 || msgno==5703 || msgno==5704) return 0;
-
-      printf("msg %s\n", msgtext);
-   }
-
-   return 0;
-}
-int
-db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr)
-{
-   //db_error = strdup(dberrstr);
-   if (dbproc!=NULL) {
-      //viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(dbproc);
-      //strcat(request->error_message, dberrstr);
-   }
-   printf("msg %s\n", dberrstr);
-
-   return INT_CANCEL;
-}
-#endif
 void log_open()
 {
 #if DEBUG

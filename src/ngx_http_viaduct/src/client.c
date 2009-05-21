@@ -14,7 +14,6 @@
 
 char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_conn_send_string(int s, char *str);
-char *viaduct_conn_send_request(int s, viaduct_request_t *request);
 void viaduct_conn_set_option(int s, char *option, char *value);
 int viaduct_connect_to_helper(char *sock_path);
 
@@ -41,11 +40,12 @@ viaduct_conn_close(int s)
    close(s);
 }
 char *
-viaduct_conn_send_request(int s, viaduct_request_t *request)
+viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
 {
    stringbuf_t *sb_rslt;
    char *json_output;
    int results = 0;
+   int errors = 0;
    char out_buf[BUFSIZE];
    char in_buf[BUFSIZE];
    int in_ptr = -1;
@@ -77,14 +77,20 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
       //viaduct_log_debug(request, "in %s", in_buf);
       //viaduct_log_debug(request, "out %s", out_buf);
       if (!strcmp(out_buf, ":RESULTS END")) results = 0;
+      if (!strcmp(out_buf, ":ERROR END")) errors = 0;
       //printf("%s\n", out_buf);
-      if (results) {
+      if (results || errors) {
          sb_append(sb_rslt, out_buf);
          //sb_append(sb_rslt, "\n");
       }
       if (!strcmp(out_buf, ":RESULTS BEGIN")) {
          viaduct_log_debug(request, "results begun\n");
          results = 1;
+      }
+      if (!strcmp(out_buf, ":ERROR BEGIN")) {
+         viaduct_log_debug(request, "have errors\n");
+         *error = 1;
+         errors = 1;
       }
    }
    viaduct_log_debug(request, "finished receiving results");
