@@ -33,7 +33,8 @@ subdir = include
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/vl_lib_readline.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -89,6 +90,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VIADUCT_BUILD = @VIADUCT_BUILD@
 VIADUCT_EXTRA_LIBS = @VIADUCT_EXTRA_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -311,6 +313,8 @@ uninstall-am:
 
 viaduct_config.h: Makefile
 	echo '#define VIADUCT_PREFIX "$(prefix)"' >$@
+#	git show --abbrev-commit | grep "^commit" | awk '{print "#define VIADUCT_BUILD \"" $$2 "\""}' >>$@
+	echo "#define VIADUCT_BUILD \"@VIADUCT_BUILD@\"" >>$@
 
 all-am: viaduct_config.h
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

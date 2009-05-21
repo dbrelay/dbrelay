@@ -63,17 +63,18 @@ void *viaduct_mssql_connect(viaduct_request_t *request)
     DBSETLPWD(mssql->login, request->sql_password); 
    else
     DBSETLPWD(mssql->login, NULL);
+   dbsetlname(mssql->login, request->sql_port, DBSETPORT); 
    DBSETLUSER(mssql->login, request->sql_user);
+   memset(tmpbuf, '\0', sizeof(tmpbuf));
+   strcpy(tmpbuf, "viaduct (");
+   len = strlen(tmpbuf);
    if (IS_SET(request->connection_name)) {
-      memset(tmpbuf, '\0', sizeof(tmpbuf));
-      strcpy(tmpbuf, "viaduct (");
-      len = strlen("viaduct (");
       strncat(tmpbuf, request->connection_name, sizeof(tmpbuf) - len - 3);
-      strcat(tmpbuf, ")");
-      DBSETLAPP(mssql->login, tmpbuf);
    } else {
-      DBSETLAPP(mssql->login, "viaduct");
+      strncat(tmpbuf, request->remote_addr, sizeof(tmpbuf) - len - 3);
    }
+   strcat(tmpbuf, ")");
+   DBSETLAPP(mssql->login, tmpbuf);
  
    mssql->dbproc = dbopen(mssql->login, request->sql_server);
    dbsetuserdata(mssql->dbproc, (BYTE *)request);
@@ -105,7 +106,8 @@ int viaduct_mssql_is_quoted(void *db, int colnum)
        coltype == SYBTEXT ||
        coltype == SYBDATETIMN ||
        coltype == SYBDATETIME ||
-       coltype == SYBDATETIME4) 
+       coltype == SYBDATETIME4 || 
+       coltype == SYBUNIQUE) 
           return 1;
    else return 0;
 }
@@ -165,6 +167,9 @@ static char *viaduct_mssql_get_sqltype_string(char *dest, int coltype, int colle
 			break;
 		case SYBDECIMAL : 
 			sprintf(dest, "decimal");
+			break;
+		case SYBUNIQUE : 
+			sprintf(dest, "guid");
 			break;
 		default : 
 			sprintf(dest, "unknown type %d", coltype);

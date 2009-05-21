@@ -17,6 +17,7 @@ OPTION=`echo $1 | cut -f1 -d=`
 if [ "$OPTION" = "--prefix" ]
 then
 	PREFIX=`echo $1 | cut -f2 -d=`
+	shift
 else
 	PREFIX=/usr/local
 fi
@@ -25,9 +26,20 @@ OPTION=`echo $1 | cut -f1 -d=`
 
 if [ "$OPTION" = "--conf-file" ]
 then
-	CONFPATH=`echo $2 | cut -f2 -d=`
+	CONFPATH=`echo $1 | cut -f2 -d=`
+	shift
 else
 	CONFPATH=conf/internal.conf
+fi
+
+OPTION=`echo $1 | cut -f1 -d=`
+
+if [ "$OPTION" = "--sql-dbtype" ]
+then
+	SQL_DBTYPE=`echo $1 | cut -f2 -d=`
+	shift
+else
+	SQL_DBTYPE="mssql"
 fi
 
 TDSDIR=freetds-0.82
@@ -52,8 +64,14 @@ patch -N -p0 < ../../patches/freetds.patch
 # VIADUCT configuration
 cd $BUILD
 cd src/ngx_http_viaduct
-./configure --prefix=$PREFIX --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
-#./configure --prefix=$PREFIX --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
+
+if [ "${SQL_DBTYPE}" = "mssql" ]
+then
+  ./configure --prefix=$PREFIX --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
+else
+  ./configure --prefix=$PREFIX --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
+fi
+cd include; make
 
 # NGINX configuration
 cd $BUILD

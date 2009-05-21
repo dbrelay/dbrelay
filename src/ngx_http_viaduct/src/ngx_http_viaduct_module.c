@@ -17,7 +17,7 @@ typedef struct {
 } ngx_http_viaduct_loc_conf_t;
 
 void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request);
-void parse_get_query_string(u_char *data, viaduct_request_t *request);
+void parse_get_query_string(ngx_str_t args, viaduct_request_t *request);
 static char *ngx_http_viaduct_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_viaduct_create_request(ngx_http_request_t *r);
 static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
@@ -71,7 +71,10 @@ ngx_module_t  ngx_http_viaduct_module = {
 ngx_int_t
 ngx_http_viaduct_init_master(ngx_log_t *log)
 {
-   ngx_log_error(NGX_LOG_ALERT, log, 0, "in init master");
+#if HAVE_FREETDS
+    dbinit();
+#endif
+   ngx_log_error(NGX_LOG_INFO, log, 0, "in init master");
 
    return NGX_OK;
 }
@@ -81,6 +84,7 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
 {
    viaduct_connection_t *connections;
    int i, s;
+   pid_t pid = 0;
 
    connections = viaduct_get_shmem();
 
@@ -91,9 +95,21 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
          s = viaduct_connect_to_helper(connections[i].sock_path);
          viaduct_conn_kill(s);
      }
+     if (connections[i].helper_pid) {
+        pid = connections[i].helper_pid;
+	if (!kill(pid, 0)) kill(pid, SIGTERM);
+     }
    }
-   viaduct_release_shmem(connections);
 
+   usleep(500000); // give graceful kills some time to work
+
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
+     if (connections[i].helper_pid) {
+        if (!kill(pid, 0)) kill(pid, SIGKILL);
+     }
+   }
+
+   viaduct_release_shmem(connections);
    viaduct_destroy_shmem();
 }
 
@@ -111,15 +127,15 @@ ngx_http_viaduct_request_body_handler(ngx_http_request_t *r)
 #if 0
     /* is GET method? */
     if (r->args.len>0) {
-    	ngx_log_error(NGX_LOG_ALERT, log, 0, "args len: %d", r->args.len);
+    	ngx_log_error(NGX_LOG_INFO, log, 0, "args len: %d", r->args.len);
     }
     /* is POST method? */
     if (r->request_body->buf && r->request_body->buf->pos!=NULL) {
-       ngx_log_error(NGX_LOG_ALERT, log, 0,
+       ngx_log_error(NGX_LOG_DEBUG, log, 0,
             "buf: \"%s\"", r->request_body->buf->pos);
     } 
 #endif
-    ngx_log_error(NGX_LOG_ALERT, log, 0,
+    ngx_log_error(NGX_LOG_DEBUG, log, 0,
         "buf: \"%s\"", r->request_body->bufs->buf->pos);
     rc = ngx_http_viaduct_send_response(r);
 }
@@ -245,10 +261,10 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
     ngx_http_core_loc_conf_t  *clcf;
 
     log = r->connection->log;
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "viaduct_handler called");
+    ngx_log_error(NGX_LOG_INFO, log, 0, "viaduct_handler called");
 
     if (!(r->method & (NGX_HTTP_GET|NGX_HTTP_HEAD|NGX_HTTP_POST))) {
-        ngx_log_error(NGX_LOG_ALERT, log, 0, "unsupported method, returning not allowed");
+        ngx_log_error(NGX_LOG_WARN, log, 0, "unsupported method, returning not allowed");
         return NGX_HTTP_NOT_ALLOWED;
     }
 
@@ -263,14 +279,21 @@ ngx_http_viaduct_handler(ngx_http_request_t *r)
 
     r->root_tested = 1;
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "here1");
+    ngx_log_error(NGX_LOG_DEBUG, log, 0, "here1");
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "here2");
+    ngx_log_error(NGX_LOG_DEBUG, log, 0, "here2");
+    if (r->method == NGX_HTTP_GET || r->method == NGX_HTTP_HEAD) {
+        rc = ngx_http_discard_request_body(r);
+        if (rc != NGX_OK) return rc;
+        return ngx_http_viaduct_send_response(r);
+    }
+    /* else POST method */
+
     rc = ngx_http_read_client_request_body(r, ngx_http_viaduct_request_body_handler);
 
     if (rc >= NGX_HTTP_SPECIAL_RESPONSE) {
-        ngx_log_error(NGX_LOG_ALERT, log, 0, "failed to read client request body");
+        ngx_log_error(NGX_LOG_ERR, log, 0, "failed to read client request body");
         return rc;
     }
 
@@ -295,11 +318,11 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     request->log = log;
     request->log_level = 0;
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "parsing query_string");
+    ngx_log_error(NGX_LOG_INFO, log, 0, "parsing query_string");
     /* is GET method? */
-    if (r->args.len>0) {
-	parse_get_query_string(r->args.data, request);
-    }
+    if (r->method==NGX_HTTP_GET || r->method==NGX_HTTP_HEAD) { //r->args.len>0) {
+	parse_get_query_string(r->args, request);
+    } else
     /* is POST method? */
     if (r->request_body->buf && r->request_body->buf->pos!=NULL) {
 	parse_post_query_string(r->request_body->bufs, request);
@@ -310,13 +333,15 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
        r->keepalive = 0;
     }
 
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql_server: \"%s\"", request->sql_server);
-    ngx_log_error(NGX_LOG_ALERT, log, 0, "sql: \"%s\"", request->sql);
+    ngx_log_error(NGX_LOG_INFO, log, 0, "sql_server: \"%s\"", request->sql_server);
+    if (request->sql) ngx_log_error(NGX_LOG_DEBUG, log, 0, "sql: \"%s\"", request->sql);
     
     log->action = "sending response to client";
 
+    strncpy(request->remote_addr, (char *) r->connection->addr_text.data, VIADUCT_OBJ_SZ);
+
     if (request->cmd) json_output = (u_char *) viaduct_db_cmd(request);
-    if (request->status) json_output = (u_char *) viaduct_db_status(request);
+    else if (request->status) json_output = (u_char *) viaduct_db_status(request);
     else json_output = (u_char *) viaduct_db_run_query(request);
     viaduct_free_request(request);
 
@@ -425,7 +450,7 @@ write_value(viaduct_request_t *request, char *key, char *value)
    } else if (!strcmp(key, "sql_user")) {
       copy_value(request->sql_user, value, VIADUCT_OBJ_SZ);
    } else if (!strcmp(key, "sql_port")) {
-      copy_value(request->sql_user, value, 6);
+      copy_value(request->sql_port, value, 6);
    } else if (!strcmp(key, "sql")) {
       request->sql = strdup(value);
    } else if (!strcmp(key, "query_tag")) {
@@ -448,7 +473,7 @@ write_value(viaduct_request_t *request, char *key, char *value)
    } else if (!strncmp(key, "param", 5)) {
       i = atoi(&key[5]);
       if (i>VIADUCT_MAX_PARAMS) {
-         viaduct_log_debug(request, "param%d exceeds VIADUCT_MAX_PARAMS", i);
+         viaduct_log_error(request, "param%d exceeds VIADUCT_MAX_PARAMS", i);
       } else if (i>0) {
          request->params[i-1] = strdup(value);
       }
@@ -469,7 +494,7 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    ngx_chain_t *chain;
    unsigned long bufsz = 0;
 
-   ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "parsing post data");
+   ngx_log_error(NGX_LOG_INFO, request->log, 0, "parsing post data");
    viaduct_log_debug(request, "parsing post data");
 
    for (chain = bufs; chain!=NULL; chain = chain->next) 
@@ -479,7 +504,7 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    }
    value = (char *) malloc(bufsz);
    v = value;
-   ngx_log_error_core(NGX_LOG_ALERT, request->log, 0, "post data %l bytes", bufsz);
+   ngx_log_error(NGX_LOG_DEBUG, request->log, 0, "post data %l bytes", bufsz);
 
    for (chain = bufs; chain!=NULL; chain = chain->next) 
    {
@@ -508,14 +533,16 @@ void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
    write_value(request, key, value);
    free(value);
 }
-void parse_get_query_string(u_char *data, viaduct_request_t *request)
+void parse_get_query_string(ngx_str_t args, viaduct_request_t *request)
 {
    char key[100];
    char value[4000];
    char *s, *k = key, *v = value;
    int target = 0;
 
-   for (s=(char *)data; *s; s++)
+   if (args.len==0) return;
+
+   for (s=(char *)args.data; *s && s < (((char *)args.data) + args.len); s++)
    { 
       if (*s=='&') {
          *k='\0';

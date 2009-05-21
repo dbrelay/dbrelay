@@ -3,6 +3,7 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include "viaduct.h"
+#include "../include/viaduct_config.h"
 
 #define MAX_PATH_SZ 256
 
@@ -18,9 +19,13 @@ union semun {
 
 viaduct_connection_t *buf;
 
+key_t viaduct_get_ipc_key()
+{
+   return ftok(VIADUCT_PREFIX, 1);
+}
 static char *get_path(char *path, char *fname)
 {
-   strcpy(path, NGX_PREFIX);
+   strcpy(path, VIADUCT_PREFIX);
    strcat(path, "/");
    strcat(path, fname);
 
@@ -33,15 +38,14 @@ void viaduct_create_shmem()
    int semid;
    viaduct_connection_t *connections;
    union semun sem;
-   char path[MAX_PATH_SZ];
    
-   key = ftok(get_path(path, "viaduct.mem"), 1);
+   key = viaduct_get_ipc_key();
    shmid = shmget(key, VIADUCT_MAX_CONN * sizeof(viaduct_connection_t), IPC_CREAT | 0666);
    connections = (viaduct_connection_t *) shmat(shmid, NULL, 0);
    memset(connections, '\0', VIADUCT_MAX_CONN * sizeof(viaduct_connection_t));
    shmdt(connections);
 
-   key = ftok(get_path(path, "viaduct.lock"), 1);
+   key = viaduct_get_ipc_key();
    semid = semget(key, 1, IPC_CREAT | 0666);
    if (semid==-1) perror("semget");
    sem.val = 1;
@@ -53,9 +57,8 @@ viaduct_connection_t *viaduct_lock_shmem()
    key_t key;
    int semid;
    struct sembuf sb = {0, -1, SEM_UNDO};
-   char path[MAX_PATH_SZ];
 
-   key = ftok(get_path(path, "viaduct.lock"), 1);
+   key = viaduct_get_ipc_key();
    semid = semget(key, 1, 0);
    if (semid==-1) perror("semget");
 
@@ -70,9 +73,8 @@ void viaduct_unlock_shmem()
    key_t key;
    int semid;
    struct sembuf sb = {0, -1, SEM_UNDO};
-   char path[MAX_PATH_SZ];
 
-   key = ftok(get_path(path, "viaduct.lock"), 1);
+   key = viaduct_get_ipc_key();
    semid = semget(key, 1, 0);
 
    if (semid==-1) perror("semget");
@@ -85,11 +87,10 @@ viaduct_connection_t *viaduct_get_shmem()
    key_t key;
    int shmid;
    viaduct_connection_t *connections;
-   char path[MAX_PATH_SZ];
 
    viaduct_lock_shmem();
 
-   key = ftok(get_path(path, "viaduct.mem"), 1);
+   key = viaduct_get_ipc_key();
    shmid = shmget(key, VIADUCT_MAX_CONN * sizeof(viaduct_connection_t), 0666);
    if (shmid==-1) return NULL;
 
@@ -108,13 +109,12 @@ void viaduct_destroy_shmem()
    key_t key;
    int shmid;
    int semid;
-   char path[MAX_PATH_SZ];
    
-   key = ftok(get_path(path, "viaduct.lock"), 1);
+   key = viaduct_get_ipc_key();
    shmid = shmget(key, VIADUCT_MAX_CONN * sizeof(viaduct_connection_t), IPC_CREAT | 0666);
    shmctl(shmid, IPC_RMID, NULL);
 
-   key = ftok(get_path(path, "viaduct.mem"), 1);
+   key = viaduct_get_ipc_key();
    semid = semget(key, 1, IPC_CREAT | 0666);
    semctl(semid, 0, IPC_RMID);
 }

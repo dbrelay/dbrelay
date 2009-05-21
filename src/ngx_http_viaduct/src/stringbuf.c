@@ -47,7 +47,7 @@ void sb_free(stringbuf_t *string)
       node = node->next;
       if (prev->part) free(prev->part);
       free(prev);
-   } while (node->next);
+   } while (node && node->next);
    free(string);
 }
 
