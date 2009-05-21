@@ -29,6 +29,10 @@
 #define RUN 5
 #define CONT 6
 
+#define BUFSIZE 4096
+
+char *recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
+
 void log_open();
 void log_close();
 void log_msg(char *msg);
@@ -66,9 +70,10 @@ main(int argc, char **argv)
 {
    unsigned int s, s2;
    struct sockaddr_un local, remote;
-   char buf[100];
+   char line[BUFSIZE];
+   char in_buf[BUFSIZE];
+   int in_ptr = -1;
    char tmp[100];
-   char line[4096];
    int len, pos = 0;
    int done = 0, ret;
    char *results;
@@ -127,10 +132,10 @@ main(int argc, char **argv)
       setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
 #endif
 
-      while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
-        pos = 0;
+      //while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
+      in_ptr = -1;
+      while (!done && recv_string(s2, &in_buf, &in_ptr, &line)!=NULL) {
         //send(s2, &buf, len, 0);
-        while (get_line(buf, len, line, &pos)) {
 	   if (DEBUG) printf("line = %s\n", line);
            ret = process_line(line);
            
@@ -197,25 +202,6 @@ main(int argc, char **argv)
               send(s2, ":ERR\n", 5, NET_FLAGS);
            }
         }
-      }
-   }
-   return 0;
-}
-int
-get_line(char *buf, int buflen, char *line, int *pos)
-{
-   int i;
-   int d = 0;
-
-   for (i=*pos; i<buflen; i++) {
-      if (buf[i]=='\n') {
-        line[d]='\0';
-        (*pos)++;
-        return 1;
-      } else {
-         line[d++]=buf[i];
-         (*pos)++;
-      }      
    }
    return 0;
 }
@@ -353,3 +339,37 @@ void log_close(FILE *log)
 #endif
 }
 
+char * 
+recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
+{
+   int t;
+   int i;
+   int len;
+
+   //fprintf(stderr, "\nptr %d\n", *in_ptr);
+   if (*in_ptr==-1) {
+      if ((t=recv(s, in_buf, BUFSIZE - 1, NET_FLAGS))<=0) {
+	if (t < 0) {
+          if (DEBUG) perror("recv"); 
+        } else {
+          if (DEBUG) printf("Server closed connection\n");
+        }
+        return NULL;
+      }
+      in_buf[t] = '\0';
+      *in_ptr=0;
+   } else (*in_ptr)++;
+   len = strlen(in_buf);
+   //fprintf(stderr, "\nptr %d len %d\n", *in_ptr, len);
+   for (i=*in_ptr;in_buf[i]!='\n' && i<len; i++);
+   strncpy(out_buf, &in_buf[*in_ptr], i - *in_ptr); 
+   out_buf[i - *in_ptr]='\0';
+   //fprintf(stderr, "\nout_buf = %s\n", out_buf);
+   if (i>=len-1) *in_ptr=-1;
+   else *in_ptr=i; 
+   if (DEBUG) printf("echo> %s\n", out_buf);
+   if (*in_ptr>=BUFSIZE) exit(1);
+
+   //fprintf(stderr, "returning %s\n", out_buf);
+   return out_buf; 
+}
