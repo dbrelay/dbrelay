@@ -55,7 +55,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
    viaduct_conn_set_option(s, "DATABASE", request->sql_database);
    viaduct_conn_set_option(s, "USER", request->sql_user);
    //viaduct_conn_set_option(s, "PASSWORD", request->sql_password);
-   sprintf(tmp, "%ld\n", request->connection_timeout);
+   sprintf(tmp, "%ld", request->connection_timeout);
    viaduct_log_info(request, "timeout %s", tmp);
    viaduct_conn_set_option(s, "TIMEOUT", tmp);
    viaduct_conn_set_option(s, "APPNAME", request->connection_name);
@@ -69,10 +69,11 @@ viaduct_conn_send_request(int s, viaduct_request_t *request)
    viaduct_conn_send_string(s, ":RUN\n");
    sb_rslt = sb_new(NULL);
    viaduct_log_debug(request, "receiving results");
-   while (viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf) && 
-      strcmp(out_buf, ":BYE") &&
-      strcmp(out_buf, ":OK") &&
-      strcmp(out_buf, ":ERR")) { 
+   while (viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf)) {
+      //viaduct_log_debug(request, "result line = %s", out_buf);
+      if (!strcmp(out_buf, ":BYE") ||
+         !strcmp(out_buf, ":OK") ||
+         !strcmp(out_buf, ":ERR")) break;
       //viaduct_log_debug(request, "in %s", in_buf);
       //viaduct_log_debug(request, "out %s", out_buf);
       if (!strcmp(out_buf, ":RESULTS END")) results = 0;
@@ -103,6 +104,7 @@ viaduct_conn_set_option(int s, char *option, char *value)
    sprintf(set_string, ":SET %s %s\n", option, value);
    viaduct_conn_send_string(s, set_string);
    viaduct_conn_recv_string(s, in_buf, &in_ptr, out_buf);
+   //fprintf(stderr, "set %s returned %s\n", option, out_buf);
 }
 
 int

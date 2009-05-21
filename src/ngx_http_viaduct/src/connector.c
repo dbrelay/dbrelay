@@ -136,7 +136,8 @@ main(int argc, char **argv)
       in_ptr = -1;
       while (!done && recv_string(s2, &in_buf, &in_ptr, &line)!=NULL) {
         //send(s2, &buf, len, 0);
-	   if (DEBUG) printf("line = %s\n", line);
+	   log_msg("line = ");
+           log_msg(line);
            ret = process_line(line);
            
            if (ret == QUIT) {
@@ -224,7 +225,11 @@ process_line(char *line)
       }
    } 
 
-   if (len<1 || line[0]!=':') return ERR;
+   if (len<1 || line[0]!=':') {
+      log_msg("bad protocol command returning ERR\n");
+      log_msg(line);
+      return ERR;
+   }
 
    if (check_command(line, "QUIT", NULL)) return QUIT;
    else if (check_command(line, "RUN", NULL)) return RUN;
