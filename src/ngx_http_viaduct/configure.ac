@@ -11,12 +11,17 @@ AC_PREFIX_DEFAULT(/usr/local)
 # ------------------------------------------------------------
 AC_PROG_CC
 
-AM_INIT_AUTOMAKE
+VIADUCT_BUILD=`git show --abbrev-commit | grep "^commit" | awk '{print $2}'`
+AC_SUBST(VIADUCT_BUILD)
+
+AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_HEADERS(include/config.h)
 AC_CONFIG_FILES( Makefile \
         include/Makefile \
         src/Makefile \
 )
+
+VL_LIB_READLINE
 
 AC_ARG_WITH(nginx,
 AS_HELP_STRING([--with-nginx=DIR], [build with support for nginx in DIR]))
@@ -82,7 +87,6 @@ if test "$with_odbc"; then
 fi
 AM_CONDITIONAL(ODBC, test "$odbc" = "true")
 
-
 AC_CHECK_TYPES([semun])
 if test "$ac_cv_type_semun" = "no"; then
   AC_MSG_CHECKING(if sem.h defines semun)
@@ -118,4 +122,3 @@ we_have_MSG_NOSIGNAL
 AC_MSG_RESULT([$haveMSG_NOSIGNAL])
 
 AC_OUTPUT([src/config])
-

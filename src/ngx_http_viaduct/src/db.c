@@ -26,6 +26,7 @@ static int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn);
 static int viaduct_db_get_connection(viaduct_request_t *request);
 static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
+static int viaduct_check_request(viaduct_request_t *request);
 u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql);
 
 static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_connection_t *conn)
@@ -53,14 +54,15 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
 
    //viaduct_log_debug(request, "prefix %s", VIADUCT_PREFIX);
    if (IS_SET(request->connection_name)) {
-      //&& !strcmp(request->connection_name, "helper")) {
-      tmpnam(conn->sock_path);
-      //strcpy(conn->sock_path, VIADUCT_PREFIX);
-      //strcat(conn->sock_path, "/connector");
-      viaduct_log_debug(request, "socket name %s", conn->sock_path);
-      conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
+      if (IS_SET(request->sock_path)) {
+         strcpy(conn->sock_path, request->sock_path);
+      } else {
+         tmpnam(conn->sock_path);
+         conn->helper_pid = viaduct_conn_launch_connector(conn->sock_path);
+      }
+      viaduct_log_info(request, "socket name %s", conn->sock_path);
       conn->tm_create = time(NULL);
-      conn->in_use = TRUE;
+      conn->in_use++;
       conn->pid = getpid();
 
       return;
@@ -69,7 +71,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
    conn->db = api->connect(request);
       
    conn->tm_create = time(NULL);
-   conn->in_use = TRUE;
+   conn->in_use++;
 
    conn->pid = getpid();
 }
@@ -89,7 +91,7 @@ static int viaduct_db_alloc_connection(viaduct_request_t *request)
 
    /* we have exhausted the pool, log something sensible and return null */
    if (slot==-1) {
-      viaduct_log_debug(request, "No free connections available!");
+      viaduct_log_error(request, "No free connections available!");
       viaduct_release_shmem(connections);
       return -1;
    }
@@ -110,7 +112,7 @@ static unsigned int match(char *s1, char *s2)
 static unsigned int viaduct_db_match(viaduct_connection_t *conn, viaduct_request_t *request)
 {
    viaduct_log_debug(request, "comparing %s and %s", conn->connection_name, request->connection_name);
-   if (conn->pid != getpid()) return FALSE;
+   //if (conn->pid != getpid()) return FALSE;
    if (match(conn->sql_server, request->sql_server) &&
        match(conn->sql_port, request->sql_port) &&
        match(conn->sql_database, request->sql_database) &&
@@ -130,11 +132,11 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
    connections = viaduct_get_shmem();
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
       conn = &connections[i];
-      if (conn->pid!=0 && conn->in_use==FALSE) {
+      if (conn->pid!=0) {
          if (viaduct_db_match(conn, request)) {
-            viaduct_log_debug(request, "found connection match for request at slot %d", i);
+            viaduct_log_info(request, "found connection match for request at slot %d", i);
+            conn->in_use++;
             conn->tm_accessed = time(NULL);
-            conn->in_use = TRUE;
             //api->assign_request(conn->db, request);
             viaduct_release_shmem(connections);		
             return i;
@@ -149,13 +151,13 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
    unsigned int slot;
 
    if (!conn) {
-      viaduct_log_debug(request, "attempt to close null connection ");
+      viaduct_log_warn(request, "attempt to close null connection ");
       return;
    }
 
-   viaduct_log_debug(request, "closing connection %d", conn->slot);
+   viaduct_log_info(request, "closing connection %d", conn->slot);
 
-   api->close(conn->db);
+   if (conn->db) api->close(conn->db);
    conn->pid=0;
    conn->sql_server[0]='\0';
    conn->sql_user[0]='\0';
@@ -183,7 +185,7 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
       conn = &connections[i];
       if (!conn->pid || conn->in_use) continue;
       if (conn->tm_accessed + conn->connection_timeout < now) {
-         viaduct_log_debug(request, "timing out conection %ud", conn->slot);
+         viaduct_log_notice(request, "timing out conection %u", conn->slot);
          viaduct_db_close_connection(conn, request);
       }
    }
@@ -191,7 +193,7 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
 }
 static void viaduct_db_free_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
-   conn->in_use = FALSE;
+   conn->in_use--;
    
    if (IS_EMPTY(conn->connection_name)) {
       api->assign_request(conn->db, NULL);
@@ -215,7 +217,7 @@ static int viaduct_db_get_connection(viaduct_request_t *request)
       viaduct_log_debug(request, "no match allocating slot %d", slot);
    }
 
-   //viaduct_db_close_connections(request);
+   viaduct_db_close_connections(request);
 
    return slot;
 }
@@ -234,6 +236,14 @@ u_char *viaduct_db_status(viaduct_request_t *request)
    json_new_object(json);
    json_add_key(json, "status");
    json_new_object(json);
+
+   json_add_key(json, "info");
+   json_new_object(json);
+   json_add_string(json, "build", VIADUCT_BUILD);
+   sprintf(tmpstr, "0x%08x", viaduct_get_ipc_key());
+   json_add_string(json, "ipckey", tmpstr);
+   json_end_object(json);
+
    json_add_key(json, "connections");
    json_new_array(json);
 
@@ -295,11 +305,11 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    char *newsql;
    int i = 0;
    char tmp[20];
-   //char sock_path[100];
+   int have_error = 0;
 
    error_string[0]='\0';
 
-   viaduct_log_debug(request, "run_query called");
+   viaduct_log_info(request, "run_query called");
 
    json_new_object(json);
 
@@ -323,6 +333,20 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 */
 
    json_end_object(json);
+
+   if (!viaduct_check_request(request)) {
+        viaduct_log_info(request, "check_request failed.");
+   	json_add_key(json, "log");
+   	json_new_object(json);
+   	if (request->sql) json_add_string(json, "sql", request->sql);
+    	json_add_string(json, "error", "Not all required parameters submitted.");
+        json_end_object(json);
+        json_end_object(json);
+
+        ret = (u_char *) json_to_string(json);
+        json_free(json);
+        return ret;
+   }
    
    newsql = viaduct_resolve_params(request, request->sql);
 
@@ -337,9 +361,9 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_release_shmem(connections);
 
       if (IS_SET(request->connection_name)) {
-         viaduct_log_debug(request, "connecting to connection helper");
-         viaduct_log_debug(request, "socket address %s", conn->sock_path);
-         s = viaduct_connect_to_helper(conn->sock_path);
+         viaduct_log_info(request, "connecting to connection helper");
+         viaduct_log_info(request, "socket address %s", conn->sock_path);
+         s = viaduct_socket_connect(conn->sock_path);
          // if connect fails, remove connector from list
          if (s==-1) {
             unlink(conn->sock_path);
@@ -355,11 +379,15 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    if (IS_SET(request->connection_name)) 
    {
-      viaduct_log_debug(request, "sending request");
-      ret = (u_char *) viaduct_conn_send_request(s, request);
+      viaduct_log_info(request, "sending request");
+      ret = (u_char *) viaduct_conn_send_request(s, request, &have_error);
       viaduct_log_debug(request, "back");
-      json_add_json(json, ", ");
-      json_add_json(json, (char *) ret);
+      if (have_error) {
+         strcpy(error_string, (char *) ret);
+      } else {
+         json_add_json(json, ", ");
+         json_add_json(json, (char *) ret);
+      }
       viaduct_log_debug(request, "closing");
       viaduct_conn_close(s);
       viaduct_log_debug(request, "after close");
@@ -378,9 +406,13 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       } else {
    	viaduct_log_debug(request, "Sending sql query");
         ret = viaduct_exec_query(conn, request->sql_database, newsql);
-        if (ret==NULL) strcpy(error_string, request->error_message);
-        json_add_json(json, ", ");
-        json_add_json(json, (char *) ret);
+        if (ret==NULL) {
+   	   viaduct_log_debug(request, "error");
+           strcpy(error_string, request->error_message);
+        } else {
+           json_add_json(json, ", ");
+           json_add_json(json, (char *) ret);
+        }
         //free(ret);
    	viaduct_log_debug(request, "Done filling JSON output");
       }
@@ -388,6 +420,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    free(conn);
 
    free(newsql);
+
    json_add_key(json, "log");
    json_new_object(json);
    json_add_string(json, "sql", request->sql);
@@ -441,13 +474,15 @@ viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql)
 int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 {
    int numcols, colnum;
-   char tmp[256], *colname;
+   char tmp[256], *colname, tmpcolname[256];
+   int maxcolname;
    int l;
 
    json_add_key(json, "data");
    json_new_array(json);
    while (api->has_results(conn->db)) 
    {
+        maxcolname = 0;
 	json_new_object(json);
 	json_add_key(json, "fields");
 	json_new_array(json);
@@ -455,13 +490,23 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 	numcols = api->numcols(conn->db);
 	for (colnum=1; colnum<=numcols; colnum++) {
 	    json_new_object(json);
-	    json_add_string(json, "name", api->colname(conn->db, colnum));
+            colname = api->colname(conn->db, colnum);
+            if (!IS_SET(colname)) {
+               sprintf(tmpcolname, "%d", ++maxcolname);
+	       json_add_string(json, "name", tmpcolname);
+            } else {
+               l = atoi(colname); 
+               if (l>0 && l>maxcolname) {
+                  maxcolname=l;
+               }
+	       json_add_string(json, "name", colname);
+            }
             api->coltype(conn->db, colnum, tmp);
 	    json_add_string(json, "sql_type", tmp);
             l = api->collen(conn->db, colnum);
             if (l!=0) {
-            	sprintf(tmp, "%d", l);
-	    	json_add_string(json, "length", tmp);
+               sprintf(tmp, "%d", l);
+               json_add_string(json, "length", tmp);
             }
             l = api->colprec(conn->db, colnum);
             if (l!=0) {
@@ -480,15 +525,25 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 	json_new_array(json);
 
         while (api->fetch_row(conn->db)) { 
+           maxcolname = 0;
 	   json_new_object(json);
 	   for (colnum=1; colnum<=numcols; colnum++) {
               colname = api->colname(conn->db, colnum);
+              if (!IS_SET(colname)) {
+                 sprintf(tmpcolname, "%d", ++maxcolname);
+              } else {
+                 l = atoi(colname); 
+                 if (l>0 && l>maxcolname) {
+                    maxcolname=l;
+                 }
+                 strcpy(tmpcolname, colname);
+              }
               if (api->colvalue(conn->db, colnum, tmp)==NULL) 
               	json_add_null(json, colname);
 	      else if (api->is_quoted(conn->db, colnum)) 
-              	json_add_string(json, colname, tmp);
+              	json_add_string(json, tmpcolname, tmp);
               else
-              	json_add_number(json, colname, tmp);
+              	json_add_number(json, tmpcolname, tmp);
            }
            json_end_object(json);
         }
@@ -587,3 +642,11 @@ viaduct_find_placeholder(char *sql)
    if (!found) return -1;
    else return i-1;
 }
+static int
+viaduct_check_request(viaduct_request_t *request)
+{
+   if (!request->sql) return 0;
+   if (!IS_SET(request->sql_server)) return 0;
+   if (!IS_SET(request->sql_user)) return 0;
+   return 1;
+} 
