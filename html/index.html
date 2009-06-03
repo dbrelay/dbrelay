@@ -26,6 +26,10 @@
       };
       
       $(document).ready(function() {
+
+        var connection_timeout_wrapper = $('#connection_timeout_wrapper');
+        var connection_timeout         = $('#connection_timeout');
+
         var launch = function () {
           var go = $('#go');
           if (go.data('inflight') == true) return false;
@@ -38,6 +42,19 @@
           handles: "s,e",
           transparent: true
         });
+        
+        $('#connection_name').change(function(){
+          var tv = ($(this).val().match(/\S+/) || [])[0];
+          if ( tv ) {
+            if ( connection_timeout_wrapper.is(':hidden') ) {
+              connection_timeout.val('60');
+              connection_timeout_wrapper.show();
+            };
+          } else {
+            connection_timeout_wrapper.hide();
+            connection_timeout.val('');
+          };
+        });
 
         $('#go').click(function(){
           if ( ! launch() ) { return false ; };
@@ -45,12 +62,13 @@
           viaductQuery(
             '/sql',
             {
-              'sql_server'   : $('#sql_server').val(),
-              'sql_port'     : $('#sql_port').val(),
-              'sql_database' : $('#sql_database').val(),
-              'sql_user'     : $('#sql_user').val(),
-              'sql_password' : $('#sql_password').val(),
-              'connection_name' : $('#connection_name').val()
+              'sql_server'         : $('#sql_server').val(),
+              'sql_port'           : $('#sql_port').val(),
+              'sql_database'       : $('#sql_database').val(),
+              'sql_user'           : $('#sql_user').val(),
+              'sql_password'       : $('#sql_password').val(),
+              'connection_name'    : $('#connection_name').val(),
+              'connection_timeout' : $('#connection_timeout').val()
             },
             $('#sql').val(),
             processRowSets,
@@ -159,6 +177,7 @@
   <body>
     <div id="docs">
       <h3>Documentation:</h3>
+      <p><a href="status.html">Server status</a></p>
       <p><a href="doc/viaduct_specification.html">Specifications</a></p>
       <p><a href="doc/viaduct_architecture.pdf">Architecture</a></p>
     </div>
@@ -169,6 +188,9 @@
       <label for="sql_user">User</label><input type="text" name="sql_user" value="" id="sql_user"><br />
       <label for="sql_password">Password</label><input type="password" name="sql_password" value="" id="sql_password"><br />
       <label for="connection_name">Connection</label><input type="text" name="connection_name" value="" id="connection_name"><br />
+      <div id="connection_timeout_wrapper" style="display:none;">
+        <label for="connection_timeout">Timeout</label><input type="text" name="connection_timeout" value="" id="connection_timeout"><br />
+      </div>
       <label for="sql">Query</label><textarea name="sql" rows="8" cols="80" id="sql"></textarea>
       <p>
         <input type="button" id="go" value="GO&nbsp;&nbsp;&gt;&nbsp;&gt;&nbsp;&gt;">
