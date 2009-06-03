@@ -11,6 +11,45 @@
 
 #define DEBUG 0
 
+unsigned int
+viaduct_socket_create(char *sock_path)
+{
+   unsigned int s;
+   int ret, len;
+   struct sockaddr_un local;
+
+   s = socket(AF_UNIX, SOCK_STREAM, 0);
+
+   local.sun_family = AF_UNIX;  
+   strcpy(local.sun_path, sock_path);
+   unlink(local.sun_path);
+   len = strlen(local.sun_path) + sizeof(local.sun_family) + 1;
+   ret = bind(s, (struct sockaddr *)&local, len);
+
+   listen(s, 30);
+
+   return s;
+}
+
+unsigned int
+viaduct_socket_accept(unsigned int s)
+{
+   unsigned int s2;
+   struct sockaddr_un remote;
+#if HAVE_SO_NOSIGPIPE
+   int on = 1;
+#endif
+
+   socklen_t len = sizeof(struct sockaddr_un);
+
+   s2 = accept(s, (struct sockaddr *) &remote, &len);
+
+#if HAVE_SO_NOSIGPIPE
+      setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
+#endif
+   return s2;
+}
+
 int
 viaduct_socket_connect(char *sock_path)
 {

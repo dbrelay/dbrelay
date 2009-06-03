@@ -65,7 +65,6 @@ int
 main(int argc, char **argv)
 {
    unsigned int s, s2;
-   struct sockaddr_un local, remote;
    char line[VIADUCT_SOCKET_BUFSIZE];
    char in_buf[VIADUCT_SOCKET_BUFSIZE];
    int in_ptr = -1;
@@ -74,9 +73,6 @@ main(int argc, char **argv)
    int done = 0, ret;
    char *results;
    char *sock_path;
-#if HAVE_SO_NOSIGPIPE
-   int on = 1;
-#endif
    viaduct_connection_t conn;
    unsigned char connected = 0;
    pid_t pid;
@@ -94,16 +90,7 @@ main(int argc, char **argv)
    viaduct_mysql_init();
 #endif
 
-   s = socket(AF_UNIX, SOCK_STREAM, 0);
-
-   local.sun_family = AF_UNIX;  
-   strcpy(local.sun_path, sock_path);
-   //strcpy(local.sun_path, SOCK_PATH);
-   unlink(local.sun_path);
-   len = strlen(local.sun_path) + sizeof(local.sun_family) + 1;
-   ret = bind(s, (struct sockaddr *)&local, len);
-
-   listen(s, 30);
+   s = viaduct_socket_create(sock_path);
 
    // fork and die so parent knows we are ready
    if (!GDB && (pid=fork())) {
@@ -118,14 +105,9 @@ main(int argc, char **argv)
    log_msg(sock_path);
    log_msg("\n");
 
-   len = sizeof(struct sockaddr_un);
    for (;;) {
-      s2 = accept(s, &remote, &len);
       done = 0;
-
-#if HAVE_SO_NOSIGPIPE
-      setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
-#endif
+      s2 = viaduct_socket_accept(s);
 
       //while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
       in_ptr = -1;
@@ -155,7 +137,7 @@ main(int argc, char **argv)
               }
 #endif
               log_msg(request.sql);
-              results = (char *) viaduct_exec_query(&conn, &request.sql_database, request.sql);
+              results = (char *) viaduct_exec_query(&conn, (char *) &request.sql_database, request.sql);
               sprintf(tmp, "addr = %lu\n", results);
               log_msg(tmp);
               if (results == NULL) {

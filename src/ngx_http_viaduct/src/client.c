@@ -109,36 +109,6 @@ viaduct_conn_set_option(int s, char *option, char *value)
    //fprintf(stderr, "set %s returned %s\n", option, out_buf);
 }
 
-int
-viaduct_connect_to_helper(char *sock_path)
-{
-   int s, len;
-   struct sockaddr_un remote;
-#if HAVE_SO_NOSIGPIPE
-   int on = 1;
-#endif
-
-   if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-       return -1;
-   }
-
-   if (DEBUG) printf("Trying to connect...\n");
-
-   remote.sun_family = AF_UNIX;
-   strcpy(remote.sun_path, sock_path);
-   len = strlen(remote.sun_path) + sizeof(remote.sun_family) + 1;
-
-   if (connect(s, (struct sockaddr *)&remote, len) == -1) {
-      return -1;
-   }
-   if (DEBUG) printf("Connected.\n");
-
-#if HAVE_SO_NOSIGPIPE
-   setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
-#endif
-
-   return s;
-}
 pid_t viaduct_conn_launch_connector(char *sock_path)
 {
    //char *argv[] = {"viaduct-connector", sock_path, NULL};
