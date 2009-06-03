@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TESTS="1 2 3 4"
+TESTS="1 2 3 4 5"
 
 echo
 echo Testing unnamed connections
