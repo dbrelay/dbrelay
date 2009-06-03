@@ -389,6 +389,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       ret = (u_char *) viaduct_conn_send_request(s, request, &have_error);
       viaduct_log_debug(request, "back");
       if (have_error) {
+         viaduct_log_debug(request, "have error");
          strcpy(error_string, (char *) ret);
       } else if (!IS_SET((char *)ret)) {
          viaduct_log_warn(request, "Connector returned no information");

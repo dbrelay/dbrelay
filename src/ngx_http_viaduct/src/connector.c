@@ -122,6 +122,7 @@ main(int argc, char **argv)
               close(s2);
               done = 1;
            } else if (ret == RUN) {
+              request.error_message[0]='\0';
               log_msg("running\n"); 
 #if PERSISTENT_CONN
               if (!connected) {
