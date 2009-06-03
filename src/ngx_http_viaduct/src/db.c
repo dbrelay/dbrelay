@@ -384,6 +384,9 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_log_debug(request, "back");
       if (have_error) {
          strcpy(error_string, (char *) ret);
+      } else if (!IS_SET(ret)) {
+         viaduct_log_warn(request, "Connector returned no information");
+         viaduct_log_info(request, "Query was: %s", newsql);
       } else {
          json_add_json(json, ", ");
          json_add_json(json, (char *) ret);
