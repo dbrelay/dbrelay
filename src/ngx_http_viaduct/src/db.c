@@ -28,7 +28,9 @@ static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
 static int viaduct_check_request(viaduct_request_t *request);
 u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql);
-static void viaduct_write_json_log(json_t *json, char *error_string);
+static void viaduct_write_json_log(json_t *json, viaduct_request_t *request, char *error_string);
+void viaduct_write_json_colinfo(json_t *json, void *db, int colnum, int *maxcolname);
+void viaduct_write_json_column(json_t *json, void *db, int colnum, int *maxcolname);
 
 static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_connection_t *conn)
 {
@@ -388,7 +390,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_log_debug(request, "back");
       if (have_error) {
          strcpy(error_string, (char *) ret);
-      } else if (!IS_SET(ret)) {
+      } else if (!IS_SET((char *)ret)) {
          viaduct_log_warn(request, "Connector returned no information");
          viaduct_log_info(request, "Query was: %s", newsql);
       } else {
@@ -481,9 +483,8 @@ viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql)
 int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 {
    int numcols, colnum;
-   char tmp[256], *colname, tmpcolname[256];
+   char tmp[256];
    int maxcolname;
-   int l;
 
    json_add_key(json, "data");
    json_new_array(json);
@@ -496,36 +497,7 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
 
 	numcols = api->numcols(conn->db);
 	for (colnum=1; colnum<=numcols; colnum++) {
-	    json_new_object(json);
-            colname = api->colname(conn->db, colnum);
-            if (!IS_SET(colname)) {
-               sprintf(tmpcolname, "%d", ++maxcolname);
-	       json_add_string(json, "name", tmpcolname);
-            } else {
-               l = atoi(colname); 
-               if (l>0 && l>maxcolname) {
-                  maxcolname=l;
-               }
-	       json_add_string(json, "name", colname);
-            }
-            api->coltype(conn->db, colnum, tmp);
-	    json_add_string(json, "sql_type", tmp);
-            l = api->collen(conn->db, colnum);
-            if (l!=0) {
-               sprintf(tmp, "%d", l);
-               json_add_string(json, "length", tmp);
-            }
-            l = api->colprec(conn->db, colnum);
-            if (l!=0) {
-               sprintf(tmp, "%d", l);
-	       json_add_string(json, "precision", tmp);
-            }
-            l = api->colscale(conn->db, colnum);
-            if (l!=0) {
-               sprintf(tmp, "%d", l);
-	       json_add_string(json, "scale", tmp);
-            }
-	    json_end_object(json);
+            viaduct_write_json_colinfo(json, conn->db, colnum, &maxcolname);
         }
 	json_end_array(json);
 	json_add_key(json, "rows");
@@ -535,22 +507,7 @@ int viaduct_db_fill_data(json_t *json, viaduct_connection_t *conn)
            maxcolname = 0;
 	   json_new_object(json);
 	   for (colnum=1; colnum<=numcols; colnum++) {
-              colname = api->colname(conn->db, colnum);
-              if (!IS_SET(colname)) {
-                 sprintf(tmpcolname, "%d", ++maxcolname);
-              } else {
-                 l = atoi(colname); 
-                 if (l>0 && l>maxcolname) {
-                    maxcolname=l;
-                 }
-                 strcpy(tmpcolname, colname);
-              }
-              if (api->colvalue(conn->db, colnum, tmp)==NULL) 
-              	json_add_null(json, colname);
-	      else if (api->is_quoted(conn->db, colnum)) 
-              	json_add_string(json, tmpcolname, tmp);
-              else
-              	json_add_number(json, tmpcolname, tmp);
+              viaduct_write_json_column(json, conn->db, colnum, &maxcolname);
            }
            json_end_object(json);
         }
@@ -658,7 +615,7 @@ viaduct_check_request(viaduct_request_t *request)
    return 1;
 } 
 static void
-viaduct_write_json_log(json_t *json, char *error_string)
+viaduct_write_json_log(json_t *json, viaduct_request_t *request, char *error_string)
 {
    	json_add_key(json, "log");
    	json_new_object(json);
@@ -666,4 +623,62 @@ viaduct_write_json_log(json_t *json, char *error_string)
     	json_add_string(json, "error", error_string);
         json_end_object(json);
         json_end_object(json);
+}
+void viaduct_write_json_colinfo(json_t *json, void *db, int colnum, int *maxcolname)
+{
+   char tmp[256], *colname, tmpcolname[256];
+   int l;
+
+   json_new_object(json);
+   colname = api->colname(db, colnum);
+   if (!IS_SET(colname)) {
+      sprintf(tmpcolname, "%d", ++(*maxcolname));
+      json_add_string(json, "name", tmpcolname);
+   } else {
+      l = atoi(colname); 
+      if (l>0 && l>*maxcolname) {
+         *maxcolname=l;
+      }
+      json_add_string(json, "name", colname);
+   }
+   api->coltype(db, colnum, tmp);
+   json_add_string(json, "sql_type", tmp);
+   l = api->collen(db, colnum);
+   if (l!=0) {
+      sprintf(tmp, "%d", l);
+      json_add_string(json, "length", tmp);
+   }
+   l = api->colprec(db, colnum);
+   if (l!=0) {
+      sprintf(tmp, "%d", l);
+      json_add_string(json, "precision", tmp);
+   }
+   l = api->colscale(db, colnum);
+   if (l!=0) {
+      sprintf(tmp, "%d", l);
+      json_add_string(json, "scale", tmp);
+   }
+   json_end_object(json);
+}
+void viaduct_write_json_column(json_t *json, void *db, int colnum, int *maxcolname)
+{
+   char tmp[256], *colname, tmpcolname[256];
+   int l;
+
+   colname = api->colname(db, colnum);
+   if (!IS_SET(colname)) {
+      sprintf(tmpcolname, "%d", ++(*maxcolname));
+   } else {
+      l = atoi(colname); 
+      if (l>0 && l>*maxcolname) {
+         *maxcolname=l;
+      }
+      strcpy(tmpcolname, colname);
+   }
+   if (api->colvalue(db, colnum, tmp)==NULL) 
+      json_add_null(json, colname);
+   else if (api->is_quoted(db, colnum)) 
+      json_add_string(json, tmpcolname, tmp);
+   else
+      json_add_number(json, tmpcolname, tmp);
 }
