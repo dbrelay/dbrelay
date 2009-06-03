@@ -167,7 +167,7 @@ void viaduct_conn_close(int s);
 
 /* socket.c */
 int viaduct_socket_connect(char *sock_path);
-char *viaduct_socket_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
+int viaduct_socket_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
 void viaduct_socket_send_string(int s, char *str);
 
 #endif /* _VIADUCT_H_INCLUDED_ */

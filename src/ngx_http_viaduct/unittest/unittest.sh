@@ -6,9 +6,14 @@ then
    exit 1
 fi
 
+if [ "$1" = "-D" ]
+then
+   DEBUG=1
+   shift
+fi
 if [ "$1" = "-C" ]
 then
-   OPTC="-c${TESTNAME}"
+   OPTC="-c$2"
    shift
 fi
 
@@ -24,7 +29,7 @@ TESTNAME=$1
 #OPTC="-c${TESTNAME}"
 
 JS=`which js 2> /dev/null`
-if [ "$JS" = "" ]
+if [ "$JS" = "" -o "x$DEBUG" = "x1" ]
 then
    echo ../src/viaduct $OPTU $OPTH $OPTD $OPTC -tunittest -f${TESTNAME}.sql 2> /dev/null 
    ../src/viaduct $OPTU $OPTH $OPTD $OPTC -tunittest -f${TESTNAME}.sql 2> /dev/null 

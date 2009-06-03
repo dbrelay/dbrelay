@@ -111,7 +111,7 @@ main(int argc, char **argv)
 
       //while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
       in_ptr = -1;
-      while (!done && viaduct_socket_recv_string(s2, in_buf, &in_ptr, line)!=NULL) {
+      while (!done && viaduct_socket_recv_string(s2, in_buf, &in_ptr, line)>0) {
 	   log_msg("line = ");
            log_msg(line);
            ret = process_line(line);
@@ -243,6 +243,8 @@ process_line(char *line)
          log_msg("sql mode off\n");
          receive_sql = 0;
          request.sql = sb_to_char(sb_sql);
+         //log_msg("sql");
+         //log_msg(request.sql);
          sb_free(sb_sql);
       } else return ERR;
       if (receive_sql) return CONT;

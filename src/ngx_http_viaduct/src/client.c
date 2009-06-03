@@ -47,7 +47,9 @@ viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
    int in_ptr = -1;
    char tmp[20];
 
+   viaduct_log_debug(request, "setting options");
    viaduct_conn_set_option(s, "SERVER", request->sql_server);
+   viaduct_log_debug(request, "SERVER sent");
    viaduct_conn_set_option(s, "DATABASE", request->sql_database);
    viaduct_conn_set_option(s, "USER", request->sql_user);
    //viaduct_conn_set_option(s, "PASSWORD", request->sql_password);
@@ -91,6 +93,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
    }
    viaduct_log_debug(request, "finished receiving results");
    json_output = sb_to_char(sb_rslt);
+   viaduct_log_debug(request, "receiving results");
    sb_free(sb_rslt);
    return json_output;
 }
