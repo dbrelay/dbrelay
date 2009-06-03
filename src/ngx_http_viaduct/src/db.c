@@ -28,6 +28,7 @@ static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
 static int viaduct_check_request(viaduct_request_t *request);
 u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql);
+static void viaduct_write_json_log(json_t *json, char *error_string);
 
 static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_connection_t *conn)
 {
@@ -89,7 +90,7 @@ static int viaduct_db_alloc_connection(viaduct_request_t *request)
      }
    }
 
-   /* we have exhausted the pool, log something sensible and return null */
+   /* we have exhausted the pool, log something sensible and return error */
    if (slot==-1) {
       viaduct_log_error(request, "No free connections available!");
       viaduct_release_shmem(connections);
@@ -336,12 +337,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    if (!viaduct_check_request(request)) {
         viaduct_log_info(request, "check_request failed.");
-   	json_add_key(json, "log");
-   	json_new_object(json);
-   	if (request->sql) json_add_string(json, "sql", request->sql);
-    	json_add_string(json, "error", "Not all required parameters submitted.");
-        json_end_object(json);
-        json_end_object(json);
+        viaduct_write_json_log(json, request, "Not all required parameters submitted.");
 
         ret = (u_char *) json_to_string(json);
         json_free(json);
@@ -354,6 +350,14 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_log_debug(request, "calling get_connection");
       slot = viaduct_db_get_connection(request);
       viaduct_log_debug(request, "using slot %d", slot);
+      if (slot==-1) {
+         viaduct_log_warn(request, "Couldn't allocate new connection");
+         viaduct_write_json_log(json, request, "Couldn't allocate new connection");
+
+         ret = (u_char *) json_to_string(json);
+         json_free(json);
+         return ret;
+      }
 
       connections = viaduct_get_shmem();
       conn = (viaduct_connection_t *) malloc(sizeof(viaduct_connection_t));
@@ -653,3 +657,13 @@ viaduct_check_request(viaduct_request_t *request)
    if (!IS_SET(request->sql_user)) return 0;
    return 1;
 } 
+static void
+viaduct_write_json_log(json_t *json, char *error_string)
+{
+   	json_add_key(json, "log");
+   	json_new_object(json);
+   	if (request->sql) json_add_string(json, "sql", request->sql);
+    	json_add_string(json, "error", error_string);
+        json_end_object(json);
+        json_end_object(json);
+}
