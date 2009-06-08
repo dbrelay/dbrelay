@@ -71,6 +71,7 @@ then
 else
   ./configure --prefix=$PREFIX --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
 fi
+cd include; make
 
 # NGINX configuration
 cd $BUILD

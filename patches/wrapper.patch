@@ -10,7 +10,7 @@
             src/core/ngx_array.c \
 --- src/core/viaduct.c  2008-12-23 07:31:40.000000000 -0500
 +++ src/core/viaduct.c	2008-12-16 10:04:33.000000000 -0500
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,54 @@
 +
 +/*
 + * Copyright (C) Igor Sysoev
@@ -21,6 +21,7 @@
 +#include <ngx_core.h>
 +#include <nginx.h>
 +#include <getopt.h>
++#include <sys/ipc.h>
 +#include "../../../../ngx_http_viaduct/src/viaduct.h"
 +
 +int ngx_cdecl ngx_main(int argc, char *const *argv);
@@ -39,6 +40,7 @@
 +     /* getopt_long stores the option index here. */
 +     int option_index = 0;
 +     int c;
++     key_t key;
 +     
 +     do {
 +        c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -46,7 +48,8 @@
 +        switch (c)
 +        {
 +           case 'c': 
-+              printf("Cleaning up old instance(s).\n");
++              key = ftok(NGX_PREFIX, 1);
++              printf("Cleaning up old instance(s) shared mem key = %d.\n", (int) key );
 +              ngx_http_viaduct_exit_master(NULL);
 +              exit(0); 
 +              break;

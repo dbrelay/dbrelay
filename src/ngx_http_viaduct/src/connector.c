@@ -18,7 +18,7 @@
 #endif
 
 #define SOCK_PATH "/tmp/viaduct/connector"
-#define DEBUG 0
+#define DEBUG 1
 #define PERSISTENT_CONN 1
 #define GDB 0
 
@@ -27,6 +27,7 @@
 #define ERR 3
 #define DIE 4
 #define RUN 5
+#define CONT 6
 
 void log_open();
 void log_close();
@@ -64,16 +65,14 @@ int
 main(int argc, char **argv)
 {
    unsigned int s, s2;
-   struct sockaddr_un local, remote;
-   char buf[100];
-   char line[4096];
+   char line[VIADUCT_SOCKET_BUFSIZE];
+   char in_buf[VIADUCT_SOCKET_BUFSIZE];
+   int in_ptr = -1;
+   char tmp[100];
    int len, pos = 0;
    int done = 0, ret;
    char *results;
    char *sock_path;
-#if HAVE_SO_NOSIGPIPE
-   int on = 1;
-#endif
    viaduct_connection_t conn;
    unsigned char connected = 0;
    pid_t pid;
@@ -91,16 +90,7 @@ main(int argc, char **argv)
    viaduct_mysql_init();
 #endif
 
-   s = socket(AF_UNIX, SOCK_STREAM, 0);
-
-   local.sun_family = AF_UNIX;  
-   strcpy(local.sun_path, sock_path);
-   //strcpy(local.sun_path, SOCK_PATH);
-   unlink(local.sun_path);
-   len = strlen(local.sun_path) + sizeof(local.sun_family) + 1;
-   ret = bind(s, (struct sockaddr *)&local, len);
-
-   listen(s, 30);
+   s = viaduct_socket_create(sock_path);
 
    // fork and die so parent knows we are ready
    if (!GDB && (pid=fork())) {
@@ -109,34 +99,30 @@ main(int argc, char **argv)
    }
    // allow control to return to the (grand)parent process
    fclose(stdout);
-   //kill(getppid(), SIGURG);
 
    log_open();
    log_msg("Using socket path\n");
    log_msg(sock_path);
    log_msg("\n");
 
-   len = sizeof(struct sockaddr_un);
    for (;;) {
-      s2 = accept(s, &remote, &len);
       done = 0;
+      s2 = viaduct_socket_accept(s);
 
-#if HAVE_SO_NOSIGPIPE
-      setsockopt(s2, SOL_SOCKET, SO_NOSIGPIPE, (void *)&on, sizeof(on));
-#endif
-
-      while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
-        //send(s2, &buf, len, 0);
-        if (get_line(buf, len, line, &pos)) {
-	   if (DEBUG) printf("line = %s\n", line);
+      //while (!done && (len = recv(s2, &buf, 100, NET_FLAGS), len > 0)) {
+      in_ptr = -1;
+      while (!done && viaduct_socket_recv_string(s2, in_buf, &in_ptr, line)>0) {
+	   log_msg("line = ");
+           log_msg(line);
            ret = process_line(line);
            
            if (ret == QUIT) {
               log_msg("disconnect.\n"); 
-              send(s2, ":BYE\n", 5, NET_FLAGS);
+              viaduct_socket_send_string(s2, ":BYE\n");
               close(s2);
               done = 1;
            } else if (ret == RUN) {
+              request.error_message[0]='\0';
               log_msg("running\n"); 
 #if PERSISTENT_CONN
               if (!connected) {
@@ -151,16 +137,27 @@ main(int argc, char **argv)
 #if PERSISTENT_CONN
               }
 #endif
-              results = (char *) viaduct_exec_query(&conn, &request.sql_database, request.sql);
-              if (results == NULL) log_msg("results are null\n"); 
-
-              log_msg("sending results\n"); 
-              send(s2, ":RESULTS BEGIN\n", 15, NET_FLAGS);
-              log_msg(results);
-              send(s2, results, strlen(results), NET_FLAGS);
-              send(s2, "\n", 1, NET_FLAGS);
-              send(s2, ":RESULTS END\n", 13, NET_FLAGS);
-              send(s2, ":OK\n", 4, NET_FLAGS);
+              log_msg(request.sql);
+              results = (char *) viaduct_exec_query(&conn, (char *) &request.sql_database, request.sql);
+              sprintf(tmp, "addr = %lu\n", results);
+              log_msg(tmp);
+              if (results == NULL) {
+	         log_msg("results are null\n"); 
+                 viaduct_socket_send_string(s2, ":ERROR BEGIN\n");
+                 viaduct_socket_send_string(s2, request.error_message);
+                 viaduct_socket_send_string(s2, "\n");
+                 viaduct_socket_send_string(s2, ":ERROR END\n");
+              } else {
+                 log_msg("sending results\n"); 
+                 viaduct_socket_send_string(s2, ":RESULTS BEGIN\n");
+                 log_msg(results);
+                 sprintf(tmp, "len = %d\n", strlen(results));
+                 log_msg(tmp);
+                 viaduct_socket_send_string(s2, results);
+                 viaduct_socket_send_string(s2, "\n");
+                 viaduct_socket_send_string(s2, ":RESULTS END\n");
+              }
+              viaduct_socket_send_string(s2, ":OK\n");
               log_msg("done\n"); 
 #if !PERSISTENT_CONN
 #if HAVE_FREETDS
@@ -175,33 +172,20 @@ main(int argc, char **argv)
            } else if (ret == DIE) {
               log_msg("exiting.\n"); 
               log_close();
-              send(s2, ":BYE\n", 5, NET_FLAGS);
+              viaduct_socket_send_string(s2, ":BYE\n");
               close(s2);
               exit(0);
            } else if (ret == OK) {
-              send(s2, ":OK\n", 4, NET_FLAGS);
+              viaduct_socket_send_string(s2, ":OK\n");
               if (request.connection_timeout) set_timer(request.connection_timeout);
+           } else if (ret == CONT) {
+              log_msg("(cont)\n"); 
            } else {
-              send(s2, ":ERR\n", 5, NET_FLAGS);
+              sprintf(tmp, "ret = %d.\n", ret); 
+              log_msg(tmp); 
+              viaduct_socket_send_string(s2, ":ERR\n");
            }
         }
-      }
-   }
-   return 0;
-}
-int
-get_line(char *buf, int buflen, char *line, int *pos)
-{
-   int i;
-
-   for (i=0; i<buflen; i++) {
-      if (buf[i]=='\n') {
-        line[*pos]='\0';
-        *pos=0;
-        return 1;
-      } else {
-         line[(*pos)++]=buf[i];
-      }      
    }
    return 0;
 }
@@ -214,13 +198,21 @@ process_line(char *line)
 
    if (receive_sql) {
       log_msg("sql mode\n");
+      log_msg("line: ");
+      log_msg(line);
+      log_msg("\n");
       if (!line || strlen(line)<8 || strncmp(line, ":SQL END", 8)) {
       	sb_append(sb_sql, line);
-        return OK;
+      	sb_append(sb_sql, "\n");
+        return CONT;
       }
    } 
 
-   if (len<1 || line[0]!=':') return ERR;
+   if (len<1 || line[0]!=':') {
+      log_msg("bad protocol command returning ERR\n");
+      log_msg(line);
+      return ERR;
+   }
 
    if (check_command(line, "QUIT", NULL)) return QUIT;
    else if (check_command(line, "RUN", NULL)) return RUN;
@@ -235,7 +227,7 @@ process_line(char *line)
    else if (check_command(line, "SET DATABASE", &request.sql_database)) return OK;
    else if (check_command(line, "SET USER", &request.sql_user)) return OK;
    else if (check_command(line, "SET PASSWORD", &request.sql_password)) return OK;
-   else if (check_command(line, "SET APPNAME", app_name)) return OK;
+   else if (check_command(line, "SET APPNAME", &request.connection_name)) return OK;
    else if (check_command(line, "SET TIMEOUT", timeout_str)) {
       request.connection_timeout = atol(timeout_str);
       return OK;
@@ -251,9 +243,12 @@ process_line(char *line)
          log_msg("sql mode off\n");
          receive_sql = 0;
          request.sql = sb_to_char(sb_sql);
+         //log_msg("sql");
+         //log_msg(request.sql);
          sb_free(sb_sql);
       } else return ERR;
-      return OK;
+      if (receive_sql) return CONT;
+      else return OK;
    }
    else if (check_command(line, "RUN", NULL)) {
       return RUN;
@@ -276,31 +271,6 @@ check_command(char *line, char *command, char *dest)
    }
 }
 
-#if HAVE_FREETDS
-int
-db_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line)
-{
-   if (dbproc!=NULL) {
-      if (msgno==5701 || msgno==5703 || msgno==5704) return 0;
-
-      printf("msg %s\n", msgtext);
-   }
-
-   return 0;
-}
-int
-db_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr, char *dberrstr, char *oserrstr)
-{
-   //db_error = strdup(dberrstr);
-   if (dbproc!=NULL) {
-      //viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(dbproc);
-      //strcat(request->error_message, dberrstr);
-   }
-   printf("msg %s\n", dberrstr);
-
-   return INT_CANCEL;
-}
-#endif
 void log_open()
 {
 #if DEBUG

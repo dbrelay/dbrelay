@@ -84,6 +84,7 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
 {
    viaduct_connection_t *connections;
    int i, s;
+   pid_t pid = 0;
 
    connections = viaduct_get_shmem();
 
@@ -91,12 +92,24 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
 
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
      if (connections[i].sock_path && strlen(connections[i].sock_path)) {
-         s = viaduct_connect_to_helper(connections[i].sock_path);
+         s = viaduct_socket_connect(connections[i].sock_path);
          viaduct_conn_kill(s);
      }
+     if (connections[i].helper_pid) {
+        pid = connections[i].helper_pid;
+	if (!kill(pid, 0)) kill(pid, SIGTERM);
+     }
    }
-   viaduct_release_shmem(connections);
 
+   usleep(500000); // give graceful kills some time to work
+
+   for (i=0; i<VIADUCT_MAX_CONN; i++) {
+     if (connections[i].helper_pid) {
+        if (!kill(pid, 0)) kill(pid, SIGKILL);
+     }
+   }
+
+   viaduct_release_shmem(connections);
    viaduct_destroy_shmem();
 }
 
@@ -321,9 +334,11 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
     }
 
     ngx_log_error(NGX_LOG_INFO, log, 0, "sql_server: \"%s\"", request->sql_server);
-    ngx_log_error(NGX_LOG_DEBUG, log, 0, "sql: \"%s\"", request->sql);
+    if (request->sql) ngx_log_error(NGX_LOG_DEBUG, log, 0, "sql: \"%s\"", request->sql);
     
     log->action = "sending response to client";
+
+    strncpy(request->remote_addr, (char *) r->connection->addr_text.data, VIADUCT_OBJ_SZ);
 
     if (request->status) json_output = (u_char *) viaduct_db_status(request);
     else json_output = (u_char *) viaduct_db_run_query(request);
@@ -521,6 +536,8 @@ void parse_get_query_string(ngx_str_t args, viaduct_request_t *request)
    char value[4000];
    char *s, *k = key, *v = value;
    int target = 0;
+
+   if (args.len==0) return;
 
    for (s=(char *)args.data; *s && s < (((char *)args.data) + args.len); s++)
    { 

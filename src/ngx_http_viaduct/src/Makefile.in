@@ -35,7 +35,8 @@ subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/vl_lib_readline.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -46,13 +47,13 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_connector_OBJECTS = db.$(OBJEXT) log.$(OBJEXT) json.$(OBJEXT) \
 	stringbuf.$(OBJEXT) shmem.$(OBJEXT) client.$(OBJEXT) \
-	connector.$(OBJEXT)
+	socket.$(OBJEXT) connector.$(OBJEXT)
 connector_OBJECTS = $(am_connector_OBJECTS)
 @FREETDS_FALSE@@MYSQL_TRUE@connector_DEPENDENCIES = mysql.o
 @FREETDS_TRUE@connector_DEPENDENCIES = mssql.o
 am_viaduct_OBJECTS = db.$(OBJEXT) log.$(OBJEXT) json.$(OBJEXT) \
 	stringbuf.$(OBJEXT) shmem.$(OBJEXT) client.$(OBJEXT) \
-	main.$(OBJEXT)
+	socket.$(OBJEXT) main.$(OBJEXT)
 viaduct_OBJECTS = $(am_viaduct_OBJECTS)
 @FREETDS_FALSE@@MYSQL_TRUE@viaduct_DEPENDENCIES = mysql.o
 @FREETDS_TRUE@viaduct_DEPENDENCIES = mssql.o
@@ -117,6 +118,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VIADUCT_BUILD = @VIADUCT_BUILD@
 VIADUCT_EXTRA_LIBS = @VIADUCT_EXTRA_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -161,11 +163,11 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -DCMDLINE @DB_INCS@
 AM_LDFLAGS = @DB_LIBS@ @VIADUCT_EXTRA_LIBS@
-viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c main.c libsybdb.a libtds.a
-connector_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c connector.c 
+viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c socket.c main.c libsybdb.a libtds.a
+connector_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c socket.c connector.c 
 EXTRA_viaduct_SOURCES = mssql.h mssql.c vmysql.h mysql.c
-@FREETDS_TRUE@viaduct_LDADD = mssql.o @DB_STATICLIBS@
-@MYSQL_TRUE@viaduct_LDADD = mysql.o @DB_STATICLIBS@
+@FREETDS_TRUE@viaduct_LDADD = mssql.o @DB_STATICLIBS@ @LIBS@
+@MYSQL_TRUE@viaduct_LDADD = mysql.o @DB_STATICLIBS@ @LIBS@
 @FREETDS_TRUE@connector_LDADD = mssql.o @DB_STATICLIBS@
 @MYSQL_TRUE@connector_LDADD = mysql.o @DB_STATICLIBS@
 all: all-am
@@ -248,6 +250,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mssql.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mysql.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/shmem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/socket.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringbuf.Po@am__quote@
 
 .c.o:

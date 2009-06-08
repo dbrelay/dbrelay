@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/ipc.h>
 #include "../include/config.h"
 
 #ifndef CMDLINE
@@ -22,6 +23,7 @@
 #define VIADUCT_MAX_PARAMS 100
 #define VIADUCT_OBJ_SZ 31
 #define VIADUCT_NAME_SZ 101
+#define VIADUCT_SOCKET_BUFSIZE 4096
 
 #define VIADUCT_LOG_SCOPE_SERVER 1
 #define VIADUCT_LOG_SCOPE_CONN 2
@@ -72,6 +74,8 @@ typedef struct {
    char error_message[4000];
    char *params[VIADUCT_MAX_PARAMS];
    char sql_dbtype[VIADUCT_OBJ_SZ];
+   char remote_addr[VIADUCT_OBJ_SZ];
+   char sock_path[256];  /* explicitly specify socket path */
 } viaduct_request_t;
 
 typedef struct {
@@ -146,20 +150,24 @@ void viaduct_log_error(viaduct_request_t *request, const char *fmt, ...);
 viaduct_request_t *viaduct_alloc_request();
 void viaduct_free_request(viaduct_request_t *request);
 
+/* shmem.c */
 void viaduct_create_shmem();
 viaduct_connection_t *viaduct_get_shmem();
 void viaduct_release_shmem(viaduct_connection_t *connections);
 void viaduct_destroy_shmem();
+key_t viaduct_get_ipc_key();
 
-char *viaduct_conn_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
-void viaduct_conn_send_string(int s, char *str);
-char *viaduct_conn_send_request(int s, viaduct_request_t *request);
+/* connection.c */
+char *viaduct_conn_send_request(int s, viaduct_request_t *request, int *error);
 void viaduct_conn_set_option(int s, char *option, char *value);
 pid_t viaduct_conn_launch_connector(char *sock_path);
-int viaduct_connect_to_helper(char *sock_path);
 u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql); 
-
 void viaduct_conn_kill(int s);
 void viaduct_conn_close(int s);
+
+/* socket.c */
+int viaduct_socket_connect(char *sock_path);
+int viaduct_socket_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf);
+void viaduct_socket_send_string(int s, char *str);
 
 #endif /* _VIADUCT_H_INCLUDED_ */
