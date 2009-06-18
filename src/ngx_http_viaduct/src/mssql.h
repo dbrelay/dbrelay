@@ -11,7 +11,7 @@
 typedef struct mssql_db_s {
     LOGINREC *login;
     DBPROCESS *dbproc;
-    char colval[256][31];
+    char colval[256][256];
     int colnull[256];
 } mssql_db_t;
 
