@@ -401,6 +401,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       } else {
          json_add_json(json, ", ");
          json_add_json(json, (char *) ret);
+         free(ret);
       }
       viaduct_log_debug(request, "closing");
       viaduct_conn_close(s);
@@ -426,8 +427,8 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
         } else {
            json_add_json(json, ", ");
            json_add_json(json, (char *) ret);
+           free(ret);
         }
-        //free(ret);
    	viaduct_log_debug(request, "Done filling JSON output");
       }
    } // !named connection
