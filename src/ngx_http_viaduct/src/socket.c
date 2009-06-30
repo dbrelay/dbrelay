@@ -97,7 +97,7 @@ viaduct_socket_send_string(int s, char *str)
 int
 viaduct_socket_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
 {
-   int t, len;
+   int t, len = 0;
    int i;
    int have_space, have_available;
    int done = 0;
@@ -109,6 +109,7 @@ viaduct_socket_recv_string(int s, char *in_buf, int *in_ptr, char *out_buf)
       if (*in_ptr==-1) {
          if ((t=recv(s, in_buf, VIADUCT_SOCKET_BUFSIZE - 1, NET_FLAGS))<=0) {
 	   if (len < 0) {
+             if (errno==EINTR) continue;
              if (DEBUG) perror("recv"); 
            } else {
              if (DEBUG) printf("Server closed connection\n");
