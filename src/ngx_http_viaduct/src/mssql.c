@@ -90,6 +90,7 @@ void viaduct_mssql_close(void *db)
    mssql_db_t *mssql = (mssql_db_t *) db;
 
    if (mssql->dbproc) dbclose(mssql->dbproc);
+   if (mssql) free(mssql);
 }
 void viaduct_mssql_assign_request(void *db, viaduct_request_t *request)
 {
