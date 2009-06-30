@@ -388,6 +388,10 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
       viaduct_log_info(request, "sending request");
       ret = (u_char *) viaduct_conn_send_request(s, request, &have_error);
       viaduct_log_debug(request, "back");
+      // internal error
+      if (have_error==2) {
+         viaduct_log_error(request, "Error occurred on socket %s (PID: %u)", conn->sock_path, conn->helper_pid);
+      }
       if (have_error) {
          viaduct_log_debug(request, "have error");
          strcpy(error_string, (char *) ret);

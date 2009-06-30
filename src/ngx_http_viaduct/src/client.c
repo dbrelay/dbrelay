@@ -46,6 +46,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
    char in_buf[VIADUCT_SOCKET_BUFSIZE];
    int in_ptr = -1;
    char tmp[20];
+   int t;
 
    viaduct_log_debug(request, "setting options");
    viaduct_conn_set_option(s, "SERVER", request->sql_server);
@@ -67,7 +68,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
    viaduct_socket_send_string(s, ":RUN\n");
    sb_rslt = sb_new(NULL);
    viaduct_log_debug(request, "receiving results");
-   while (viaduct_socket_recv_string(s, in_buf, &in_ptr, out_buf)) {
+   while ((t=viaduct_socket_recv_string(s, in_buf, &in_ptr, out_buf))>0) {
       //viaduct_log_debug(request, "result line = %s", out_buf);
       if (!strcmp(out_buf, ":BYE") ||
          !strcmp(out_buf, ":OK") ||
@@ -90,6 +91,14 @@ viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
          *error = 1;
          errors = 1;
       }
+   }
+   if (t==-1) {
+      // broken socket
+      *error=2;
+      sb_free(sb_rslt);
+      sb_rslt=sb_new(NULL);
+      sb_append(sb_rslt, "Internal Error: connector terminated connection unexpectedly.");
+      viaduct_log_error(request, "Connector terminated connection unexpectedly.");
    }
    viaduct_log_debug(request, "finished receiving results");
    json_output = sb_to_char(sb_rslt);
