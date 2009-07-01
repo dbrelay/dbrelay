@@ -270,7 +270,6 @@ u_char *viaduct_db_status(viaduct_request_t *request)
         strftime(tmpstr, sizeof(tmpstr), "%Y-%m-%d %H:%M:%S", ts);
         json_add_string(json, "tm_accessed", tmpstr);
         json_add_string(json, "sql_server", conn->sql_server ? conn->sql_server : "");
-        json_add_string(json, "sql_server", conn->sql_server ? conn->sql_server : "");
         json_add_string(json, "sql_port", conn->sql_port ? conn->sql_port : "");
         json_add_string(json, "sql_database", conn->sql_database ? conn->sql_database : "");
         json_add_string(json, "sql_user", conn->sql_user ? conn->sql_user : "");
