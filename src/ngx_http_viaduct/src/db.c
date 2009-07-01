@@ -439,7 +439,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    json_add_key(json, "log");
    json_new_object(json);
-   json_add_string(json, "sql", request->sql);
+   if (!request->noecho) json_add_string(json, "sql", request->sql);
    if (strlen(error_string)) {
       json_add_string(json, "error", error_string);
    }

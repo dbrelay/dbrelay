@@ -76,6 +76,7 @@ typedef struct {
    char sql_dbtype[VIADUCT_OBJ_SZ];
    char remote_addr[VIADUCT_OBJ_SZ];
    char sock_path[256];  /* explicitly specify socket path */
+   unsigned char noecho;
 } viaduct_request_t;
 
 typedef struct {
