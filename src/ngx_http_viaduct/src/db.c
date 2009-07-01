@@ -31,6 +31,7 @@ u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql
 static void viaduct_write_json_log(json_t *json, viaduct_request_t *request, char *error_string);
 void viaduct_write_json_colinfo(json_t *json, void *db, int colnum, int *maxcolname);
 void viaduct_write_json_column(json_t *json, void *db, int colnum, int *maxcolname);
+static void viaduct_db_zero_connection(viaduct_connection_t *conn, viaduct_request_t *request);
 
 static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_connection_t *conn)
 {
@@ -151,8 +152,6 @@ static unsigned int viaduct_db_find_connection(viaduct_request_t *request)
 }
 static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_request_t *request)
 {
-   unsigned int slot;
-
    if (!conn) {
       viaduct_log_warn(request, "attempt to close null connection ");
       return;
@@ -161,6 +160,10 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
    viaduct_log_info(request, "closing connection %d", conn->slot);
 
    if (conn->db) api->close(conn->db);
+   viaduct_db_zero_connection(conn, request);
+}
+static void viaduct_db_zero_connection(viaduct_connection_t *conn, viaduct_request_t *request)
+{
    conn->pid=0;
    conn->sql_server[0]='\0';
    conn->sql_user[0]='\0';
@@ -169,11 +172,6 @@ static void viaduct_db_close_connection(viaduct_connection_t *conn, viaduct_requ
    conn->sql_password[0]='\0';
    conn->connection_name[0]='\0';
    conn->in_use = 0;
-   slot = conn->slot;
-
-   //free(conn);
-   //connections[slot]=NULL;
-   //memset(conn, '\0', sizeof(viaduct_connection_t));
 }
 static void viaduct_db_close_connections(viaduct_request_t *request)
 {
@@ -186,6 +184,10 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
    connections = viaduct_get_shmem();
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
       conn = &connections[i];
+      if (conn->pid && !IS_SET(conn->connection_name) && kill(conn->pid, 0)) {
+         viaduct_log_notice(request, "dead worker %u holding connection slot %d, cleaning up.", conn->pid, conn->slot);
+         viaduct_db_zero_connection(conn, request);
+      }
       if (!conn->pid || conn->in_use) continue;
       if (conn->tm_accessed + conn->connection_timeout < now) {
          viaduct_log_notice(request, "timing out conection %u", conn->slot);
