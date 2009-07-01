@@ -315,6 +315,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    viaduct_log_info(request, "run_query called");
 
+   if (request->prettyprint) json_pretty_print(json, 1);
    json_new_object(json);
 
    json_add_key(json, "request");

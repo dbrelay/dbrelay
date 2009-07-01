@@ -492,6 +492,7 @@ write_flag_values(viaduct_request_t *request, char *value)
 
    while ((tok = strsep(&flags, ";"))) {
       if (!strcmp(tok, "noecho")) request->noecho=1; 
+      if (!strcmp(tok, "pp")) request->prettyprint=1; 
    }
    free(flags);
 }

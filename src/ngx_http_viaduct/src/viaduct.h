@@ -77,6 +77,7 @@ typedef struct {
    char remote_addr[VIADUCT_OBJ_SZ];
    char sock_path[256];  /* explicitly specify socket path */
    unsigned char noecho;
+   unsigned char prettyprint;
 } viaduct_request_t;
 
 typedef struct {

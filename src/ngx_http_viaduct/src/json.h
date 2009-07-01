@@ -18,11 +18,13 @@ typedef struct json_s {
    int tab_level;
    json_node_t *stack;
    int pending;
+   unsigned char prettyprint;
 } json_t;
 
 
 void json_push(json_t *json, int node_type);
 json_t *json_new();
+void json_pretty_print(json_t *json, unsigned char pp);
 void json_free(json_t *json);
 char *json_to_string(json_t *json);
 void json_new_object(json_t *json);
