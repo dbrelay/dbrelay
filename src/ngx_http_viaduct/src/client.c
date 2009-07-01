@@ -53,7 +53,7 @@ viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
    viaduct_log_debug(request, "SERVER sent");
    viaduct_conn_set_option(s, "DATABASE", request->sql_database);
    viaduct_conn_set_option(s, "USER", request->sql_user);
-   //viaduct_conn_set_option(s, "PASSWORD", request->sql_password);
+   if (request->sql_password) viaduct_conn_set_option(s, "PASSWORD", request->sql_password);
    sprintf(tmp, "%ld", request->connection_timeout);
    viaduct_log_info(request, "timeout %s", tmp);
    viaduct_conn_set_option(s, "TIMEOUT", tmp);
