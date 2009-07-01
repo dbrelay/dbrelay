@@ -491,8 +491,8 @@ write_flag_values(viaduct_request_t *request, char *value)
    char *tok;
 
    while ((tok = strsep(&flags, ";"))) {
-      if (!strcmp(tok, "echosql")) request->echosql=1; 
-      if (!strcmp(tok, "pp")) request->prettyprint=1; 
+      if (!strcmp(tok, "echosql")) request->flags|=VIADUCT_FLAG_ECHOSQL; 
+      if (!strcmp(tok, "pp")) request->flags|=VIADUCT_FLAG_PP; 
    }
    free(flags);
 }

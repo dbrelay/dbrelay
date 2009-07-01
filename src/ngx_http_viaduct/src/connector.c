@@ -138,7 +138,7 @@ main(int argc, char **argv)
               }
 #endif
               log_msg("%s\n", request.sql);
-              results = (char *) viaduct_exec_query(&conn, (char *) &request.sql_database, request.sql);
+              results = (char *) viaduct_exec_query(&conn, (char *) &request.sql_database, request.sql, request.flags);
               log_msg("addr = %lu\n", results);
               if (results == NULL) {
 	         log_msg("results are null\n"); 
@@ -198,7 +198,7 @@ process_line(char *line)
 {
    char arg[100];
    int len = strlen(line);
-
+   char flag_str[10];
 
    if (receive_sql) {
       log_msg("sql mode\n");
@@ -231,6 +231,10 @@ process_line(char *line)
    else if (check_command(line, "SET APPNAME", &request.connection_name)) return OK;
    else if (check_command(line, "SET TIMEOUT", timeout_str)) {
       request.connection_timeout = atol(timeout_str);
+      return OK;
+   }
+   else if (check_command(line, "SET FLAGS", flag_str)) {
+      request.flags = (unsigned long) atol(flag_str);
       return OK;
    }
    else if (check_command(line, "SQL", arg)) {

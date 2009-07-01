@@ -57,6 +57,8 @@ viaduct_conn_send_request(int s, viaduct_request_t *request, int *error)
    sprintf(tmp, "%ld", request->connection_timeout);
    viaduct_log_info(request, "timeout %s", tmp);
    viaduct_conn_set_option(s, "TIMEOUT", tmp);
+   sprintf(tmp, "%lu", request->flags);
+   viaduct_conn_set_option(s, "FLAGS", tmp);
    viaduct_conn_set_option(s, "APPNAME", request->connection_name);
 
    viaduct_socket_send_string(s, ":SQL BEGIN\n");

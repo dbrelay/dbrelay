@@ -27,7 +27,6 @@ static int viaduct_db_get_connection(viaduct_request_t *request);
 static char *viaduct_resolve_params(viaduct_request_t *request, char *sql);
 static int viaduct_find_placeholder(char *sql);
 static int viaduct_check_request(viaduct_request_t *request);
-u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql);
 static void viaduct_write_json_log(json_t *json, viaduct_request_t *request, char *error_string);
 void viaduct_write_json_colinfo(json_t *json, void *db, int colnum, int *maxcolname);
 void viaduct_write_json_column(json_t *json, void *db, int colnum, int *maxcolname);
@@ -315,7 +314,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    viaduct_log_info(request, "run_query called");
 
-   if (request->prettyprint) json_pretty_print(json, 1);
+   if (request->flags & VIADUCT_FLAG_PP) json_pretty_print(json, 1);
    json_new_object(json);
 
    json_add_key(json, "request");
@@ -422,7 +421,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
         }
       } else {
    	viaduct_log_debug(request, "Sending sql query");
-        ret = viaduct_exec_query(conn, request->sql_database, newsql);
+        ret = viaduct_exec_query(conn, request->sql_database, newsql, request->flags);
         if (ret==NULL) {
    	   viaduct_log_debug(request, "error");
            strcpy(error_string, request->error_message);
@@ -440,7 +439,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    json_add_key(json, "log");
    json_new_object(json);
-   if (request->echosql) json_add_string(json, "sql", request->sql);
+   if (request->flags & VIADUCT_FLAG_ECHOSQL) json_add_string(json, "sql", request->sql);
    if (strlen(error_string)) {
       json_add_string(json, "error", error_string);
    }
@@ -471,11 +470,13 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 }
 
 u_char *
-viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql)
+viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql, unsigned long flags)
 {
   json_t *json = json_new();
   u_char *ret;
  
+  if (flags & VIADUCT_FLAG_PP) json_pretty_print(json, 1);
+
   api->change_db(conn->db, database);
   if (api->exec(conn->db, sql))
   {
