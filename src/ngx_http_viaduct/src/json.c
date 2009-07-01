@@ -208,11 +208,11 @@ void json_push(json_t *json, int node_type)
    json->stack = node;
 }
 
-/*
 main()
 {
    char *buf;
    json_t *json = json_new();
+   json_pretty_print(json, 1);
 
    json_new_array(json);
    json_new_array(json);
@@ -243,4 +243,3 @@ main()
    printf("%s\n", buf);
    json_free(json);
 }
-*/

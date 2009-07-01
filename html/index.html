@@ -86,7 +86,7 @@
           $('#results').empty();
           var flags = '';
           var mod = false;
-          if ($('#noecho:checked').val()) { flags += 'noecho'; mod = true; }
+          if ($('#echosql:checked').val()) { flags += 'echosql'; mod = true; }
           if ($('#pp:checked').val()) { if (mod) flags += ';'; flags += 'pp'; mod = true; }
           viaductQuery(
             '/sql',
@@ -227,7 +227,7 @@
       <label for="sql_user">User</label><input type="text" name="sql_user" value="" id="sql_user"><br />
       <label for="sql_password">Password</label><input type="password" name="sql_password" value="" id="sql_password"><br />
       <label for="connection_name">Connection</label><input type="text" name="connection_name" value="" id="connection_name"><br />
-      <label for="flags">Flags</label><input type="checkbox" name="noecho" id="noecho">Don't Echo SQL
+      <label for="flags">Flags</label><input type="checkbox" name="echosql" id="echosql">Echo SQL
       <input type="checkbox" name="pp" id="pp" checked>Pretty Print<br />
       <div id="connection_timeout_wrapper" style="display:none;">
         <label for="connection_timeout">Timeout</label><input type="text" name="connection_timeout" value="" id="connection_timeout"><br />
