@@ -208,6 +208,7 @@ void json_push(json_t *json, int node_type)
    json->stack = node;
 }
 
+/*
 main()
 {
    char *buf;
@@ -243,3 +244,4 @@ main()
    printf("%s\n", buf);
    json_free(json);
 }
+*/
