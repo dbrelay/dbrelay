@@ -90,6 +90,8 @@ void viaduct_mssql_close(void *db)
    mssql_db_t *mssql = (mssql_db_t *) db;
 
    if (mssql->dbproc) dbclose(mssql->dbproc);
+   if (mssql->login) dbloginfree(mssql->login);
+   if (mssql) free(mssql);
 }
 void viaduct_mssql_assign_request(void *db, viaduct_request_t *request)
 {
@@ -333,5 +335,15 @@ viaduct_mssql_err_handler(DBPROCESS * dbproc, int severity, int dberr, int oserr
 }
 char *viaduct_mssql_error(void *db)
 {
-    return login_error;
+   mssql_db_t *mssql = (mssql_db_t *) db;
+   
+   if (mssql->dbproc) {
+      viaduct_request_t *request = (viaduct_request_t *) dbgetuserdata(mssql->dbproc);
+      if (request!=NULL) {
+         return request->error_message;
+      }
+      return NULL;
+   } else {
+      return login_error;
+   }
 }

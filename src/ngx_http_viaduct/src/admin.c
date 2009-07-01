@@ -59,7 +59,7 @@ int viaduct_admin_kill(viaduct_request_t *request, char *sock_path)
    viaduct_connection_t *conn;
    int i;
 
-   int s = viaduct_connect_to_helper(sock_path);
+   int s = viaduct_socket_connect(sock_path);
    if (s==-1) return FAIL;
 
    viaduct_conn_kill(s);

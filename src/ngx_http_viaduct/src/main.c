@@ -21,7 +21,7 @@ populate_request(int argc, char **argv, viaduct_request_t *request)
     int opt;
     int required = 0;
 
-    while ((opt = getopt(argc, argv, "h:p:u:w:c:t:d:v:f:T:")) != -1) {
+    while ((opt = getopt(argc, argv, "h:p:u:w:c:t:d:v:f:T:S:")) != -1) {
           switch (opt) {
           case 'c':
                   strcpy(request->connection_name, optarg);
@@ -41,6 +41,9 @@ populate_request(int argc, char **argv, viaduct_request_t *request)
                   break;
           case 'p':
                   strcpy(request->sql_port, optarg);
+                  break;
+          case 'S':
+                  strcpy(request->sock_path, optarg);
                   break;
           case 'T':
                   request->connection_timeout = atoi(optarg);

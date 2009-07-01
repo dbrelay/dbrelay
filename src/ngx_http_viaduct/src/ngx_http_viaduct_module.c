@@ -24,6 +24,7 @@ static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
 static ngx_int_t ngx_http_viaduct_send_response(ngx_http_request_t *r);
 ngx_int_t ngx_http_viaduct_init_master(ngx_log_t *log);
 void ngx_http_viaduct_exit_master(ngx_cycle_t *cycle);
+static void write_flag_values(viaduct_request_t *request, char *value);
 
 static ngx_command_t  ngx_http_viaduct_commands[] = {
 
@@ -92,7 +93,7 @@ ngx_http_viaduct_exit_master(ngx_cycle_t *cycle)
 
    for (i=0; i<VIADUCT_MAX_CONN; i++) {
      if (connections[i].sock_path && strlen(connections[i].sock_path)) {
-         s = viaduct_connect_to_helper(connections[i].sock_path);
+         s = viaduct_socket_connect(connections[i].sock_path);
          viaduct_conn_kill(s);
      }
      if (connections[i].helper_pid) {
@@ -477,12 +478,26 @@ write_value(viaduct_request_t *request, char *key, char *value)
       } else if (i>0) {
          request->params[i-1] = strdup(value);
       }
+   } else if (!strcmp(key, "flags")) {
+      write_flag_values(request, value);
    }
    
    if (!noprint) {
       viaduct_log_debug(request, "key %s", key);
       viaduct_log_debug(request, "value %s", value);
    }
+}
+static void 
+write_flag_values(viaduct_request_t *request, char *value)
+{
+   char *flags = strdup(value);
+   char *tok;
+
+   while ((tok = strsep(&flags, ";"))) {
+      if (!strcmp(tok, "echosql")) request->flags|=VIADUCT_FLAG_ECHOSQL; 
+      if (!strcmp(tok, "pp")) request->flags|=VIADUCT_FLAG_PP; 
+   }
+   free(flags);
 }
 void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
 {
