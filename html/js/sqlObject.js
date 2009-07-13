@@ -68,8 +68,12 @@ sqlObject = function() { // Module pattern, called immediately
   };
   
   function get_params( query ){
+	 
     var matches = query.match(param_re);
-    for (m in matches){
+    for (m in matches){ 
+			//cbajohr
+			if(typeof(matches[m]) !== 'string') continue;
+			
       matches[m] = matches[m].replace(divid_re, '');
     };
     return matches;
