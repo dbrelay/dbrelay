@@ -84,6 +84,10 @@
         $('#go').click(function(){
           if ( ! launch() ) { return false ; };
           $('#results').empty();
+          var flags = '';
+          var mod = false;
+          if ($('#echosql:checked').val()) { flags += 'echosql'; mod = true; }
+          if ($('#pp:checked').val()) { if (mod) flags += ';'; flags += 'pp'; mod = true; }
           viaductQuery(
             '/sql',
             {
@@ -93,7 +97,8 @@
               'sql_user'           : $('#sql_user').val(),
               'sql_password'       : $('#sql_password').val(),
               'connection_name'    : $('#connection_name').val(),
-              'connection_timeout' : $('#connection_timeout').val()
+              'connection_timeout' : $('#connection_timeout').val(),
+              'flags' : flags
             },
             $('#sql').val(),
             processRowSets,
@@ -222,6 +227,8 @@
       <label for="sql_user">User</label><input type="text" name="sql_user" value="" id="sql_user"><br />
       <label for="sql_password">Password</label><input type="password" name="sql_password" value="" id="sql_password"><br />
       <label for="connection_name">Connection</label><input type="text" name="connection_name" value="" id="connection_name"><br />
+      <label for="flags">Flags</label><input type="checkbox" name="echosql" id="echosql">Echo SQL
+      <input type="checkbox" name="pp" id="pp" checked>Pretty Print<br />
       <div id="connection_timeout_wrapper" style="display:none;">
         <label for="connection_timeout">Timeout</label><input type="text" name="connection_timeout" value="" id="connection_timeout"><br />
       </div>

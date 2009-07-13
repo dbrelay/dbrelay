@@ -45,6 +45,9 @@
 #define VIADUCT_LOG_LVL_CRIT    6
 #endif
 
+#define VIADUCT_FLAG_ECHOSQL 0x01
+#define VIADUCT_FLAG_PP      0x02
+
 #ifdef CMDLINE
    typedef struct ngx_log_s {} ngx_log_t;
    typedef unsigned char u_char;
@@ -76,6 +79,7 @@ typedef struct {
    char sql_dbtype[VIADUCT_OBJ_SZ];
    char remote_addr[VIADUCT_OBJ_SZ];
    char sock_path[256];  /* explicitly specify socket path */
+   unsigned long flags;
 } viaduct_request_t;
 
 typedef struct {
@@ -161,7 +165,7 @@ key_t viaduct_get_ipc_key();
 char *viaduct_conn_send_request(int s, viaduct_request_t *request, int *error);
 void viaduct_conn_set_option(int s, char *option, char *value);
 pid_t viaduct_conn_launch_connector(char *sock_path);
-u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql); 
+u_char *viaduct_exec_query(viaduct_connection_t *conn, char *database, char *sql, unsigned long flags); 
 void viaduct_conn_kill(int s);
 void viaduct_conn_close(int s);
 
