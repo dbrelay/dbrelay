@@ -58,7 +58,7 @@ sqlDbAccess = function(){
 				],   
 				
 				fetch_rows: [
-		       "select {{{columns}}} from {{{table}}} {{{where}}} {{{orderBy}}}",
+		       "select {{{columns}}} from {{{table}}} {{{where}}} {{{orderBy}}} {{{orderByType}}}",
 		       this._onVerb
 				],
 				
@@ -88,9 +88,9 @@ sqlDbAccess = function(){
 				 +"select top {{{pagingSize}}} {{{columns}}} from ( "
 				 +"    select top {{{absMax}}} {{{columns}}} "
 				 +"     from {{{table}}} {{{where}}}"
-				 +"    order by {{{orderBy}}} asc "
-				 +"  ) as newtbl {{{where}}} order by {{{orderBy}}} desc "
-				 +" ) as newtbl2 order by {{{orderBy}}} asc",
+				 +"    order by {{{orderBy}}} {{{orderByType}}} "
+				 +"  ) as newtbl {{{where}}} order by {{{orderBy}}} {{{orderByTypeOpp}}} "
+				 +" ) as newtbl2 order by {{{orderBy}}} {{{orderByType}}}",
 					this._onVerb
 				],
 				

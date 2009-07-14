@@ -99,7 +99,8 @@ sqlTable = function(){
 						table:table,
 						columns: cfg.columns || '*',
 						where: cfg.where ? ('WHERE ' + cfg.where) : '',
-						orderBy: cfg.orderBy ? 'ORDER BY ' + cfg.orderBy + ' ' + (cfg.orderByType || 'asc') : ''
+						orderBy: cfg.orderBy ? 'ORDER BY ' + cfg.orderBy : '',
+						orderByType: cfg.orderBy ? (cfg.orderByType || 'asc') : ''
 					},
 					function(results){
 						//final callback
@@ -164,6 +165,8 @@ sqlTable = function(){
 					alert('recordStart and pagingSize should be numeric');
 					return{};
 				}
+			  //opposite of order type 
+				var orderByTypeOpp = cfg.orderByType.toLowerCase() === 'asc' ? 'desc' : 'asc';
 				 
 				//run sqlDbAccess verb to fetch paged rows
 			  this.sqlDb.run('fetch_paged_rows',{ 
@@ -173,6 +176,7 @@ sqlTable = function(){
 						where: cfg.where ? 'WHERE ' + cfg.where : '',
 						orderBy : cfg.orderBy,
 						orderByType: cfg.orderByType,
+						orderByTypeOpp: orderByTypeOpp,
 						table: table,
 						absMax : cfg.recordStart + cfg.pagingSize
 					},  
