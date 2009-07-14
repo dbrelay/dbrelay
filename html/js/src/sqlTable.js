@@ -245,6 +245,10 @@ sqlTable = function(){
 						 }
 					});
 				}catch(e){}
+			},
+			
+			safeSqlString : function(s){
+				return "'" + s.replace(/'/g, "''") + "'";
 			},      
 			  
 			/** Deletes row(s) from the table
@@ -263,7 +267,7 @@ sqlTable = function(){
 					var row = rows[i], wheres=[]; 
 					
 					for(var k in row){ 
-						wheres.push(k + "='" + row[k].replace(/'/g, "\'") + "'") 
+						wheres.push(k + "=" + this.safeSqlString(row[k]) ) 
 					}
 					
           //add to batch 
@@ -307,16 +311,14 @@ sqlTable = function(){
 					
 					//SETVALUES
 					for(var col in values){ 
-						var safeVal = values[col].replace(/'/g, "\'");
-						
-						valueparam.push(col + "='" + safeVal + "'");   
+						valueparam.push(col + "=" + this.safeSqlString(values[col]));   
 					}  
 					
 					 //WHERE 
 					var wherecols = wheres[i]; 
 
 						for(var k in wherecols){ 
-							whereparam.push(k + "='" + wherecols[k].replace(/'/g, "\'") + "'") 
+							whereparam.push(k + "=" + this.safeSqlString(wherecols[k]) ); 
 						}  
 					
           //add to batch 
@@ -390,7 +392,7 @@ sqlTable = function(){
 				}
 				else{ 
 					for(var w in where){  
-						whereparam.push(k + "='" + where[w].replace(/'/g, "\'") + "'")     
+						whereparam.push(k + "=" + this.safeSqlString( where[w]));     
 					}
 					whereparam = whereparam.length === 0 ? '' : 'WHERE ' + whereparam.join('AND')
 				} 

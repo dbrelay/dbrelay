@@ -32,16 +32,16 @@ if(typeof(cfg.recordStart)!=='number'||typeof(cfg.pagingSize)!=='number'){alert(
 var orderByTypeOpp=cfg.orderByType.toLowerCase()==='asc'?'desc':'asc';this.sqlDb.run('fetch_paged_rows',{columns:cfg.columns,recordStart:cfg.recordStart,pagingSize:cfg.pagingSize,where:cfg.where?'WHERE '+cfg.where:'',orderBy:cfg.orderBy,orderByType:cfg.orderByType,orderByTypeOpp:orderByTypeOpp,table:table,absMax:cfg.recordStart+cfg.pagingSize},function(results){if(callback){callback.call(scope||window,this,results,cfg,{total:0,columns:cfg.columns,recordStart:cfg.recordStart+cfg.pagingSize,pagingSize:cfg.pagingSize,where:cfg.where,orderByType:cfg.orderByType,orderBy:cfg.orderBy});}},this);},addRows:function(rows,callback,scope){if(rows.length===0){return;}
 var batch='add'+new Date().getTime();for(var i=0,len=rows.length;i<len;i++){var row=rows[i],values=[],columns=[];for(var k in row){values.push("'"+row[k].replace(/'/g,"\'")+"'");columns.push(k);}
 sqlDb.so.row_add({table:table,columns:'('+columns.join(',')+')',values:'('+values.join(',')+')'},batch);}
-try{sqlDb.so.run_batch(batch,function(resp){sqlDb.so.empty_batch(batch);if(callback){callback.call(scope||window,this,resp);}});}catch(e){}},deleteRows:function(rows,callback,scope){if(rows.length===0){return;}
-var batch='delete'+new Date().getTime();for(var i=0,len=rows.length;i<len;i++){var row=rows[i],wheres=[];for(var k in row){wheres.push(k+"='"+row[k].replace(/'/g,"\'")+"'")}
+try{sqlDb.so.run_batch(batch,function(resp){sqlDb.so.empty_batch(batch);if(callback){callback.call(scope||window,this,resp);}});}catch(e){}},safeSqlString:function(s){return"'"+s.replace(/'/g,"''")+"'";},deleteRows:function(rows,callback,scope){if(rows.length===0){return;}
+var batch='delete'+new Date().getTime();for(var i=0,len=rows.length;i<len;i++){var row=rows[i],wheres=[];for(var k in row){wheres.push(k+"="+this.safeSqlString(row[k]))}
 sqlDb.so.delete_row({table:table,where:'('+wheres.join(' AND ')+')'},batch);}
 try{sqlDb.so.run_batch(batch,function(resp){sqlDb.so.empty_batch(batch);if(callback){callback.call(scope||window,this,resp);}});}catch(e){}},updateRows:function(set,wheres,callback,scope){if(set.length===0){return;}
-var batch='update'+new Date().getTime();for(var i=0,len=set.length;i<len;i++){var values=set[i],valueparam=[],whereparam=[];for(var col in values){var safeVal=values[col].replace(/'/g,"\'");valueparam.push(col+"='"+safeVal+"'");}
-var wherecols=wheres[i];for(var k in wherecols){whereparam.push(k+"='"+wherecols[k].replace(/'/g,"\'")+"'")}
+var batch='update'+new Date().getTime();for(var i=0,len=set.length;i<len;i++){var values=set[i],valueparam=[],whereparam=[];for(var col in values){valueparam.push(col+"="+this.safeSqlString(values[col]));}
+var wherecols=wheres[i];for(var k in wherecols){whereparam.push(k+"="+this.safeSqlString(wherecols[k]));}
 sqlDb.so.update_row({table:table,setvalues:valueparam.join(','),where:whereparam.join(' AND ')},batch);}
 try{sqlDb.so.run_batch(batch,function(resp){sqlDb.so.empty_batch(batch);if(callback){callback.call(scope||window,this,resp);}});}catch(e){}},queryPrimaryKeys:function(callback,scope){this.sqlDb.run('get_primary_keys',{table:table},function(resp){var rows=resp.data[0].rows,keys=[];for(var i=0;i<rows.length;i++){keys[i]=rows[i].COLUMN_NAME;}
 this.pkeyColumns=keys;if(callback){callback.call(scope||window,this,resp,keys);}});},queryTotalRows:function(cfg,callback,scope){cfg=cfg||{};var where=cfg.where||{},whereparam=[];if(typeof(where)==='string'){whereparam='WHERE '+where;}
-else{for(var w in where){whereparam.push(k+"='"+where[w].replace(/'/g,"\'")+"'")}
+else{for(var w in where){whereparam.push(k+"="+this.safeSqlString(where[w]));}
 whereparam=whereparam.length===0?'':'WHERE '+whereparam.join('AND')}
 this.sqlDb.run('get_count',{table:table,columns:cfg.pkeys||'*',where:whereparam},function(resp){if(resp.data){var total=resp.data[0].rows[0][1];if(callback){callback.call(scope||window,this,resp,total);}}});},applyProperties:function(dest,src,overwrite){dest=dest||{};for(var p in src){if(overwrite||!dest[p]){dest[p]=src[p];}}
 return dest;}};return new _sqlTable();}}();

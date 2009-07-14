@@ -6,8 +6,8 @@ Ext.namespace('va');
 va.ConnectionWindow = Ext.extend(Ext.Window,{
 	layout:'anchor',
 	title:'Database Connection Information',
-	width:330,
-	height:300,
+	width:400,
+	height:350,
 	modal:true,
 	defaults:{border:false}, 
   

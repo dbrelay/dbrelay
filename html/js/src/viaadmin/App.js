@@ -146,6 +146,7 @@ va.App = function(){
 											},
 											{
 												text:'Inline Table Editor',
+												iconCls:'vaicon-table',
 												handler:function(){window.open('/eg/inlinetable_example.htm');}  
 											}
 										]
@@ -214,7 +215,10 @@ va.App = function(){
 						'ok':{
 							fn: function(w, table, columns){    
                 this.sqlDb.createTable(table,columns, function(sqld, resp){
-								 	this.refreshTablesMenu();
+								 	this.refreshTablesMenu();         
+								  
+								//open this table for editing
+								this.showTableEditor(table);
 								},this);
 													
 							},

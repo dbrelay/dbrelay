@@ -147,9 +147,11 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 				}
 				
 				//update URL field
-				var conn = this.sqlDb.connection;
+				var conn = Ext.apply({},this.sqlDb.connection);
 				conn.sql =  this.fldSqlCode.getValue(); 
-				conn.query_tag = null; 
+				conn.query_tag = null;        
+				//don't pass password     
+				conn.sql_password = null;
 
 				var sqlUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
 		        + Ext.urlEncode(conn) + '&' + window.location.hash;   
