@@ -175,15 +175,31 @@ va.App = function(){
 			});
 			
 			
-			
-      //display connection window 
-		 //TODO: optionally read connection data from external file, and bypass this window...    
+			//If direct URL was used, auto-set the params and open the SQL tab accordingly 
+			var url = window.location.href;	       
+			var qparams = Ext.urlDecode(url.substring( url.indexOf('?')+1));
+     
+			this.restoredConnection = qparams;
+
 			this.showConnectionWindow(true);
 			
+		/*	if(qparams && qparams.sql_server && qparams.sql_database){      
+				console.dir(qparams); 
+				 //create sqlDb object
+				 // this.sqlDb = sqlDbAccess(qparams);      
+                          
+					
+          //open a SQL panel by default
+				 // this.addSqlPanel(qparams.sql);    
+				 // this.refreshTablesMenu();  
+			}
+			else{
+      	//display connection window 
+		 			//TODO: optionally read connection data from external file, and bypass this window...    
+					this.showConnectionWindow(true);
+			 }  */
+			
 		},  
-		
-		
-		   
 		
 		
 		/* Create the new table window (if needed), and show/hide it
@@ -219,6 +235,7 @@ va.App = function(){
 			
   		if(!this.connectionWindow){
 				this.connectionWindow = new va.ConnectionWindow({
+					defaultConnection : this.restoredConnection || {},
 					listeners:{
 						'connectionupdate':{
 							fn: function(w, conncfg){    
@@ -226,9 +243,9 @@ va.App = function(){
 								//first time
 								if(!this.sqlDb){  
 									//create sqlDb object
-									this.sqlDb = new sqlDbAccess(conncfg); 
+									this.sqlDb = sqlDbAccess(conncfg); 
                   //open a SQL panel by default
-									this.addSqlPanel();
+									this.addSqlPanel(this.restoredConnection.sql);
 					       }
 
 					       //update information
@@ -249,13 +266,14 @@ va.App = function(){
 		 
 		 /** Adds a new SqlResultPanel tab to the main tabs 
 		*/
-     addSqlPanel : function(){
+     addSqlPanel : function(defaultSql){
 
 			var p = Ext.getCmp('maintabs').add(new va.SqlResultPanel({
 				sqlDb: this.sqlDb,
 				border: false,
 				title: 'Run SQL ' + (++_numSqls),
-				closable:true
+				closable:true,
+				defaultSql : defaultSql
 			}));
 			_viewport.doLayout();  
 				

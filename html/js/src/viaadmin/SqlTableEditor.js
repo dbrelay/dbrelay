@@ -44,17 +44,6 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
   
 
 		this.tbar =[  
-			{   
-				iconCls:'vaicon-gear',
-				enableToggle:true,  
-				tooltip:'More options',
-				handler: function(b,e){ 
-					this.optionsPanel.toggleCollapse();    
-					this.doLayout();
-				},
-				scope:this
-			},
-			'-',
 			//Refresh
 			{
         xtype:'button',
@@ -64,7 +53,6 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 				handler:this.refresh,
 				scope:this     
       }, 
-			
 			'-',  
 			//Update Rows
 			{
@@ -92,11 +80,23 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 					
 				},
 				scope:this
-			},   
-			'-', 
-      '<b><span id="total'+idpfx+'"></span></b> rows total',               
+			}, 
+			'-',
+			{   
+				iconCls:'vaicon-find',
+				enableToggle:true,  
+				pressed:true,
+				text:'Filtering',
+				tooltip:'More options',
+				handler: function(b,e){ 
+					this.optionsPanel.setVisible(this.optionsPanel.hidden);    
+					this.doLayout();
+				},
+				scope:this
+			},             
 			'->',
-			'Show',
+			'<b><span id="total'+idpfx+'"></span></b> total',
+			'-',
 			{
 				xtype:'numberfield',
 				id:'pagesize'+idpfx,
@@ -118,7 +118,8 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 						scope:this
 					}
 				}
-			}, 
+			},
+			'/page', 
 			'-',
 			{ 
 				iconCls:'vaicon-first',
@@ -199,11 +200,21 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 				height:100,
 				split:true,
 				layout:'anchor',
-				border:false,       
-				animCollapse:false,
-				collapseMode:'mini',  
+				border:false,   
 				unstyled:true,       
-				collapsed:true,
+				listeners:{
+					'expand':{
+						fn:function(p){
+							p.doLayout();
+						}
+					},
+					'resize':{
+						fn:function(p, aw, ah){
+							this.whereField.setHeight(ah - 35);
+						},
+						scope:this
+					}
+				},
 				items:[
 					{
 						layout:'column',

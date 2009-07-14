@@ -27,50 +27,79 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 				height:80,
 				split:true,
 				collapsible:true,
-				layout:'fit',
-				unstyled:true,
-				items:{
-					xtype:'textarea',
-					id: 'sqlcode' + idpfx,
-					allowBlank:false,
-					enableKeyEvents:true, 
-					selectOnFocus:true,
-					listeners:{
-						'keyup':{
-							fn:function(fld, e){
-								if(e.shiftKey && e.keyCode === e.ENTER){
-									 this.execSql();
-								}
-							},
-							scope:this
-						}
-					}
-				},
-				tbar:[ 
+				layout:'form',
+				unstyled:true,  
+				labelWidth:80,
+				items:[
 					{
-						iconCls:'vaicon-minus', 
-						text:'Clear',
-						handler:function(){this.fldSqlCode.setValue('');},
-						scope:this
+						fieldLabel:'SQL',
+						xtype:'textarea',
+						id: 'sqlcode' + idpfx, 
+						anchor:'98%',
+						allowBlank:false,
+						enableKeyEvents:true, 
+						selectOnFocus:true, 
+						value: this.defaultSql || '',
+						listeners:{
+							'keyup':{
+								fn:function(fld, e){
+									if(e.shiftKey && e.keyCode === e.ENTER){
+										 this.execSql();
+									}
+								},
+								scope:this
+							}
+						}
 					},
-					'-',
+					{
+						xtype:'textfield',
+						fieldLabel:'Direct Url',
+						id:'url'+idpfx,
+						anchor:'98%',
+						readOnly:true,
+						selectOnFocus:true
+					}
+				], 
+				tbar:[ 
 					 {
-						text:'Execute SQL [Shift + Enter]',
+						text:'Run (Shift + Enter)',
 						iconCls:'vaicon-tick',            
 						tooltip:'Execute SQL [Shift + Enter]',
 						handler: this.execSql,
 						scope:this
-					}     
-					
-					
-				] 
+					},
+					'->',
+					{
+						iconCls:'vaicon-minus', 
+						text:'Clear',
+						handler:function(){
+							this.fldSqlCode.setValue('');
+							this.fldUrl.setValue('');  
+							this.showMsgPanel('Enter query to execute.');
+						},
+						scope:this
+					}    
+				],
+				listeners:{
+					'resize':{
+						fn: function(p,aw,ah){ 
+							 this.fldSqlCode.setHeight(ah - 60);
+						},
+						scope:this
+					},
+					'expand':{
+						fn:function(p){
+							p.doLayout();
+						}
+					}
+				} 
 			},
 			//grid will be added to center after query is run
 			{
 				region:'center',
 				id:'resultsRegion'+idpfx,
 				border:false,
-				unstyled:true,
+			 // unstyled:true,
 				layout:'card',
 				activeItem:0,
 				items:{
@@ -81,17 +110,20 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 			}
 		];
 		
-		
+
 		va.SqlResultPanel.superclass.initComponent.call(this);
 	   
 		this.fldSqlCode = this.findById('sqlcode'+ idpfx); 
-		this.msgPanel = this.findById('msg'+idpfx); 
+		this.msgPanel = this.findById('msg'+idpfx);  
+		this.fldUrl = this.findById('url'+idpfx); 
 		
 		                
 		//save postfix, to be accessed externally later if needed
 		this.idpfx = idpfx;
-	},
-	
+	}, 
+
+
+
 	/** Runs the SQL code and displays results in the grid
 	*/
 	execSql : function(){
@@ -113,6 +145,16 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 					//grid
 					this.showResultsGrid(data);
 				}
+				
+				//update URL field
+				var conn = this.sqlDb.connection;
+				conn.sql =  this.fldSqlCode.getValue(); 
+				conn.query_tag = null; 
+
+				var sqlUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
+		        + Ext.urlEncode(conn) + '&' + window.location.hash;   
+
+				this.fldUrl.setValue(sqlUrl);
 			}
 			
 			},this);
@@ -174,9 +216,8 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 					autoFill:true
 				},
 				tbar:[
-					'<span id="total'+this.idpfx+'"></span> rows total',               
+					'<span id="total'+this.idpfx+'"></span> total',               
 					'-',
-					'Show',
 					{
 						xtype:'numberfield',
 						id:'pagesize'+this.idpfx,
@@ -198,7 +239,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 							}
 						}
 					}, 
-					'Rows',
+					'/page',
 					'-',
 					{ 
 						iconCls:'vaicon-first',
@@ -287,9 +328,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.tableData = rows;
 		this.totalRows = data.count;  
 		Ext.get('total'+this.idpfx).update(this.totalRows);  
-    
-		this.totalPages = Math.floor((this.totalRows / this.pageSize) + 1); 
-    Ext.get('totalPages'+this.idpfx).update(this.totalPages);
+
 		this.updatePageView();
 		
 		    
@@ -324,7 +363,10 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 		
 
 		this.pageNumber = pageNumber;
-		this.pageSize = pageSize;	  
+		this.pageSize = pageSize;	   
+		 
+		this.totalPages = Math.floor((this.totalRows / this.pageSize) + 1);
+    Ext.get('totalPages'+this.idpfx).update(this.totalPages);
 		
 	}
 

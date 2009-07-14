@@ -1,7 +1,8 @@
 /**
   Connection window, where user edits connection information
 
-*/
+*/ 
+Ext.namespace('va');
 va.ConnectionWindow = Ext.extend(Ext.Window,{
 	layout:'anchor',
 	title:'Database Connection Information',
@@ -11,7 +12,8 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 	defaults:{border:false}, 
   
  	initComponent : function(){
-	  var _idpfx = Ext.id(); //ensure unique ids
+	  var _idpfx = Ext.id(); //ensure unique ids 
+		var defaultConn = this.defaultConnection || {};
 	
 		this.items = [
 			{
@@ -31,7 +33,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 							id: 'sql_server' + _idpfx,
 							allowBlank:false,   
 							selectOnFocus:true,
-							value:'172.16.115.128'
+							value: defaultConn.sql_server || '172.16.115.128'
 						}
 					},
 					{
@@ -43,7 +45,8 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 							xtype:'textfield',
 							anchor:'98%',
 							fieldLabel:'Port',
-							id:'sql_port'+ _idpfx
+							id:'sql_port'+ _idpfx,
+							value: defaultConn.sql_port || ''
 						}
 					}
 				]
@@ -67,7 +70,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								id:'sql_database'+ _idpfx,
 								allowBlank:false,
 								selectOnFocus:true,
-								value:'viaducttest'
+								value:defaultConn.sql_database ||'viaducttest'
 							},
 							{
 								xtype:'textfield',
@@ -76,7 +79,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								id:'sql_user'+ _idpfx,
 								allowBlank:false, 
 								selectOnFocus:true,  
-								value:'sa'
+								value:defaultConn.sql_user ||'sa'
 							},
 							{
 								xtype:'textfield',
@@ -84,7 +87,8 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								inputType:'password',
 								fieldLabel:'Password', 
 								selectOnFocus:true,  
-								id:'sql_password'+ _idpfx
+								id:'sql_password'+ _idpfx,
+								value: defaultConn.sql_password || ''
 							},
 							{
 								xtype:'textfield',
@@ -94,7 +98,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								selectOnFocus:true,  
 								id:'connection_name'+ _idpfx, 
 								//generate unique connection name for this session (ie. va_534588228924) 
-								value:'va_' + new Date().getTime() 
+								value:defaultConn.connection_name || 'va_' + new Date().getTime() 
 							}, 
 							{
 								xtype:'numberfield',
@@ -102,7 +106,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								selectOnFocus:true,
 								fieldLabel:'Timeout',
 								id:'connection_timeout'+ _idpfx, 
-								value:60
+								value:defaultConn.connection_timeout || 60
 							}
 							
 						]
@@ -169,8 +173,10 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 				connection_name : this.fields['connection_name'].getValue(),
 				connection_timeout : this.fields['connection_timeout'].getValue()
 			};
-       
-                   
+      
+			//save to caches
+      this.connection = values;
+             
 	    //TODO: test connection
 			var testDb = new sqlDbAccess(values); 
 	    testDb.testConnection(function(sqld, success){
