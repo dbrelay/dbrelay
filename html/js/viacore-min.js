@@ -36,9 +36,11 @@ try{sqlDb.so.run_batch(batch,function(resp){sqlDb.so.empty_batch(batch);if(callb
 var batch='delete'+new Date().getTime();for(var i=0,len=rows.length;i<len;i++){var row=rows[i],wheres=[];for(var k in row){wheres.push(k+"="+this.safeSqlString(row[k]))}
 sqlDb.so.delete_row({table:table,where:'('+wheres.join(' AND ')+')'},batch);}
 try{sqlDb.so.run_batch(batch,function(resp){sqlDb.so.empty_batch(batch);if(callback){callback.call(scope||window,this,resp);}});}catch(e){}},updateRows:function(set,wheres,callback,scope){if(set.length===0){return;}
-var batch='update'+new Date().getTime();for(var i=0,len=set.length;i<len;i++){var values=set[i],valueparam=[],whereparam=[];for(var col in values){valueparam.push(col+"="+this.safeSqlString(values[col]));}
-var wherecols=wheres[i];for(var k in wherecols){whereparam.push(k+"="+this.safeSqlString(wherecols[k]));}
-sqlDb.so.update_row({table:table,setvalues:valueparam.join(','),where:whereparam.join(' AND ')},batch);}
+var batch='update'+new Date().getTime();for(var i=0,len=set.length;i<len;i++){var values=set[i],valueparam=[],where='';for(var col in values){valueparam.push(col+"="+this.safeSqlString(values[col]));}
+var wherecols=wheres[i];if(typeof(wherecols)==='string'){where=wherecols;}
+else{var whereparam=[];for(var k in wherecols){whereparam.push(k+"="+this.safeSqlString(wherecols[k]));}
+where=whereparam.join(' AND ');}
+sqlDb.so.update_row({table:table,setvalues:valueparam.join(','),where:where},batch);}
 try{sqlDb.so.run_batch(batch,function(resp){sqlDb.so.empty_batch(batch);if(callback){callback.call(scope||window,this,resp);}});}catch(e){}},queryPrimaryKeys:function(callback,scope){this.sqlDb.run('get_primary_keys',{table:table},function(resp){var rows=resp.data[0].rows,keys=[];for(var i=0;i<rows.length;i++){keys[i]=rows[i].COLUMN_NAME;}
 this.pkeyColumns=keys;if(callback){callback.call(scope||window,this,resp,keys);}});},queryTotalRows:function(cfg,callback,scope){cfg=cfg||{};var where=cfg.where||{},whereparam=[];if(typeof(where)==='string'){whereparam='WHERE '+where;}
 else{for(var w in where){whereparam.push(k+"="+this.safeSqlString(where[w]));}

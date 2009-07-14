@@ -292,8 +292,8 @@ sqlTable = function(){
 			
 			/** Batch update table rows.  This function assumes each row to be updated have the same where column(s), and that all WHERE clauses are AND'd together.
 			
-			@param {Array} set : array of objects of columnName:setValue pairs  ex. [{name='Fred'},{name='Ted'}]
-			@param {Array} where : array of objects to use in the where clause. Should be same length as set param  ex: [{id='2'},{key2='3'}] 
+			@param {Array} set : array of objects of columnName:setValue pairs  ex. [{name='Fred'},{name='Ted'}] or array of strings, where string is sql where clause['name LIKE \'%co%\''].  Array can contain mixed objects & strings.
+			@param {Array} wheres : array of objects to use in the where clause. Should be same length as set param  ex: [{id='2'},{key2='3'}] 
 			
 			@param {function} callback : optional callback function. Function will be called with the following params:  
 					@cbparam : {sqlTable} this sqlTable
@@ -307,7 +307,7 @@ sqlTable = function(){
 				var batch = 'update' + new Date().getTime();
 
 				for(var i=0,len=set.length; i<len; i++){
-					var values = set[i], valueparam =[], whereparam=[]; 
+					var values = set[i], valueparam =[], where=''; 
 					
 					//SETVALUES
 					for(var col in values){ 
@@ -316,16 +316,22 @@ sqlTable = function(){
 					
 					 //WHERE 
 					var wherecols = wheres[i]; 
-
-						for(var k in wherecols){ 
-							whereparam.push(k + "=" + this.safeSqlString(wherecols[k]) ); 
-						}  
+           if(typeof(wherecols) === 'string'){
+							where = wherecols;
+						}
+						else{ 
+							var whereparam=[];
+							for(var k in wherecols){ 
+								whereparam.push(k + "=" + this.safeSqlString(wherecols[k]) ); 
+							}
+							where = whereparam.join(' AND '); 
+						} 
 					
           //add to batch 
         	 sqlDb.so.update_row({
 						 table:table,
 						 setvalues : valueparam.join(','),
-						 where : whereparam.join(' AND ')
+						 where : where
 					}, batch );
         }
         

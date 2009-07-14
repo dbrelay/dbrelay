@@ -50,7 +50,13 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         text: 'Run/Refresh',  
 				tooltip:'Refresh columns & data from server',
         iconCls:'vaicon-refresh',
-				handler:this.refresh,
+				handler:function(){
+					if(this.grid.getStore().getModifiedRecords().length > 0){
+						if(confirm('You currently have outstanding edits. Refreshing will revert your changes. Are you sure you want to refresh?')){
+							this.refresh();
+						}
+					}
+				},
 				scope:this     
       }, 
 			'-',  
