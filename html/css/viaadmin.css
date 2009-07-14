@@ -27,6 +27,11 @@ body {
 	font-weight:bold;
 }
 
+label{
+	font-size:11px;
+	color:#000099;
+}
+
 /* Icons */
 .vaicon-plus{
 	background-image: url('../images/plus-circle.png') !important;

@@ -43,7 +43,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 						listeners:{
 							'keyup':{
 								fn:function(fld, e){
-									if(e.shiftKey && e.keyCode === e.ENTER){
+									if(e.ctrlKey && e.keyCode === e.ENTER){
 										 this.execSql();
 									}
 								},
@@ -62,7 +62,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 				], 
 				tbar:[ 
 					 {
-						text:'Run (Shift + Enter)',
+						text:'Run (CTRL + Enter)',
 						iconCls:'vaicon-tick',            
 						tooltip:'Execute SQL [Shift + Enter]',
 						handler: this.execSql,

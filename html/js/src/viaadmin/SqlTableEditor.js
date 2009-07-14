@@ -241,7 +241,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 										listeners:{
 											'keyup':{
 												fn:function(fld, e){
-													if((e.shiftKey || e.ctrlKey) && e.keyCode === e.ENTER){
+													if(e.ctrlKey && e.keyCode === e.ENTER){
 														 this.refresh();
 													}
 												},
