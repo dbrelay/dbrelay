@@ -5,15 +5,15 @@
 va.CreateTableWindow = Ext.extend(Ext.Window,{
 	layout:'form',
 	title:'Create Table',
-	width:400,
-	height:300,
+	width:550,
+	height:400,
 	modal:true,
 	defaults:{border:false}, 
   
  	initComponent : function(){
 	  var idpfx = Ext.id(); //ensure unique ids
 	
-		this.items = [
+		this.items = [ 
 			{
 				fieldLabel:'Table Name',
 				id:'name'+idpfx,
@@ -21,6 +21,106 @@ va.CreateTableWindow = Ext.extend(Ext.Window,{
 				anchor:'98%',
 				allowBlank:false
 			},  
+		/*	{
+				xtype:'panel',
+				layout:'column',
+				border:false, 
+				autoHeight:true,
+				height:'auto',
+				anchor:'95%',  
+				unstyled:true,
+				items:[
+					{
+						columnWidth:.3,
+						border:false,
+						layout:'form',  
+						labelAlign:'top', 
+						unstyled:true, 
+						items:[
+							{
+								xtype:'textfield',
+								fieldLabel:'Name',
+								id:'add_name'+idpfx,
+								anchor:'99%'
+							}
+						] 
+					},
+					{
+						columnWidth:.25,
+						border:false,
+						layout:'form',  
+						labelAlign:'top',  
+						unstyled:true, 
+						items:[
+							{
+								xtype:'textfield',
+								fieldLabel:'Data Type',
+								id:'add_type'+idpfx,
+								anchor:'99%'
+							}
+						] 
+					},
+					{
+						columnWidth:.1,
+						border:false,
+						layout:'form',  
+						labelAlign:'top',  
+						unstyled:true, 
+						items:[
+							{
+								xtype:'checkbox',
+								fieldLabel:'Null?',
+								id:'add_null'+idpfx,
+								anchor:'99%'
+							}
+						] 
+					},
+					{
+						columnWidth:.2,
+						border:false,
+						layout:'form',  
+						labelAlign:'top', 
+						unstyled:true, 
+						items:[
+							{
+								xtype:'checkbox',
+								fieldLabel:'Prmy Key?',
+								id:'add_pkey'+idpfx,
+								anchor:'99%'
+							}
+						] 
+					},
+					{
+						columnWidth:.1,
+						border:false,
+						layout:'form',  
+						labelAlign:'top',  
+						unstyled:true, 
+						items:[
+							{
+								xtype:'button',
+								text:'Add Col',
+								iconCls:'vaicon-plus',
+								handler: function(){
+								},
+								scope:this
+							}
+						] 
+					}
+				]
+			},    
+			{
+         xtype: 'multiselect',
+         fieldLabel: 'Columns',
+         width: 300,
+         height: 200,
+         allowBlank:false,
+         store: [[123,'One Hundred Twenty Three'],
+                 ['1', 'One'], ['2', 'Two'], ['3', 'Three'], ['4', 'Four'], ['5', 'Five'],
+                 ['6', 'Six'], ['7', 'Seven'], ['8', 'Eight'], ['9', 'Nine']],
+         ddReorder: true 
+      },   */
+			
 			//editable grid for columns
 			{
 				fieldLabel:'Columns',
@@ -29,7 +129,7 @@ va.CreateTableWindow = Ext.extend(Ext.Window,{
 				anchor:'98% 90%',
 				allowBlank:false,   
 				selectOnFocus:true,
-				value:"id INT PRIMARY KEY, name varchar(50), description varchar(100), days INT"
+				value:'id INT PRIMARY KEY,\nname varchar(50),\ndescription varchar(100),\ndays INT\n'
 			}
 		];
 		

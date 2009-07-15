@@ -98,4 +98,10 @@ label{
 }
 .vaicon-find{
 	background-image: url('../images/binocular.png') !important;
+} 
+.vaicon-doc{
+	background-image: url('../images/document-list.png') !important;
+}
+.vaicon-eg{
+	background-image: url('../images/document-globe.png') !important;
 }

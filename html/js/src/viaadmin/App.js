@@ -118,35 +118,54 @@ va.App = function(){
 										iconCls:'vaicon-info',
 										menu:[
 											{
-												text:'Home Page',
+												text:'Viaduct Home',
 												iconCls:'vaicon-home', 
 												handler:function(){window.open('/index.htm');}
 											},
 											{
-												text:'Status',
+												text:'Status Admin Page',
 												iconCls:'vaicon-monitor',
 												handler:function(){window.open('/status.htm');}
 											},
 											'-', 
-											'<b>Documentation</b>',
+											'<b>Viaduct Specs</b>',
 											{
 												text:'Specifications',
+												iconCls:'vaicon-doc', 
 												handler:function(){window.open('/doc/viaduct_specification.html');}    
 											},
 											{
 												text:'Architecture', 
 												iconCls:'vaicon-pdf',
 												handler:function(){window.open('/doc/viaduct_architecture.pdf');}  
-											},   
+											},
+											'-', 
+											'<b>Javascript Docs</b>',
+											{
+												text:'sqlObject', 
+												iconCls:'vaicon-doc',
+												handler:function(){window.open('/doc/SQL_query_interface.html');}  
+											},
+											{
+												text:'sqlDbAccess', 
+												iconCls:'vaicon-doc',
+												handler:function(){window.open('/doc/jsapi-sqldbaccess.htm');}  
+											},
+											{
+												text:'sqlTable', 
+												iconCls:'vaicon-doc',
+												handler:function(){window.open('/doc/jsapi-sqltable.htm');}  
+											},  
 											'-',
 											'<b>Examples</b>',
 											{
 												text:'Python Access',
+												iconCls:'vaicon-eg', 
 												handler:function(){window.open('/eg/Python_access.html');}  
 											},
 											{
 												text:'Inline Table Editor',
-												iconCls:'vaicon-table',
+												iconCls:'vaicon-eg',
 												handler:function(){window.open('/eg/inlinetable_example.htm');}  
 											}
 										]

@@ -1,22 +1,5 @@
-/** SQL Paging Example        
-
-select * from (
- select top 50 id,last_name,first_name from (
-    select top 80 id,last_name,first_name
-    from people
-   order by id asc
- ) as newtbl order by id desc
-) as newtbl2 order by id asc   
-
-returns records 30 - 80          
-      recordStart: 30
-			pagingSize: 50
-*/
-
-
-
 /**
-    Abstraction of sqlObject.
+    Abstraction of sqlObject.  
 */
 
 sqlDbAccess = function(){
@@ -134,7 +117,7 @@ sqlDbAccess = function(){
 			*/
 			run : function(verb, cfg, callback, scope){
 				if(!this.so[verb]){
-				  alert('"'+verb+'" is not a valid action.');
+				  alert('"'+verb+'" is not a valid action.'); 
 					return;
 				}
 				
@@ -218,7 +201,19 @@ sqlDbAccess = function(){
 					 }
 				}, this);
 			}, 
-			
+		 
+			/**
+				Creates a new table on this database
+				
+				@param {String} table : name of table to create
+				@param {string} columns : raw column string definition
+				@param {function} callback : optional callback function.
+						@cbparam {sqlDbAccess} this
+						@cbparam {Object} raw json response from server 
+						@cbparam {Array} array of table names
+						
+				@param {Object} scope of callback
+			*/ 
 			createTable: function(table, columns, callback, scope){
 				 this.run('create_table',{
 						table:table,
@@ -231,6 +226,17 @@ sqlDbAccess = function(){
 				});
 			},
 			
+	 /**
+	 		Drops a table from the database
+			
+			@param {String} table : name of table to drop
+			@param {function} callback : optional callback function.
+					@cbparam {sqlDbAccess} this
+					@cbparam {Object} raw json response from server 
+					@cbparam {Array} array of table names
+					
+			@param {Object} scope of callback
+		*/ 
 			dropTable: function(table, callback, scope){
 				 this.run('drop_table',{table:table},callback, scope);
 			},

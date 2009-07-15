@@ -115,7 +115,7 @@ sqlTable = function(){
 			
 			
 			/**
-				EXPERIMENTAL: Fetches paged rows from the table
+				Fetches paged rows from the table
 				@param {Object} cfg : config object with the following (* required):
 					@cfg {String} columns : columns to return, defaults to * . Ex:  col1,col2 
 					@cfg {int} recordStart : starting 0-based index if paging (defaults to 0)
@@ -247,6 +247,12 @@ sqlTable = function(){
 				}catch(e){}
 			},
 			
+			/**   SQL'ify a string value
+			
+			@param {string} s : string to make safe
+			
+			@return {string} string with all single quotes replaced with '' AND also wrapped in single quotes (ex. 'Chicago''s'
+			*/
 			safeSqlString : function(s){
 				return "'" + s.replace(/'/g, "''") + "'";
 			},      
@@ -255,7 +261,11 @@ sqlTable = function(){
 			@param {Array of Objects} rows : array of rows to drop, each row represented by an object with key/value pairs for the WHERE clause   (i.e. [{id='2'},{key2='3'}].
 							 Each clause will be AND'd together.   
 							
-			
+				@param {function} callback : optional callback function. Function will be called with the following params:  
+						@cbparam : {sqlTable} this sqlTable
+						@cbparam : {Object} raw JSON response from server
+
+				@param {Object} scope : scope of callback function (defaults to global scope)  
 			*/
 			deleteRows : function(rows, callback, scope){
 
