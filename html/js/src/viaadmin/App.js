@@ -33,7 +33,8 @@ va.App = function(){
 			_viewport = new Ext.Viewport({
 				layout:'border',
 				
-				items:[  
+				items:[
+
 			/* Db level action strip */
 					{
 						region:'west',
@@ -123,7 +124,7 @@ va.App = function(){
 												handler:function(){window.open('/index.htm');}
 											},
 											{
-												text:'Status Admin Page',
+												text:'Viaduct Status',
 												iconCls:'vaicon-monitor',
 												handler:function(){window.open('/status.htm');}
 											},
