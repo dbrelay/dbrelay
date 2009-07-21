@@ -117,58 +117,24 @@ va.App = function(){
 										xtype:'button',
 										text:'More',
 										iconCls:'vaicon-info',
-										menu:[
-											{
-												text:'Viaduct Home',
-												iconCls:'vaicon-home', 
-												handler:function(){window.open('/index.htm');}
-											},
-											{
+										menu:[   
+										{
+											text:'Documentation Home',
+											iconCls:'vaicon-doc', 
+											handler:function(){window.open('/doc/index.htm');}    
+										},  
+										'-',
+										{
 												text:'Viaduct Status',
 												iconCls:'vaicon-monitor',
 												handler:function(){window.open('/status.htm');}
-											},
-											'-', 
-											'<b>Viaduct Specs</b>',
+										},  
 											{
-												text:'Specifications',
-												iconCls:'vaicon-doc', 
-												handler:function(){window.open('/doc/viaduct_specification.html');}    
-											},
-											{
-												text:'Architecture', 
-												iconCls:'vaicon-pdf',
-												handler:function(){window.open('/doc/viaduct_architecture.pdf');}  
-											},
-											'-', 
-											'<b>Javascript Docs</b>',
-											{
-												text:'sqlObject', 
-												iconCls:'vaicon-doc',
-												handler:function(){window.open('/doc/SQL_query_interface.html');}  
-											},
-											{
-												text:'sqlDbAccess', 
-												iconCls:'vaicon-doc',
-												handler:function(){window.open('/doc/jsapi-sqldbaccess.htm');}  
-											},
-											{
-												text:'sqlTable', 
-												iconCls:'vaicon-doc',
-												handler:function(){window.open('/doc/jsapi-sqltable.htm');}  
-											},  
-											'-',
-											'<b>Examples</b>',
-											{
-												text:'Python Access',
-												iconCls:'vaicon-eg', 
-												handler:function(){window.open('/eg/Python_access.html');}  
-											},
-											{
-												text:'Inline Table Editor',
-												iconCls:'vaicon-eg',
-												handler:function(){window.open('/eg/inlinetable_example.htm');}  
+												text:'Old UI',
+												iconCls:'vaicon-home', 
+												handler:function(){window.open('/oldindex.htm');}
 											}
+											
 										]
 									}   
 								]
