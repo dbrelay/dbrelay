@@ -173,6 +173,12 @@ static char *viaduct_mssql_get_sqltype_string(char *dest, int coltype, int colle
 		case SYBUNIQUE : 
 			sprintf(dest, "guid");
 			break;
+		case SYBBINARY : 
+			sprintf(dest, "binary");
+			break;
+		case SYBVARBINARY : 
+			sprintf(dest, "varbinary");
+			break;
 		default : 
 			sprintf(dest, "unknown type %d", coltype);
 			break;
@@ -181,7 +187,10 @@ static char *viaduct_mssql_get_sqltype_string(char *dest, int coltype, int colle
 }
 static unsigned char viaduct_mssql_has_length(int coltype)
 {
-	if (coltype==SYBVARCHAR || coltype==SYBCHAR)
+	if (coltype==SYBVARCHAR || 
+            coltype==SYBCHAR ||
+	    coltype==SYBVARBINARY || 
+            coltype==SYBBINARY)
 		return 1;
 	else
 		return 0;
