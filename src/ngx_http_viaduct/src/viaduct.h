@@ -93,7 +93,7 @@ typedef struct {
    long connection_timeout;
    time_t tm_create;
    time_t tm_accessed;
-   unsigned char in_use;
+   unsigned int in_use;
    unsigned int slot;
    pid_t pid;
    pid_t helper_pid;
