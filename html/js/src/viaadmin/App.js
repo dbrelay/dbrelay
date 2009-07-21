@@ -33,7 +33,8 @@ va.App = function(){
 			_viewport = new Ext.Viewport({
 				layout:'border',
 				
-				items:[  
+				items:[
+
 			/* Db level action strip */
 					{
 						region:'west',
@@ -118,34 +119,54 @@ va.App = function(){
 										iconCls:'vaicon-info',
 										menu:[
 											{
-												text:'Home Page',
+												text:'Viaduct Home',
 												iconCls:'vaicon-home', 
 												handler:function(){window.open('/index.htm');}
 											},
 											{
-												text:'Status',
+												text:'Viaduct Status',
 												iconCls:'vaicon-monitor',
 												handler:function(){window.open('/status.htm');}
 											},
 											'-', 
-											'<b>Documentation</b>',
+											'<b>Viaduct Specs</b>',
 											{
 												text:'Specifications',
+												iconCls:'vaicon-doc', 
 												handler:function(){window.open('/doc/viaduct_specification.html');}    
 											},
 											{
 												text:'Architecture', 
 												iconCls:'vaicon-pdf',
 												handler:function(){window.open('/doc/viaduct_architecture.pdf');}  
-											},   
+											},
+											'-', 
+											'<b>Javascript Docs</b>',
+											{
+												text:'sqlObject', 
+												iconCls:'vaicon-doc',
+												handler:function(){window.open('/doc/SQL_query_interface.html');}  
+											},
+											{
+												text:'sqlDbAccess', 
+												iconCls:'vaicon-doc',
+												handler:function(){window.open('/doc/jsapi-sqldbaccess.htm');}  
+											},
+											{
+												text:'sqlTable', 
+												iconCls:'vaicon-doc',
+												handler:function(){window.open('/doc/jsapi-sqltable.htm');}  
+											},  
 											'-',
 											'<b>Examples</b>',
 											{
 												text:'Python Access',
+												iconCls:'vaicon-eg', 
 												handler:function(){window.open('/eg/Python_access.html');}  
 											},
 											{
 												text:'Inline Table Editor',
+												iconCls:'vaicon-eg',
 												handler:function(){window.open('/eg/inlinetable_example.htm');}  
 											}
 										]
@@ -175,15 +196,31 @@ va.App = function(){
 			});
 			
 			
-			
-      //display connection window 
-		 //TODO: optionally read connection data from external file, and bypass this window...    
+			//If direct URL was used, auto-set the params and open the SQL tab accordingly 
+			var url = window.location.href;	       
+			var qparams = Ext.urlDecode(url.substring( url.indexOf('?')+1));
+     
+			this.restoredConnection = qparams;
+
 			this.showConnectionWindow(true);
 			
+		/*	if(qparams && qparams.sql_server && qparams.sql_database){      
+				console.dir(qparams); 
+				 //create sqlDb object
+				 // this.sqlDb = sqlDbAccess(qparams);      
+                          
+					
+          //open a SQL panel by default
+				 // this.addSqlPanel(qparams.sql);    
+				 // this.refreshTablesMenu();  
+			}
+			else{
+      	//display connection window 
+		 			//TODO: optionally read connection data from external file, and bypass this window...    
+					this.showConnectionWindow(true);
+			 }  */
+			
 		},  
-		
-		
-		   
 		
 		
 		/* Create the new table window (if needed), and show/hide it
@@ -198,7 +235,10 @@ va.App = function(){
 						'ok':{
 							fn: function(w, table, columns){    
                 this.sqlDb.createTable(table,columns, function(sqld, resp){
-								 	this.refreshTablesMenu();
+								 	this.refreshTablesMenu();         
+								  
+								//open this table for editing
+								this.showTableEditor(table);
 								},this);
 													
 							},
@@ -219,6 +259,7 @@ va.App = function(){
 			
   		if(!this.connectionWindow){
 				this.connectionWindow = new va.ConnectionWindow({
+					defaultConnection : this.restoredConnection || {},
 					listeners:{
 						'connectionupdate':{
 							fn: function(w, conncfg){    
@@ -226,9 +267,9 @@ va.App = function(){
 								//first time
 								if(!this.sqlDb){  
 									//create sqlDb object
-									this.sqlDb = new sqlDbAccess(conncfg); 
+									this.sqlDb = sqlDbAccess(conncfg); 
                   //open a SQL panel by default
-									this.addSqlPanel();
+									this.addSqlPanel(this.restoredConnection.sql);
 					       }
 
 					       //update information
@@ -249,13 +290,14 @@ va.App = function(){
 		 
 		 /** Adds a new SqlResultPanel tab to the main tabs 
 		*/
-     addSqlPanel : function(){
+     addSqlPanel : function(defaultSql){
 
 			var p = Ext.getCmp('maintabs').add(new va.SqlResultPanel({
 				sqlDb: this.sqlDb,
 				border: false,
 				title: 'Run SQL ' + (++_numSqls),
-				closable:true
+				closable:true,
+				defaultSql : defaultSql
 			}));
 			_viewport.doLayout();  
 				

@@ -27,6 +27,11 @@ body {
 	font-weight:bold;
 }
 
+label{
+	font-size:11px;
+	color:#000099;
+}
+
 /* Icons */
 .vaicon-plus{
 	background-image: url('../images/plus-circle.png') !important;
@@ -87,4 +92,16 @@ body {
 }   
 .vaicon-log{
 	background-image: url('../images/document-attribute-l.png') !important;
+}
+.vaicon-link{
+	background-image: url('../images/chain.png') !important;
+}
+.vaicon-find{
+	background-image: url('../images/binocular.png') !important;
+} 
+.vaicon-doc{
+	background-image: url('../images/document-list.png') !important;
+}
+.vaicon-eg{
+	background-image: url('../images/document-globe.png') !important;
 }

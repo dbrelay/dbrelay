@@ -99,7 +99,8 @@ sqlTable = function(){
 						table:table,
 						columns: cfg.columns || '*',
 						where: cfg.where ? ('WHERE ' + cfg.where) : '',
-						orderBy: cfg.orderBy ? 'ORDER BY ' + cfg.orderBy + ' ' + (cfg.orderByType || 'asc') : ''
+						orderBy: cfg.orderBy ? 'ORDER BY ' + cfg.orderBy : '',
+						orderByType: cfg.orderBy ? (cfg.orderByType || 'asc') : ''
 					},
 					function(results){
 						//final callback
@@ -114,7 +115,7 @@ sqlTable = function(){
 			
 			
 			/**
-				EXPERIMENTAL: Fetches paged rows from the table
+				Fetches paged rows from the table
 				@param {Object} cfg : config object with the following (* required):
 					@cfg {String} columns : columns to return, defaults to * . Ex:  col1,col2 
 					@cfg {int} recordStart : starting 0-based index if paging (defaults to 0)
@@ -164,6 +165,8 @@ sqlTable = function(){
 					alert('recordStart and pagingSize should be numeric');
 					return{};
 				}
+			  //opposite of order type 
+				var orderByTypeOpp = cfg.orderByType.toLowerCase() === 'asc' ? 'desc' : 'asc';
 				 
 				//run sqlDbAccess verb to fetch paged rows
 			  this.sqlDb.run('fetch_paged_rows',{ 
@@ -173,6 +176,7 @@ sqlTable = function(){
 						where: cfg.where ? 'WHERE ' + cfg.where : '',
 						orderBy : cfg.orderBy,
 						orderByType: cfg.orderByType,
+						orderByTypeOpp: orderByTypeOpp,
 						table: table,
 						absMax : cfg.recordStart + cfg.pagingSize
 					},  
@@ -241,13 +245,27 @@ sqlTable = function(){
 						 }
 					});
 				}catch(e){}
+			},
+			
+			/**   SQL'ify a string value
+			
+			@param {string} s : string to make safe
+			
+			@return {string} string with all single quotes replaced with '' AND also wrapped in single quotes (ex. 'Chicago''s'
+			*/
+			safeSqlString : function(s){
+				return "'" + s.replace(/'/g, "''") + "'";
 			},      
 			  
 			/** Deletes row(s) from the table
 			@param {Array of Objects} rows : array of rows to drop, each row represented by an object with key/value pairs for the WHERE clause   (i.e. [{id='2'},{key2='3'}].
 							 Each clause will be AND'd together.   
 							
-			
+				@param {function} callback : optional callback function. Function will be called with the following params:  
+						@cbparam : {sqlTable} this sqlTable
+						@cbparam : {Object} raw JSON response from server
+
+				@param {Object} scope : scope of callback function (defaults to global scope)  
 			*/
 			deleteRows : function(rows, callback, scope){
 
@@ -259,7 +277,7 @@ sqlTable = function(){
 					var row = rows[i], wheres=[]; 
 					
 					for(var k in row){ 
-						wheres.push(k + "='" + row[k].replace(/'/g, "\'") + "'") 
+						wheres.push(k + "=" + this.safeSqlString(row[k]) ) 
 					}
 					
           //add to batch 
@@ -284,8 +302,8 @@ sqlTable = function(){
 			
 			/** Batch update table rows.  This function assumes each row to be updated have the same where column(s), and that all WHERE clauses are AND'd together.
 			
-			@param {Array} set : array of objects of columnName:setValue pairs  ex. [{name='Fred'},{name='Ted'}]
-			@param {Array} where : array of objects to use in the where clause. Should be same length as set param  ex: [{id='2'},{key2='3'}] 
+			@param {Array} set : array of objects of columnName:setValue pairs  ex. [{name='Fred'},{name='Ted'}] or array of strings, where string is sql where clause['name LIKE \'%co%\''].  Array can contain mixed objects & strings.
+			@param {Array} wheres : array of objects to use in the where clause. Should be same length as set param  ex: [{id='2'},{key2='3'}] 
 			
 			@param {function} callback : optional callback function. Function will be called with the following params:  
 					@cbparam : {sqlTable} this sqlTable
@@ -299,27 +317,31 @@ sqlTable = function(){
 				var batch = 'update' + new Date().getTime();
 
 				for(var i=0,len=set.length; i<len; i++){
-					var values = set[i], valueparam =[], whereparam=[]; 
+					var values = set[i], valueparam =[], where=''; 
 					
 					//SETVALUES
 					for(var col in values){ 
-						var safeVal = values[col].replace(/'/g, "\'");
-						
-						valueparam.push(col + "='" + safeVal + "'");   
+						valueparam.push(col + "=" + this.safeSqlString(values[col]));   
 					}  
 					
 					 //WHERE 
 					var wherecols = wheres[i]; 
-
-						for(var k in wherecols){ 
-							whereparam.push(k + "='" + wherecols[k].replace(/'/g, "\'") + "'") 
-						}  
+           if(typeof(wherecols) === 'string'){
+							where = wherecols;
+						}
+						else{ 
+							var whereparam=[];
+							for(var k in wherecols){ 
+								whereparam.push(k + "=" + this.safeSqlString(wherecols[k]) ); 
+							}
+							where = whereparam.join(' AND '); 
+						} 
 					
           //add to batch 
         	 sqlDb.so.update_row({
 						 table:table,
 						 setvalues : valueparam.join(','),
-						 where : whereparam.join(' AND ')
+						 where : where
 					}, batch );
         }
         
@@ -386,7 +408,7 @@ sqlTable = function(){
 				}
 				else{ 
 					for(var w in where){  
-						whereparam.push(k + "='" + where[w].replace(/'/g, "\'") + "'")     
+						whereparam.push(k + "=" + this.safeSqlString( where[w]));     
 					}
 					whereparam = whereparam.length === 0 ? '' : 'WHERE ' + whereparam.join('AND')
 				} 

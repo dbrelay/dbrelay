@@ -1,0 +1,61 @@
+{
+   "request" : {
+      "query_tag" : "Example", "sql_server" : "chisqlops1", "sql_user" : "getco\\vdidenko", "sql_database" : "ops"
+   }, "data" : [
+   {
+      "fields" : [
+         {
+            "name" : "target", "sql_type" : "char", "length" : "50"
+         },
+         {
+            "name" : "requests", "sql_type" : "int", "length" : "4"
+         },
+         {
+            "name" : "replies", "sql_type" : "int", "length" : "4"
+         },
+         {
+            "name" : "fails", "sql_type" : "int", "length" : "4"
+         }
+      ], "rows" : [
+         {
+            "target" : "TGT1", "requests" : 10920, "replies" : 3409, "fails" : 90
+         },
+         {
+            "target" : "TGT2", "requests" : 131497287, "replies" : 3508882, "fails" : 2451894
+         },
+         {
+            "target" : "TGT3", "requests" : 15728, "replies" : 321, "fails" : 43
+         },
+         {
+            "target" : "TGT$", "requests" : 120859455, "replies" : 3148272, "fails" : 998405
+         },
+         {
+            "target" : "TGT5", "requests" : 550988, "replies" : 154275, "fails" : 2120
+         },
+         {
+            "target" : "TGT6", "requests" : 107122726, "replies" : 2320365, "fails" : 292126
+         },
+         {
+            "target" : "TGT7", "requests" : 399134788, "replies" : 579818, "fails" : 49418
+         },
+         {
+            "target" : "TARGET8", "requests" : 104247221, "replies" : 188204, "fails" : 1374112
+         },
+         {
+            "target" : "TGT9", "requests" : 50631, "replies" : 248, "fails" : 6
+         },
+         {
+            "target" : "TGT10", "requests" : 60, "replies" : 0, "fails" : 60
+         },
+         {
+            "target" : "T11", "requests" : 532, "replies" : 0, "fails" : 532
+         },
+         {
+            "target" : "TARGET12", "requests" : 1845514, "replies" : 11744, "fails" : 6836
+         }
+      ], "count" : 12
+   }
+], "log" : {
+      "sql" : "select target, requests, replies, fails from yr_stats \n\nwhere tds='2009-01-01'"
+   }
+}
