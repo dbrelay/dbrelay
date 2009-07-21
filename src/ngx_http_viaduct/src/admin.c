@@ -4,6 +4,7 @@
 
 #include "viaduct.h"
 #include "stringbuf.h"
+#include <sys/signal.h>
 
 #define SUCCESS 0
 #define FAIL 1
