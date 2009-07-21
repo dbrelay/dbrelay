@@ -109,7 +109,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 				},
 				tbar:[
 					{
-						text:'Test'
+						text:''
 					}
 				]
 				
@@ -193,14 +193,14 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 			
 			if(!data.count){continue;}
 			
-			var name ='Viewing Result Set ' + (count+1);
+			var name ='Result Set ' + (count+1);
 			
 			//grid
 		  if(!this.grids[count]){
 			//create the grid if it doesn't exist yet 
 
 				this.grids[count] = new va.SqlSelectGrid({
-					resultName:name, 
+					resultName:'Viewing ' + name, 
 					dataSet:data,
 					listeners:{
 						'render':{
