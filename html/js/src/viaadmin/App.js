@@ -348,6 +348,8 @@ va.App = function(){
 					}
 					
 				}
+				
+				_tablesMenuOpen.doLayout();     
 			} 
   
 		}, 
@@ -369,6 +371,8 @@ va.App = function(){
 					}
 					
 				}
+				
+				_tablesMenuDrop.doLayout();
 				
 			}     
 		},
