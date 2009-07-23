@@ -332,32 +332,44 @@ va.App = function(){
 		},  
 		
 		_freeEditTableHandler : function(fld,e){
-			if(e.keyCode === e.ENTER){ 
-				var table = fld.getValue();
-				if( this.tableNames.indexOf(table) !== -1){
-				 	this.showTableEditor(table);            
+			
+			if(e.keyCode === e.ENTER){          
+				var table = fld.getValue();    
+				var tableRX = new RegExp(table, "i");
+				
+				var clickies = _tablesMenuOpen.find( 'isClicky', true); 
+				
+			 	for(var i=0, len=clickies.length;i<len;i++){
+					var item = clickies[i];
+					item.show();
+					
+					if( !tableRX.test(item.text) ){
+						item.hide(); 
+					}
+					
 				}
-				else{
-					alert(table + ' is not a valid table in the database');
-				}
-			}     
+			} 
+  
 		}, 
 		
 		_freeDropTableHandler : function(fld,e){
-			if(e.keyCode === e.ENTER){        
-				var table = fld.getValue();   
+			
+			if(e.keyCode === e.ENTER){         
+				var table = fld.getValue(); 
+				var tableRX = new RegExp(table, "i");
 				
-				if(confirm('Are you sure you want to drop table '+ table)){
-					this.sqlDb.dropTable(table, function(resp){
-						if(resp.data){             
-							if(this.tables[table]){
-								this.tables[table].ownerCt.remove(this.tables[table]);  
-								this.tables[table] = null;
-							}
-							this.refreshTablesMenu();
-						}
-					}, this);
+				var clickies = _tablesMenuDrop.find( 'isClicky', true); 
+				
+				for(var i=0, len=clickies.length;i<len;i++){
+					var item = clickies[i];
+					item.show();
+					
+					if( !tableRX.test(item.text) ){
+						item.hide(); 
+					}
+					
 				}
+				
 			}     
 		},
 		
@@ -431,14 +443,16 @@ va.App = function(){
 				 	 _tablesMenuOpen.addMenuItem(	{
 						text:name, 
 						iconCls:'vaicon-table',
-						handler:openTableHandler,
+						handler:openTableHandler,  
+						isClicky:true,
 						scope:this
 				 	 });    
 					
 						_tablesMenuDrop.addMenuItem(	{
 							text:name, 
 							iconCls:'vaicon-table',
-							handler:dropTableHandler,
+							handler:dropTableHandler,  
+							isClicky:true, 
 							scope:this
 					 	}); 
 				 }                      
