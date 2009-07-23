@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Viaduct</title>
+    <title>viaadmin</title>
 
 	  <link rel="stylesheet" href="js/ext-3.0.0/resources/css/ext-all-notheme.css" type="text/css" charset="utf-8">   
 	  <link rel="stylesheet" href="js/ext-3.0.0/resources/css/xtheme-blue.css" type="text/css" media="screen" title="no title" charset="utf-8">
@@ -10,11 +10,10 @@
 		<link rel="stylesheet" href="css/viaadmin.css" type="text/css" media="screen" title="no title" charset="utf-8">
 	                                                                                                                                     
 
-                             
+           
 
-
-	<body>
-		<span></span> 
+	<body>   
+		<span></span>
 		<div id="dbr-loading-mask" style="width:100%;height:100%;background:#c3daf9;position:absolute;z-index:20000;left:0;top:0;">&#160;</div>
 		<div id="dbr-loading">
 			<div class="loading-indicator"><img src="/images/loading.gif" align="absmiddle">&#160;Loading...</div>
@@ -24,14 +23,25 @@
 
     <script src="js/ext-3.0.0/adapter/jquery/ext-jquery-adapter.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/ext-3.0.0/ext-all.js" type="text/javascript" charset="utf-8"></script>
-
-	 
-	<script src="js/viacore-min.js" type="text/javascript" charset="utf-8"></script>  
-   <script src="js/viaadmin-all-min.js" type="text/javascript" charset="utf-8"></script>
-
-
-		<div id="content"></div>                   
 		
+	 	<script src="js/src/sqlObject.js" type="text/javascript" charset="utf-8"></script>
+   	<script src="js/src/sqlDbAccess.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/src/sqlTable.js" type="text/javascript" charset="utf-8"></script>  
+
+
+		<!-- vadmin related -->
+		<script src="js/src/viaadmin/MultiSelect.js" type="text/javascript" charset="utf-8"></script>  
+		<script src="js/src/viaadmin/SqlTableEditor.js" type="text/javascript" charset="utf-8"></script>  
+		<script src="js/src/viaadmin/ConnectionWindow.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/src/viaadmin/SqlSelectGrid.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/src/viaadmin/SqlResultPanel.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/src/viaadmin/CreateTableWindow.js" type="text/javascript" charset="utf-8"></script>
+    
+
+		<script src="js/src/viaadmin/App.js" type="text/javascript" charset="utf-8"></script>
+		
+		
+		<div id="content"></div> 
 		
 		
   </body>

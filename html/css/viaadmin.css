@@ -4,6 +4,29 @@ body {
 	font-size:12px;
 }
 
+/* loading */
+
+#dbr-loading{
+	position:absolute;
+	left:45%;
+	top:40%;
+	border:1px solid #6593cf;
+	padding:2px;
+	background:#c3daf9;
+	width:150px;
+	text-align:center;
+	z-index:20001;
+}
+#dbr-loading .loading-indicator{
+	border:1px solid #a3bad9;
+	background:white repeat-x;
+	color:#003366;
+	font:bold 13px tahoma,arial,helvetica;
+	padding:10px;
+	margin:0;
+}
+
+
 .x-grid3-row-table.va-deletetablerow td {  
 	background-color:#ff0000 !important;
 }
