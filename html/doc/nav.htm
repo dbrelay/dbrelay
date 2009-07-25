@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Untitled Document</title>
+<link rel="stylesheet" href="doc.css" type="text/css"/>  
+
+<style>
+body{
+	background-color:#E6E6E6;
+}
+
+ol,ul,li{
+list-style:none;
+margin:0;
+padding:0;
+}
+
+ul{
+margin-bottom:15px;
+border-collapse:collapse;
+border-top:1px solid black;
+}
+
+li a{
+display: block;
+padding: 3px 0;
+padding-left: 9px;
+width: 100%; /*185px minus all left/right paddings and margins*/
+text-decoration: none;
+color: white;
+background-color: #2175bc;
+border-bottom: 1px solid #90bade;
+border-left: 7px solid #1958b7;
+
+}
+li a:hover{
+	background-color: #2586d7;
+border-left-color: #1c64d1;
+}
+
+#nav{
+	min-width:140px;
+}
+
+
+.nav-header{
+	font-weight:bold;
+	font-size:14px;
+	color: white;
+border-bottom: 1px solid black;
+padding: 1px 0;
+padding-left: 5px;
+background-color: black;
+}
+
+#logo{
+	height:30px;
+	margin-bottom:5px;
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	font-size:16px;
+	margin-top:5px;
+	margin-left:5px;
+}
+
+</style>
+
+
+<script>
+
+function loadPage(url) {
+	parent.frames['main'].window.location=url;
+}
+
+</script>
+</head>
+
+<body>
+
+<div id="logo">viaduct.</div>
+<div id="nav">
+
+<div class="nav-header">Specifications</div>
+<ul>
+	<li><a href="javascript:loadPage('overview.htm')">Overview</a></li>
+    <li><a href="javascript:loadPage('features.htm')">Features</a></li>
+    <li><a href="javascript:loadPage('interaction.htm')">Interaction Logic</a></li>
+    <li><a href="javascript:loadPage('interfaces.htm')">Interfaces</a></li>
+    <li><a href="javascript:loadPage('environment.htm')">Environment</a></li>
+    <li><a href="javascript:loadPage('example.htm')">Example</a></li>
+</ul>
+    
+<div class="nav-header">Architecture</div>
+<ul>
+    <li><a href="viaduct_architecture.pdf" target="_blank">Architecture (PDF)</a></li>
+</ul>
+
+<div class="nav-header">JavaScript API</div>
+<ul>    
+    <li><a href="javascript:loadPage('jsapi-sqlobject.htm')">sqlObject &amp; Overview</a></li>
+    <li><a href="javascript:loadPage('jsapi-sqldbaccess.htm')">sqlDbAccess</a></li>
+    <li><a href="javascript:loadPage('jsapi-sqltable.htm')">sqlTable</a></li>
+</ul>
+
+<div class="nav-header">Examples</div>
+<ul>    
+    <li><a href="javascript:loadPage('../eg/python_example.htm')">Python Access</a></li>
+    <li><a href="javascript:loadPage('../eg/inlinetable_example.htm')">Inline Table Editor</a></li>
+</ul>
+
+<div class="nav-header">Pages</div>
+<ul>
+	<li><a href="/index.htm" target="_blank">Admin/Home</a></li>
+    <li><a href="/status.htm" target="_blank">Status</a></li>
+    <li><a href="/oldindex.htm" target="_blank">Old Home</a></li>
+</ul>
+</div>
+
+<i>&copy; 2009 GETCO, LLC.<br/> All Rights Reserved</i>
+</body>
+</html>
