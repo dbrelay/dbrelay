@@ -3,33 +3,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Python access to Viaduct</title>
-    <style type="text/css" media="all">
-      body {
-        width: 80%;
-        margin: auto;
-      }
-      pre {
-        background-color: #eee;
-        margin-left: 2em;
-        border: 1px dotted grey;
-        padding: 1em;
-        overflow: auto;
-      }
-    </style>
+    
+    <link rel="stylesheet" href="../doc/doc.css" type="text/css"/>       
+
   </head>
   <body>
     <h1>Python example</h1>
     <ol>
       <li><a href="http://pypi.python.org/pypi/simplejson">Download the simplejson package from here</a></li>
-      <li>
-        <p>Install the simplejson package, like this (use the correct version):</p>
-        <pre>tar xzf simplejson-2.0.9.tar.gz
+      <li>Install the simplejson package, like this (use the correct version):
+<pre class="codeblock">tar xzf simplejson-2.0.9.tar.gz
 cd simplejson-2.0.9
 sudo python setup.py install</pre>
       </li>
-      <li>
-        <p>Run the emaple Python script with your values:</p>
-        <pre>import urllib, urllib2, simplejson, os
+      <li>Run the emaple Python script with your values:
+<pre class="codeblock">import urllib, urllib2, simplejson, os
 
 try:
   del os.environ['HTTP_PROXY']
@@ -57,6 +45,5 @@ if 'log' in result and 'error' in result['log']:
   print result['log']['sql']</pre>
       </li>
     </ol>
-    <hr />
   </body>
 </html>
