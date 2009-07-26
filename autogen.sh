@@ -16,7 +16,7 @@
 # directly anymore.
 
 srcdir=`dirname $0`
-PKG_NAME="ngx_http_viaduct."
+PKG_NAME="dbrelay."
 
 # If autoreconf encounters an error, it might be because this is the 
 # very first time it was run, meaning that some files e.g. config.sub

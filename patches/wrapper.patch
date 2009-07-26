@@ -4,12 +4,12 @@
  
  
  CORE_SRCS="src/core/nginx.c \
-+           src/core/viaduct.c \
++           src/core/dbrelay.c \
             src/core/ngx_log.c \
             src/core/ngx_palloc.c \
             src/core/ngx_array.c \
---- src/core/viaduct.c  2008-12-23 07:31:40.000000000 -0500
-+++ src/core/viaduct.c	2008-12-16 10:04:33.000000000 -0500
+--- src/core/dbrelay.c  2008-12-23 07:31:40.000000000 -0500
++++ src/core/dbrelay.c	2008-12-16 10:04:33.000000000 -0500
 @@ -0,0 +1,54 @@
 +
 +/*
@@ -22,15 +22,15 @@
 +#include <nginx.h>
 +#include <getopt.h>
 +#include <sys/ipc.h>
-+#include "../../../../ngx_http_viaduct/src/viaduct.h"
++#include "../../../../dbrelay/src/dbrelay.h"
 +
 +int ngx_cdecl ngx_main(int argc, char *const *argv);
-+void ngx_http_viaduct_exit_master(ngx_cycle_t *cycle);
++void ngx_http_dbrelay_exit_master(ngx_cycle_t *cycle);
 +
 +int ngx_cdecl
 +main(int argc, char *const *argv)
 +{
-+     viaduct_connection_t *buf;
++     dbrelay_connection_t *buf;
 + 
 +     static struct option long_options[] =
 +     {
@@ -50,17 +50,17 @@
 +           case 'c': 
 +              key = ftok(NGX_PREFIX, 1);
 +              printf("Cleaning up old instance(s) shared mem key = %d.\n", (int) key );
-+              ngx_http_viaduct_exit_master(NULL);
++              ngx_http_dbrelay_exit_master(NULL);
 +              exit(0); 
 +              break;
 +        }
 +     } while(c!=-1);
 +
 +    // initialize shared memory and semaphore
-+    if ((buf=viaduct_get_shmem())==NULL) {
-+       viaduct_create_shmem();
++    if ((buf=dbrelay_get_shmem())==NULL) {
++       dbrelay_create_shmem();
 +    } else {
-+       viaduct_release_shmem(buf);
++       dbrelay_release_shmem(buf);
 +    }
 +
 +    return ngx_main(argc, argv);

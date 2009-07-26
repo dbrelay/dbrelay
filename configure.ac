@@ -1,5 +1,5 @@
 
-AC_INIT([viaduct], [0.01])
+AC_INIT([dbrelay], [0.01])
 AC_PREREQ(2.53)
 AC_REVISION($Revision: 1.0 $)
 
@@ -76,12 +76,12 @@ if test "x$freetds" = "xtrue"; then
    ./configure --prefix=$BUILD/$TDSDIR --with-tdsver=8.0
 fi
 
-# VIADUCT configuration
+# DB Relay configuration
 echo
-echo Now configuring ngx_http_viaduct
+echo Now configuring DB Relay
 echo
 cd $BUILD
-cd src/ngx_http_viaduct
+cd src/dbrelay
 
 if test "x$freetds" = "xtrue"; then
    ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
@@ -99,7 +99,7 @@ cd $BUILD
 cd src/$NGXDIR
 patch -N -p0 < ../../patches/wrapper.patch
 
-./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_http_viaduct/src
+./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/dbrelay/src
 
 cd ../..
 echo $prefix
