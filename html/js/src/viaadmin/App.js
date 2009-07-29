@@ -122,18 +122,18 @@ va.App = function(){
 										{
 											text:'Documentation Home',
 											iconCls:'vaicon-doc', 
-											handler:function(){window.open('/doc/index.htm');}    
+											handler:function(){window.open('/doc/index.html');}    
 										},  
 										'-',
 										{
 												text:'Viaduct Status',
 												iconCls:'vaicon-monitor',
-												handler:function(){window.open('/status.htm');}
+												handler:function(){window.open('/status.html');}
 										},  
 											{
 												text:'Old UI',
 												iconCls:'vaicon-home', 
-												handler:function(){window.open('/oldindex.htm');}
+												handler:function(){window.open('/oldindex.html');}
 											}
 											
 										]
