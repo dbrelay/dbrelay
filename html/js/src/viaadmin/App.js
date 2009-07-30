@@ -8,7 +8,7 @@ va.App = function(){
   var _tablesMenuOpen =  new Ext.menu.Menu();    
   var _tablesMenuDrop =  new Ext.menu.Menu();
 		
-	
+	var _appName = "Viaduct";
 		
 	return {
 		/** {sqlDbAccess} sql db object that is bound to this UI */
@@ -122,18 +122,18 @@ va.App = function(){
 										{
 											text:'Documentation Home',
 											iconCls:'vaicon-doc', 
-											handler:function(){window.open('/doc/index.htm');}    
+											handler:function(){window.open('/doc/index.html');}    
 										},  
 										'-',
 										{
 												text:'Viaduct Status',
 												iconCls:'vaicon-monitor',
-												handler:function(){window.open('/status.htm');}
+												handler:function(){window.open('/status.html');}
 										},  
 											{
 												text:'Old UI',
 												iconCls:'vaicon-home', 
-												handler:function(){window.open('/oldindex.htm');}
+												handler:function(){window.open('/oldindex.html');}
 											}
 											
 										]
@@ -151,7 +151,7 @@ va.App = function(){
 						items:{
 							xtype:'tabpanel',
 							id:'maintabs',  
-							enableTablScroll:true,
+							enableTabScroll:true,
 							deferredRender:false,
 							layoutOnTabChange:true,
 							plain:true,
@@ -262,11 +262,38 @@ va.App = function(){
 					       }
 
 					       //update information
-								 else {
-								 		this.sqlDb.connection = Ext.apply(this.sqlDb.connection, conncfg);
+								 else {      
+										//see if info has changed
+										var changed = false, oldconn = this.sqlDb.connection;
+									 
+									  for(var p in conncfg){
+											if( conncfg[p].trim() !==  oldconn[p]){
+												var changed = true;
+												break;
+											}
+										}
+										
+										if(changed){       
+											if(confirm('Changing the connection information will close any openend table editor tabs.  Do you want to continue?')){ 
+												this.sqlDb.connection = Ext.apply(oldconn, conncfg);                             
+												//remove existing table editors
+												for( var n in this.tables ){
+													this.tables[n].ownerCt.remove(this.tables[n]);  
+													this.tables[n] = null;
+												}
+												_viewport.doLayout();
+											}
+											else{
+												return false;
+											}
+										}
+								 		
 								 }
-
-								 this.refreshTablesMenu(); 						
+                   
+								//update window title with db name
+								 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
+								 this.refreshTablesMenu();
+									return true; 						
 							},
 							scope:this
 						}
