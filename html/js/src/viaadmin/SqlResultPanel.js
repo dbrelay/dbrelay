@@ -53,12 +53,9 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 						}
 					},
 					{
-						xtype:'textfield',
-						fieldLabel:'Direct Url',
-						id:'url'+idpfx,
-						anchor:'98%',
-						readOnly:true,
-						selectOnFocus:true
+						xtype:'displayfield',
+						fieldLabel:'',
+						id:'url'+idpfx
 					}
 				], 
 				tbar:[ 
@@ -152,8 +149,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 					 this.showMsgPanel('<p style="color:green">Success: ' + data.count + ' rows affected.</p>');     
 					this.centerRegion.body.unmask();    
 				}
-				else{       
-					//grid
+				else{
 					this.showResultGrids(resp.data);
 				}
 				
@@ -167,13 +163,16 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 				var sqlUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
 		        + Ext.urlEncode(conn) + '&' + window.location.hash;   
 
-				this.fldUrl.setValue(sqlUrl);
+				this.setUrlLink(sqlUrl);
 			}
 			
 			},this);
 	},
               
-
+  setUrlLink : function(url){    
+		this.fldUrl.setValue('<a href="'+url+'" target="_blank">Direct link to this SQL query (right-click & copy)</a>'); 
+	},
+	
  	showMsgPanel : function(msg){
 		this.centerRegion.getLayout().setActiveItem(this.msgPanel);  
 		this.msgPanel.body.update(msg);
@@ -191,7 +190,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
     for (var i=0; i<numResults; i++){   
 			var data = dataSets[i];           
 			
-			if(!data.count){continue;}
+			if(!data.count && data.count !== 0){continue;}
 			
 			var name ='Result Set ' + (count+1);
 			

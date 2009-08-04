@@ -45,7 +45,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								}
 							},   
 							//value: '172.16.115.128',
-							value: defaultConn.sql_server || ''
+						  value: defaultConn.sql_server || ''
 						}
 					},
 					{
