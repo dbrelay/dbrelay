@@ -188,7 +188,10 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
          viaduct_db_zero_connection(conn, request);
       }
       if (!conn->pid || conn->in_use) continue;
-      if (conn->tm_accessed + conn->connection_timeout < now) {
+      if (conn->tm_accessed + VIADUCT_HARD_TIMEOUT < now) {
+         viaduct_log_notice(request, "hard timing out conection %u", conn->slot);
+         viaduct_db_close_connection(conn, request);
+      } else if (conn->tm_accessed + conn->connection_timeout < now) {
          viaduct_log_notice(request, "timing out conection %u", conn->slot);
          viaduct_db_close_connection(conn, request);
       }
@@ -388,7 +391,6 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    u_char *ret;
    viaduct_connection_t *conn;
    viaduct_connection_t *connections;
-   //DBPROCESS *dbproc = NULL;
    int s = 0;
    int slot = -1;
    char *newsql;
