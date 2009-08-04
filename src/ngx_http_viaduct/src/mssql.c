@@ -30,7 +30,8 @@ viaduct_dbapi_t viaduct_mssql_api =
    &viaduct_mssql_fetch_row,
    &viaduct_mssql_colvalue,
    &viaduct_mssql_error,
-   viaduct_mssql_catalogsql
+   &viaduct_mssql_catalogsql,
+   &viaduct_mssql_isalive
 };
 
 int viaduct_mssql_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line);
@@ -385,4 +386,10 @@ AND   c.CONSTRAINT_NAME = pk.CONSTRAINT_NAME";
          break;
    }
    return NULL;
+}
+int viaduct_mssql_isalive(void *db)
+{
+   mssql_db_t *mssql = (mssql_db_t *) db;
+   
+   return !DBDEAD(mssql->dbproc);
 }

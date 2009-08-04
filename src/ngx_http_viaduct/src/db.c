@@ -65,6 +65,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
       }
       viaduct_log_info(request, "socket name %s", conn->sock_path);
       conn->tm_create = time(NULL);
+      conn->tm_accessed = time(NULL);
       conn->in_use++;
       conn->pid = getpid();
 
@@ -74,6 +75,7 @@ static void viaduct_db_populate_connection(viaduct_request_t *request, viaduct_c
    conn->db = api->connect(request);
       
    conn->tm_create = time(NULL);
+   conn->tm_accessed = time(NULL);
    conn->in_use++;
 
    conn->pid = getpid();
@@ -188,13 +190,15 @@ static void viaduct_db_close_connections(viaduct_request_t *request)
          viaduct_db_zero_connection(conn, request);
       }
 
+      if (!conn->pid) continue;
+
       if (conn->tm_accessed + VIADUCT_HARD_TIMEOUT < now) {
          viaduct_log_notice(request, "hard timing out conection %u", conn->slot);
          viaduct_db_close_connection(conn, request);
          continue;
       }
 
-      if (!conn->pid || conn->in_use) continue;
+      if (conn->in_use) continue;
 
       if (conn->tm_accessed + conn->connection_timeout < now) {
          viaduct_log_notice(request, "timing out conection %u", conn->slot);

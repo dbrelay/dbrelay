@@ -127,6 +127,7 @@ typedef int (*viaduct_db_fetch_row)(void *db);
 typedef char *(*viaduct_db_colvalue)(void *db, int colnum, char *dest);
 typedef char *(*viaduct_db_error)(void *db);
 typedef char *(*viaduct_db_catalogsql)(int dbcmd, char **params);
+typedef int (*viaduct_db_isalive)(void *db);
 
 typedef struct {
    viaduct_db_init init;
@@ -149,6 +150,7 @@ typedef struct {
    viaduct_db_colvalue colvalue;
    viaduct_db_error error;
    viaduct_db_catalogsql catalogsql;
+   viaduct_db_isalive isalive;
 } viaduct_dbapi_t;
 
 u_char *viaduct_db_run_query(viaduct_request_t *request);

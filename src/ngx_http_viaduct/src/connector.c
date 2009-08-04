@@ -11,12 +11,7 @@
 #include "viaduct.h"
 #include "../include/viaduct_config.h"
 
-#if HAVE_FREETDS
-#include "mssql.h"
-#endif
-#if HAVE_MYSQL
-#include "vmysql.h"
-#endif
+extern viaduct_dbapi_t *api;
 
 #define SOCK_PATH "/tmp/viaduct/connector"
 #define DEBUG 1
@@ -85,12 +80,7 @@ main(int argc, char **argv)
       sock_path = SOCK_PATH;
    }
 
-#if HAVE_FREETDS
-   viaduct_mssql_init();
-#endif
-#if HAVE_MYSQL
-   viaduct_mysql_init();
-#endif
+   api->init();
 
    s = viaduct_socket_create(sock_path);
 
@@ -127,12 +117,7 @@ main(int argc, char **argv)
 #if PERSISTENT_CONN
               if (!connected) {
 #endif
-#if HAVE_FREETDS
-                  conn.db = viaduct_mssql_connect(&request);
-#endif
-#if HAVE_MYSQL
-                  conn.db = viaduct_mysql_connect(&request);
-#endif
+                  conn.db = api->connect(&request);
                   connected = 1;
 #if PERSISTENT_CONN
               }
@@ -158,12 +143,7 @@ main(int argc, char **argv)
               viaduct_socket_send_string(s2, ":OK\n");
               log_msg("done\n"); 
 #if !PERSISTENT_CONN
-#if HAVE_FREETDS
-              viaduct_mssql_close(conn.db);
-#endif
-#if HAVE_MYSQL
-              viaduct_mysql_close(conn.db);
-#endif
+              api->close(conn.db);
 #endif
               free(results);
 		      if (request.connection_timeout) set_timer(request.connection_timeout);
@@ -185,11 +165,9 @@ main(int argc, char **argv)
         } // recv
         if (t<=0) log_msg("client connection broken\n");
         receive_sql = 0;
-#if HAVE_FREETDS
-        if (DBDEAD(conn.db)) {
+        if (!api->isalive(conn.db)) {
            connected = 0;
         }
-#endif
    } // for
    return 0;
 }
