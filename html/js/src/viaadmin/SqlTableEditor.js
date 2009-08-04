@@ -17,10 +17,11 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
   sqlTable: null,            
 	//primary key columns
 	pkeyColumns:[], 
-	pkeyStyle:'color:#00761c;font-weight:bold;',    
-	
+	pkeyStyle:'color:#00761c;font-weight:bold;',      
+
 	DELETE_INDEX: 'va-deletebox',  
-	ADD_INDEX: 'va-newrow',
+	ADD_INDEX: 'va-newrow',   
+	disableDelete: false,
 	
 
 	/** paging */
@@ -49,10 +50,14 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         text: 'Run/Refresh',  
 				tooltip:'Refresh columns & data from server',
         iconCls:'vaicon-refresh',
-				handler:function(){
-					if(confirm('Refreshing will revert and outstanding edits you may have. Are you sure you want to refresh?')){
-						this.refresh();
-					} 
+				handler:function(){          
+					Ext.Msg.confirm('Confirm Refresh?','Refreshing will revert and outstanding edits you may have. Are you sure you want to refresh?',
+					 function(btn, text){      
+							if(btn == 'yes'){
+								this.refresh();  
+							}    
+					},this);
+
 				},
 				scope:this     
       }, 
@@ -63,10 +68,14 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         text: 'Commit Changes', 
 				tooltip:'Commit all changes (adds, deletes, edits) to table in database',
         iconCls:'vaicon-disk',
-				handler: function(){
-					if(confirm('Are you sure you want to save changes to the server?')){
-						this.updateSelectedRows();
-					}
+				handler: function(){       
+					Ext.Msg.confirm('Confirm Commit?','Are you sure you want to save changes to the server?',
+					 function(btn, text){      
+							if(btn == 'yes'){
+								this.updateSelectedRows();  
+							}    
+					},this);
+					
 				},
 				scope:this    
       },     
@@ -367,7 +376,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			
 			 
 			/* DELETE */
-			if(rec.data[this.DELETE_INDEX] === true){ 
+			if(!this.disableDelete && rec.data[this.DELETE_INDEX] === true){ 
 				               
 				if(rec.data[this.ADD_INDEX] === true){
 					this.grid.getStore().remove(rec); 
@@ -399,7 +408,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 		}                      
 	
 	 //delete first.  run update on callback
-		if(deleteRows.length > 0){
+		if(!this.disableDelete && deleteRows.length > 0){
 			this.sqlTable.deleteRows(deleteRows, function(sqlt, resp){
 			  if(resp.data){
 				 	//delete from UI, don't refresh
@@ -425,7 +434,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 	  }
 	
 		//run update last
-		if(updateRows.length > 0){ 
+		if( updateRows.length > 0){ 
 			 this.sqlTable.updateRows(updateRows, updateWhereRows, function(sqlt, resp){
 				  if(resp.data){    
 						for(var i=0;i<updatedRecs.length;i++){
@@ -538,15 +547,32 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			
 				//query primary keys
 				this.sqlTable.queryPrimaryKeys(function(sqlt, resp2, keys){
+					if(keys.length === 0){  
+						Ext.Msg.alert('No Primary Keys Found for ' + this.tableNam,'No primary keys were found for this table.  As a result, you will not be able to commit any row deletions or edits');
+						this.disableEditing();    
+					}
 					
 					this._finishRefresh(keys, cols);               
-					
+
 				}, this);  
 			
 			}, this);    
 		
 		
 
+	},      
+	
+	/** Disable row deleting and editing (i.e. when table has no primary keys) */
+	disableEditing : function(){  
+		this.grid.on('beforeedit', function(e){
+		 var rec = e.record;
+			
+		 if(rec.data[this.ADD_INDEX] !== true){    
+				e.cancel = true; 
+		 }   
+	 	 
+		}, this);                       
+		this.disableDelete = true;
 	},
 	 
 	//private
@@ -644,20 +670,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			}, 
 			this);
 			       
-			
-			
-		  /*this.sqlTable.fetchAll(function(sqlt, resp){
-				if(resp && resp.data){   
-					 this.displayMask('Preparing Data for Display...'); 
-				
-					this.tableData = resp.data[0].rows; 
-					this.setTotalCount(resp.data[0].count);
-				   
-					this.updatePageView();       
-				}  
-				this.hideMask(); 
-			}, 
-			this);   */
+
 		}
 
 	 

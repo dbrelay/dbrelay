@@ -94,7 +94,9 @@ va.App = function(){
 										xtype:'button',
 										text:'SQL',
 										iconCls:'vaicon-sql',
-										handler:this.addSqlPanel,
+										handler:function(){
+											this.addSqlPanel();
+										},
 										scope:this 
 									},       
 									//Edit Connection
@@ -273,19 +275,27 @@ va.App = function(){
 											}
 										}
 										
-										if(changed){       
-											if(confirm('Changing the connection information will close any openend table editor tabs.  Do you want to continue?')){ 
-												this.sqlDb.connection = Ext.apply(oldconn, conncfg);                             
-												//remove existing table editors
-												for( var n in this.tables ){
-													this.tables[n].ownerCt.remove(this.tables[n]);  
-													this.tables[n] = null;
-												}
-												_viewport.doLayout();
-											}
-											else{
-												return false;
-											}
+										if(changed){  
+											var ok = true;
+											         
+											Ext.Msg.confirm('Confirm connection info change','Changing the connection information will close any openend table editor tabs.  Do you want to continue?',
+											 function(btn, text){      
+													if(btn == 'yes'){
+														this.sqlDb.connection = Ext.apply(oldconn, conncfg);                             
+														//remove existing table editors
+														for( var n in this.tables ){
+															this.tables[n].ownerCt.remove(this.tables[n]);  
+															this.tables[n] = null;
+														}
+														_viewport.doLayout();  
+													} 
+													else{  
+														ok = false;
+													}               
+													
+											},this);
+
+											return ok;
 										}
 								 		
 								 }
@@ -313,7 +323,7 @@ va.App = function(){
 				border: false,
 				title: 'Run SQL ' + (++_numSqls),
 				closable:true,
-				defaultSql : defaultSql
+				defaultSql : defaultSql || ''
 			}));
 			_viewport.doLayout();  
 				
@@ -455,17 +465,22 @@ va.App = function(){
 				function dropTableHandler(item, e){ 
 					var n =item.text;
 					
-					if(confirm('Are you sure you want to drop table '+ n)){
-						this.sqlDb.dropTable(n, function(resp){
-							if(resp.data){             
-								if(this.tables[n]){
-									this.tables[n].ownerCt.remove(this.tables[n]);  
-									this.tables[n] = null;
-								}
-								this.refreshTablesMenu();
-							}
-						}, this);
-					}
+					Ext.Msg.confirm('Confirm Commit?','Are you sure you want to drop table '+ n,
+					 function(btn, text){      
+							if(btn == 'yes'){
+								this.sqlDb.dropTable(n, function(resp){
+									if(resp.data){             
+										if(this.tables[n]){
+											this.tables[n].ownerCt.remove(this.tables[n]);  
+											this.tables[n] = null;
+										}
+										this.refreshTablesMenu();
+									}
+								}, this);  
+							}    
+					},this);
+					
+
 				}
 				
 				 for(var i=0,len=tableNames.length; i<len; i++){
