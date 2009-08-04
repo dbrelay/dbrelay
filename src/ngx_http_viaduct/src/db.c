@@ -294,29 +294,11 @@ u_char *viaduct_db_status(viaduct_request_t *request)
 
    return json_output;
 }
-u_char *viaduct_db_run_query(viaduct_request_t *request)
+/*
+ * echo request parameters in json output
+ */
+static void viaduct_append_request_json(json_t *json, viaduct_request_t *request)
 {
-   /* FIX ME */
-   char error_string[500];
-   json_t *json = json_new();
-   u_char *ret;
-   viaduct_connection_t *conn;
-   viaduct_connection_t *connections;
-   //DBPROCESS *dbproc = NULL;
-   int s = 0;
-   int slot = -1;
-   char *newsql;
-   int i = 0;
-   char tmp[20];
-   int have_error = 0;
-
-   error_string[0]='\0';
-
-   viaduct_log_info(request, "run_query called");
-
-   if (request->flags & VIADUCT_FLAG_PP) json_pretty_print(json, 1);
-   json_new_object(json);
-
    json_add_key(json, "request");
    json_new_object(json);
 
@@ -338,6 +320,89 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    json_end_object(json);
 
+}
+static void viaduct_append_log_json(json_t *json, viaduct_request_t *request, char *error_string)
+{
+   int i;
+   char tmp[20];
+
+   json_add_key(json, "log");
+   json_new_object(json);
+   if (request->flags & VIADUCT_FLAG_ECHOSQL) json_add_string(json, "sql", request->sql);
+   if (strlen(error_string)) {
+      json_add_string(json, "error", error_string);
+   }
+   i = 0;
+   while (request->params[i]) {
+      sprintf(tmp, "param%d", i);
+      json_add_string(json, tmp, request->params[i]);
+      i++;
+   }
+   json_end_object(json);
+
+   json_end_object(json);
+}
+static viaduct_connection_t *viaduct_wait_for_connection(viaduct_request_t *request, int *s)
+{
+   int slot = 0;
+   viaduct_connection_t *conn;
+   viaduct_connection_t *connections;
+
+   do {
+      viaduct_log_debug(request, "calling get_connection");
+      slot = viaduct_db_get_connection(request);
+      viaduct_log_debug(request, "using slot %d", slot);
+      if (slot==-1) {
+         viaduct_log_warn(request, "Couldn't allocate new connection");
+         return NULL;
+      }
+
+      connections = viaduct_get_shmem();
+      conn = (viaduct_connection_t *) malloc(sizeof(viaduct_connection_t));
+      memcpy(conn, &connections[slot], sizeof(viaduct_connection_t));
+      conn->slot = slot;
+      viaduct_release_shmem(connections);
+
+      if (IS_SET(request->connection_name)) {
+         viaduct_log_info(request, "connecting to connection helper");
+         viaduct_log_info(request, "socket address %s", conn->sock_path);
+         *s = viaduct_socket_connect(conn->sock_path);
+         // if connect fails, remove connector from list
+         if (*s==-1) {
+            unlink(conn->sock_path);
+            free(conn);
+            connections = viaduct_get_shmem();
+            connections[slot].pid=0;
+            viaduct_release_shmem(connections);
+         }
+      }
+  } while (*s==-1);
+
+  return conn;
+}
+u_char *viaduct_db_run_query(viaduct_request_t *request)
+{
+   /* FIX ME */
+   char error_string[500];
+   json_t *json = json_new();
+   u_char *ret;
+   viaduct_connection_t *conn;
+   viaduct_connection_t *connections;
+   //DBPROCESS *dbproc = NULL;
+   int s = 0;
+   int slot = -1;
+   char *newsql;
+   int have_error = 0;
+
+   error_string[0]='\0';
+
+   viaduct_log_info(request, "run_query called");
+
+   if (request->flags & VIADUCT_FLAG_PP) json_pretty_print(json, 1);
+   json_new_object(json);
+
+   viaduct_append_request_json(json, request);
+
    if (!viaduct_check_request(request)) {
         viaduct_log_info(request, "check_request failed.");
         viaduct_write_json_log(json, request, "Not all required parameters submitted.");
@@ -349,38 +414,15 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
    
    newsql = viaduct_resolve_params(request, request->sql);
 
-   do {
-      viaduct_log_debug(request, "calling get_connection");
-      slot = viaduct_db_get_connection(request);
-      viaduct_log_debug(request, "using slot %d", slot);
-      if (slot==-1) {
-         viaduct_log_warn(request, "Couldn't allocate new connection");
-         viaduct_write_json_log(json, request, "Couldn't allocate new connection");
+   conn = viaduct_wait_for_connection(request, &s);
+   if (conn == NULL) {
+      viaduct_write_json_log(json, request, "Couldn't allocate new connection");
 
-         ret = (u_char *) json_to_string(json);
-         json_free(json);
-         return ret;
-      }
-
-      connections = viaduct_get_shmem();
-      conn = (viaduct_connection_t *) malloc(sizeof(viaduct_connection_t));
-      memcpy(conn, &connections[slot], sizeof(viaduct_connection_t));
-      viaduct_release_shmem(connections);
-
-      if (IS_SET(request->connection_name)) {
-         viaduct_log_info(request, "connecting to connection helper");
-         viaduct_log_info(request, "socket address %s", conn->sock_path);
-         s = viaduct_socket_connect(conn->sock_path);
-         // if connect fails, remove connector from list
-         if (s==-1) {
-            unlink(conn->sock_path);
-            free(conn);
-            connections = viaduct_get_shmem();
-            connections[slot].pid=0;
-            viaduct_release_shmem(connections);
-         }
-      }
-  } while (s==-1);
+      ret = (u_char *) json_to_string(json);
+      json_free(json);
+      return ret;
+   }
+   slot = conn->slot;
 
    viaduct_log_debug(request, "Allocated connection for query");
 
@@ -437,21 +479,7 @@ u_char *viaduct_db_run_query(viaduct_request_t *request)
 
    free(newsql);
 
-   json_add_key(json, "log");
-   json_new_object(json);
-   if (request->flags & VIADUCT_FLAG_ECHOSQL) json_add_string(json, "sql", request->sql);
-   if (strlen(error_string)) {
-      json_add_string(json, "error", error_string);
-   }
-   i = 0;
-   while (request->params[i]) {
-      sprintf(tmp, "param%d", i);
-      json_add_string(json, tmp, request->params[i]);
-      i++;
-   }
-   json_end_object(json);
-
-   json_end_object(json);
+   viaduct_append_log_json(json, request, error_string);
 
    ret = (u_char *) json_to_string(json);
    json_free(json);
