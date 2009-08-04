@@ -20,6 +20,23 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.tbar = [
 			'<span id="name'+idpfx+'" style="font-weight:bold;color:green">Viewing '+(this.resultName || '') +'</span>',
 			'->',
+			{
+				text:'Export View',
+				iconCls:'vaicon-tableexport',
+				menu:[
+					{
+						text:'All rows as HTML',
+						handler:function(){this.exportHtml(true);},
+						scope:this
+					},
+					{
+						text:'Selected rows as HTML',
+						handler:function(){this.exportHtml(false)},
+						scope:this
+					}
+				]
+			},                   
+			'-',
 			'<span id="total'+idpfx+'"></span> total',               
 			'-',
 			{
@@ -169,6 +186,7 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.updatePageView();    
  
 	},
+	     
 	
 	showPage : function(page){  
 		this.pageNumberField.suspendEvents();
@@ -208,6 +226,56 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 	setResultName: function(s){ 
 		Ext.get('name'+this.idpfx).update(s);  
 		this.resultName = s; 
+	},
+	
+	exportHtml : function(allRows){
+		var rows = allRows ? this.tableData : this.getSelectionModel().getSelections(), html='', cols=[];   
+		
+		html = '<table>';     
+		
+		var cm = this.getColumnModel();   
+		var numCols = cm.getColumnCount(); 
+    
+		html+= '<thead><tr>';
+		for(var c=0; c<numCols; c++){
+			if(!cm.isHidden(c)){    
+				var cname = cm.getDataIndex(c);
+				cols.push(cname);
+				html += '<th>'+cname+'</th>';
+			}
+		}       
+		html+= '</tr></thead><tbody>';  
+		
+		//entire data set
+		for(var i=0, len=rows.length; i<len; i++){
+			html+= '<tr>';          
+			var row = rows[i];
+			
+			for(var c=0; c<cols.length; c++){   
+				 html += '<td>'+ (allRows ? row[cols[c]] : row.data[cols[c]]) +'</td>';
+			}
+			
+			html+='</tr>';
+		}
+		html += '</tbody></table>';
+		
+		var win = window.open('','',
+		  'width=600,height=500'
+		   +',menubar=0'
+		   +',toolbar=1'
+		   +',status=0'
+		   +',scrollbars=1'
+		   +',resizable=1');
+		
+		
+		win.document.writeln('<html><head><style>');    
+		win.document.writeln('table{width:100%;border-collapse:collapse;padding:0;margin:0;font-family:Arial, Helvetica, "sans serif"}');
+		win.document.writeln('td,th{font-size:11px;text-align:left;border:1px solid black;}');
+		win.document.writeln('</style></head><body>');     
+		win.document.writeln(html); 
+    win.document.writeln('</body></html>');   
+		win.document.close();
+		
 	}
 
 

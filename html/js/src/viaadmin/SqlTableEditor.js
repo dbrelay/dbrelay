@@ -572,7 +572,8 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 		 }   
 	 	 
 		}, this);                       
-		this.disableDelete = true;
+		this.disableDelete = true;   
+		this.grid.getColumnModel().setHidden(0,true);
 	},
 	 
 	//private
