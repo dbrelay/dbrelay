@@ -63,7 +63,11 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         text: 'Commit Changes', 
 				tooltip:'Commit all changes (adds, deletes, edits) to table in database',
         iconCls:'vaicon-disk',
-				handler: this.updateSelectedRows,
+				handler: function(){
+					if(confirm('Are you sure you want to save changes to the server?')){
+						this.updateSelectedRows();
+					}
+				},
 				scope:this    
       },     
 			'-',
