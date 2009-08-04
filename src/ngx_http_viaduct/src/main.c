@@ -162,6 +162,9 @@ int main(int argc, char **argv)
                request->params[0] = param0;
 	       json_output = viaduct_db_cmd(request);
 	       free(m2);
+	    } else if (strlen(mybuf)>=11 && !strncmp(mybuf, "list tables", 11)) {
+               strcpy(request->cmd,"tables");
+	       json_output = (u_char *) viaduct_db_cmd(request);
             } else {
                request->sql = mybuf;
                json_output = (u_char *) viaduct_db_run_query(request);

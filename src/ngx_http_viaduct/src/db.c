@@ -646,6 +646,7 @@ viaduct_find_placeholder(char *sql)
 static int
 viaduct_check_request(viaduct_request_t *request)
 {
+   if (!request->sql && !request->cmd) return 0;
    if (!request->sql) return 0;
    if (!IS_SET(request->sql_server)) return 0;
    if (!IS_SET(request->sql_user)) return 0;

@@ -48,6 +48,10 @@
 #define VIADUCT_FLAG_ECHOSQL 0x01
 #define VIADUCT_FLAG_PP      0x02
 
+#define VIADUCT_DBCMD_TABLES	0
+#define VIADUCT_DBCMD_COLUMNS	1
+#define VIADUCT_DBCMD_PKEY	2
+
 #ifdef CMDLINE
    typedef struct ngx_log_s {} ngx_log_t;
    typedef unsigned char u_char;
@@ -120,6 +124,7 @@ typedef int (*viaduct_db_colscale)(void *db, int colnum);
 typedef int (*viaduct_db_fetch_row)(void *db);
 typedef char *(*viaduct_db_colvalue)(void *db, int colnum, char *dest);
 typedef char *(*viaduct_db_error)(void *db);
+typedef char *(*viaduct_db_catalogsql)(int dbcmd, char **params);
 
 typedef struct {
    viaduct_db_init init;
@@ -141,6 +146,7 @@ typedef struct {
    viaduct_db_fetch_row fetch_row;
    viaduct_db_colvalue colvalue;
    viaduct_db_error error;
+   viaduct_db_catalogsql catalogsql;
 } viaduct_dbapi_t;
 
 u_char *viaduct_db_run_query(viaduct_request_t *request);

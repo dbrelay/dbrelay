@@ -29,7 +29,8 @@ viaduct_dbapi_t viaduct_mssql_api =
    &viaduct_mssql_colscale,
    &viaduct_mssql_fetch_row,
    &viaduct_mssql_colvalue,
-   &viaduct_mssql_error
+   &viaduct_mssql_error,
+   viaduct_mssql_catalogsql
 };
 
 int viaduct_mssql_msg_handler(DBPROCESS * dbproc, DBINT msgno, int msgstate, int severity, char *msgtext, char *srvname, char *procname, int line);
@@ -355,4 +356,33 @@ char *viaduct_mssql_error(void *db)
    } else {
       return login_error;
    }
+}
+char *viaduct_mssql_catalogsql(int dbcmd, char **params)
+{
+   char *sql;
+   char *columns_mask = "SELECT COLUMN_NAME,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '%s'";
+   char *pkey_mask = "SELECT c.COLUMN_NAME \
+FROM  INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk , \
+INFORMATION_SCHEMA.KEY_COLUMN_USAGE c \
+WHERE pk.TABLE_NAME = '%s' \
+AND   CONSTRAINT_TYPE = 'PRIMARY KEY' \
+AND   c.TABLE_NAME = pk.TABLE_NAME \
+AND   c.CONSTRAINT_NAME = pk.CONSTRAINT_NAME";
+
+   switch (dbcmd) {
+      case VIADUCT_DBCMD_TABLES:
+         return strdup("SELECT * FROM INFORMATION_SCHEMA.tables WHERE TABLE_TYPE='BASE TABLE'");
+         break;
+      case VIADUCT_DBCMD_COLUMNS:
+         sql = malloc(strlen(columns_mask) + strlen(params[0]));
+         sprintf(columns_mask, params[0]);
+         return sql;
+         break;
+      case VIADUCT_DBCMD_PKEY: 
+         sql = malloc(strlen(pkey_mask) + strlen(params[0]));
+         sprintf(pkey_mask, params[0]);
+         return sql;
+         break;
+   }
+   return NULL;
 }

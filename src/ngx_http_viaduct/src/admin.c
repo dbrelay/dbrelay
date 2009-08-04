@@ -12,6 +12,11 @@
 
 u_char *viaduct_json_error(char *error_string);
 int viaduct_admin_kill(viaduct_request_t *request, char *sock_path);
+u_char *viaduct_admin_tables(viaduct_request_t *request);
+u_char *viaduct_admin_columns(viaduct_request_t *request);
+u_char *viaduct_admin_pkey(viaduct_request_t *request);
+
+extern viaduct_dbapi_t *api;
 
 char *viaduct_admin_result_text(int ret)
 {
@@ -33,6 +38,12 @@ u_char *viaduct_db_cmd(viaduct_request_t *request)
          return (u_char *) viaduct_json_error("No parameter specified");
       }
       ret = viaduct_admin_kill(request, request->params[0]);
+   } else if (!strcmp(request->cmd, "tables")) {
+      return (u_char *) viaduct_admin_tables(request);
+   } else if (!strcmp(request->cmd, "columns")) {
+      return (u_char *) viaduct_admin_columns(request);
+   } else if (!strcmp(request->cmd, "pkey")) {
+      return (u_char *) viaduct_admin_pkey(request);
    } else {
       return (u_char *) viaduct_json_error("Unknown admin command");
    }
@@ -49,7 +60,22 @@ u_char *viaduct_db_cmd(viaduct_request_t *request)
    json_free(json);
 
    return json_output;
+}
 
+u_char *viaduct_admin_tables(viaduct_request_t *request)
+{
+   request->sql = api->catalogsql(VIADUCT_DBCMD_TABLES, NULL);
+   return viaduct_db_run_query(request);
+}
+u_char *viaduct_admin_columns(viaduct_request_t *request)
+{
+   request->sql = api->catalogsql(VIADUCT_DBCMD_COLUMNS, request->params);
+   return viaduct_db_run_query(request);
+}
+u_char *viaduct_admin_pkey(viaduct_request_t *request)
+{
+   request->sql = api->catalogsql(VIADUCT_DBCMD_PKEY, request->params);
+   return viaduct_db_run_query(request);
 }
 
 int viaduct_admin_kill(viaduct_request_t *request, char *sock_path)
