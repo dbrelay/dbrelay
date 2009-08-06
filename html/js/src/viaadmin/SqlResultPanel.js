@@ -170,7 +170,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 	},
               
   setUrlLink : function(url){    
-		this.fldUrl.setValue('<a href="'+url+'" target="_blank">Direct link to this SQL query (right-click & copy)</a>'); 
+		this.fldUrl.setValue('<a href="'+url+'" target="_blank">' + url + '</a>'); 
 	},
 	
  	showMsgPanel : function(msg){

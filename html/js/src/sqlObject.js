@@ -143,7 +143,7 @@ sqlObject = function() { // Module pattern, called immediately
             };
             if (callback_or_batch) {
               if (typeof( callback_or_batch ) == "function" ) {
-                exec( query, callback_or_batch, that );
+                exec( query, callback_or_batch, tag );
               } else {
                 batches.push( callback_or_batch, query );
               };
