@@ -6,14 +6,16 @@
 # description: Viaduct DB access server
 #
 
-BUILD_PREFIX="/usr/local/viaduct"
-
 # echo "Config file is ${BUILD_PREFIX}/conf/nginx.conf"
 # echo "PID    file is ${BUILD_PREFIX}/logs/nginx.pid"
 
 #  ATTENTION!!!! Make sure, that the SUBSYS_NAME is unique or
 #                generates to a unique string of your system
 #                among all other subsys names  on the system
+
+BUILD_PREFIX="/usr/local/viaduct"
+PROC_PID=$(cat ${BUILD_PREFIX}/logs/nginx.pid)
+RUN_USER="viaduct"
 
 SUBSYS_NAME=$(basename ${0})
 
@@ -25,7 +27,7 @@ RETVAL=0
 start()
 {
 	echo -n $"Starting Viaduct: "
-	su -l viaduct -c "cd ${BUILD_PREFIX}; ./sbin/nginx || ./sbin/nginx"
+	su -l ${RUN_USER} -c "cd ${BUILD_PREFIX}; ./sbin/nginx --clean && ./sbin/nginx || ./sbin/nginx"
 	RETVAL=$?
 	[ "$RETVAL" = 0 ] && touch /var/lock/subsys/${SUBSYS_NAME}
 	echo
@@ -34,8 +36,11 @@ start()
 stop()
 {
 	echo -n $"Stopping Viaduct: "
-	kill $(cat ${BUILD_PREFIX}/logs/nginx.pid)
-	RETVAL=$?
+	kill ${PROC_PID} &&
+  	sleep 1 &&
+  	[ "$(ps p ${PROC_PID} --ppid ${PROC_PID} h o pid,args | wc -l)" -gt 0 ] && sleep 5
+  	su -l ${RUN_USER} -c "cd ${BUILD_PREFIX}; ./sbin/nginx --clean"
+  RETVAL=$?
 	[ "$RETVAL" = 0 ] && rm -f /var/lock/subsys/${SUBSYS_NAME}
 	echo
 }
