@@ -17,10 +17,11 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
   sqlTable: null,            
 	//primary key columns
 	pkeyColumns:[], 
-	pkeyStyle:'color:#00761c;font-weight:bold;',    
-	
+	pkeyStyle:'color:#00761c;font-weight:bold;',      
+
 	DELETE_INDEX: 'va-deletebox',  
-	ADD_INDEX: 'va-newrow',
+	ADD_INDEX: 'va-newrow',   
+	disableDelete: false,
 	
 
 	/** paging */
@@ -49,12 +50,14 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         text: 'Run/Refresh',  
 				tooltip:'Refresh columns & data from server',
         iconCls:'vaicon-refresh',
-				handler:function(){
-					if(this.grid.getStore().getModifiedRecords().length > 0){
-						if(confirm('You currently have outstanding edits. Refreshing will revert your changes. Are you sure you want to refresh?')){
-							this.refresh();
-						}
-					}
+				handler:function(){          
+					Ext.Msg.confirm('Confirm Refresh?','Refreshing will revert and outstanding edits you may have. Are you sure you want to refresh?',
+					 function(btn, text){      
+							if(btn == 'yes'){
+								this.refresh();  
+							}    
+					},this);
+
 				},
 				scope:this     
       }, 
@@ -65,7 +68,15 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         text: 'Commit Changes', 
 				tooltip:'Commit all changes (adds, deletes, edits) to table in database',
         iconCls:'vaicon-disk',
-				handler: this.updateSelectedRows,
+				handler: function(){       
+					Ext.Msg.confirm('Confirm Commit?','Are you sure you want to save changes to the server?',
+					 function(btn, text){      
+							if(btn == 'yes'){
+								this.updateSelectedRows();  
+							}    
+					},this);
+					
+				},
 				scope:this    
       },     
 			'-',
@@ -98,7 +109,19 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 					this.doLayout();
 				},
 				scope:this
-			},             
+			}, 
+			'-',  
+			{
+				text:'Export View',
+				iconCls:'vaicon-tableexport',
+				menu:[
+					{
+						text:'Current page to HTML',
+						handler:function(){this.exportHtml();},
+						scope:this
+					}
+				]
+			},          
 			'->',
 			'<b><span id="total'+idpfx+'"></span></b> total',
 			'-',
@@ -365,7 +388,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			
 			 
 			/* DELETE */
-			if(rec.data[this.DELETE_INDEX] === true){ 
+			if(!this.disableDelete && rec.data[this.DELETE_INDEX] === true){ 
 				               
 				if(rec.data[this.ADD_INDEX] === true){
 					this.grid.getStore().remove(rec); 
@@ -397,7 +420,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 		}                      
 	
 	 //delete first.  run update on callback
-		if(deleteRows.length > 0){
+		if(!this.disableDelete && deleteRows.length > 0){
 			this.sqlTable.deleteRows(deleteRows, function(sqlt, resp){
 			  if(resp.data){
 				 	//delete from UI, don't refresh
@@ -423,7 +446,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 	  }
 	
 		//run update last
-		if(updateRows.length > 0){ 
+		if( updateRows.length > 0){ 
 			 this.sqlTable.updateRows(updateRows, updateWhereRows, function(sqlt, resp){
 				  if(resp.data){    
 						for(var i=0;i<updatedRecs.length;i++){
@@ -536,15 +559,33 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			
 				//query primary keys
 				this.sqlTable.queryPrimaryKeys(function(sqlt, resp2, keys){
+					if(keys.length === 0){  
+						Ext.Msg.alert('No Primary Keys Found for ' + this.tableNam,'No primary keys were found for this table.  As a result, you will not be able to commit any row deletions or edits');
+						this.disableEditing();    
+					}
 					
 					this._finishRefresh(keys, cols);               
-					
+
 				}, this);  
 			
 			}, this);    
 		
 		
 
+	},      
+	
+	/** Disable row deleting and editing (i.e. when table has no primary keys) */
+	disableEditing : function(){  
+		this.grid.on('beforeedit', function(e){
+		 var rec = e.record;
+			
+		 if(rec.data[this.ADD_INDEX] !== true){    
+				e.cancel = true; 
+		 }   
+	 	 
+		}, this);                       
+		this.disableDelete = true;   
+		this.grid.getColumnModel().setHidden(0,true);
 	},
 	 
 	//private
@@ -642,20 +683,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			}, 
 			this);
 			       
-			
-			
-		  /*this.sqlTable.fetchAll(function(sqlt, resp){
-				if(resp && resp.data){   
-					 this.displayMask('Preparing Data for Display...'); 
-				
-					this.tableData = resp.data[0].rows; 
-					this.setTotalCount(resp.data[0].count);
-				   
-					this.updatePageView();       
-				}  
-				this.hideMask(); 
-			}, 
-			this);   */
+
 		}
 
 	 
@@ -665,6 +693,57 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 	setTotalCount : function(n){
 		this.totalRows = n; 
 		Ext.get('total'+this.idpfx).update(n);  
+	},
+	
+	
+	exportHtml : function(){
+		var rows = this.grid.store.data.items, html='', cols=[];   
+		
+		html = '<table>';     
+		
+		var cm = this.grid.getColumnModel();   
+		var numCols = cm.getColumnCount(); 
+    
+		html+= '<thead><tr>';
+		for(var c=0; c<numCols; c++){
+			if(!cm.isHidden(c)){    
+				var cname = cm.getDataIndex(c);
+				cols.push(cname);
+				html += '<th>'+cname+'</th>';
+			}
+		}       
+		html+= '</tr></thead><tbody>';  
+		
+		//entire data set
+		for(var i=0, len=rows.length; i<len; i++){
+			html+= '<tr>';          
+			var row = rows[i];
+			
+			for(var c=0; c<cols.length; c++){   
+				 html += '<td>'+ row.data[cols[c]] +'</td>';
+			}
+			
+			html+='</tr>';
+		}
+		html += '</tbody></table>';
+		
+		var win = window.open('','',
+		  'width=600,height=500'
+		   +',menubar=0'
+		   +',toolbar=1'
+		   +',status=0'
+		   +',scrollbars=1'
+		   +',resizable=1');
+		
+		
+		win.document.writeln('<html><head><style>');    
+		win.document.writeln('table{width:100%;border-collapse:collapse;padding:0;margin:0;font-family:Arial, Helvetica, "sans serif"}');
+		win.document.writeln('td,th{font-size:11px;text-align:left;border:1px solid black;}');
+		win.document.writeln('</style></head><body>');     
+		win.document.writeln(html); 
+    win.document.writeln('</body></html>');   
+		win.document.close();
+		
 	}
 
 });

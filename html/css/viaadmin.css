@@ -112,7 +112,10 @@ label{
 }  
 .vaicon-tables{
 	background-image: url('../images/tables.png') !important;
-}   
+}  
+.vaicon-tableexport{
+	background-image: url('../images/table-export.png') !important;
+} 
 .vaicon-log{
 	background-image: url('../images/document-attribute-l.png') !important;
 }

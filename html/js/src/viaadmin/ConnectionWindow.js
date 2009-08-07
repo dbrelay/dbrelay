@@ -43,8 +43,9 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 									},
 									scope:this
 								}
-							},
-							value: defaultConn.sql_server || ''
+							},   
+							//value: '172.16.115.128',
+						  value: defaultConn.sql_server || ''
 						}
 					},
 					{
@@ -91,7 +92,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								fieldLabel:'Database',
 								id:'sql_database'+ _idpfx,
 								allowBlank:true,
-								selectOnFocus:true,
+								selectOnFocus:true, 
 								value:defaultConn.sql_database ||'',
 								enableKeyEvents:true,
 								listeners:{
@@ -257,8 +258,9 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 			var testDb = new sqlDbAccess(values); 
 	    testDb.testConnection(function(sqld, success){
 			   if(success){
-						this.fireEvent('connectionupdate', this, values);  
-						this.hide();
+						if(this.fireEvent('connectionupdate', this, values)){  
+							this.hide();
+				 		}
 				 }
 				else{
 					alert('Couldn\'t connect to database.\nPlease make sure the above information is correct.');
