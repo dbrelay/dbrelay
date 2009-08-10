@@ -40,6 +40,22 @@ ul.dense2 {        pagging-top: 0;
         margin-top: 0;
         margin-bottom: 0;
 }
+td > p {
+  margin: 0;
+}
+td > p + p {
+  margin-top: 1em;
+}
+td > dl {
+  margin: 0;
+}
+td > dl > dd {
+  margin: 0;
+  margin-top: 0.5em;
+}
+td > dl > dt {
+  margin-left: 1em;
+}
 -->
   </style>
   </head>
@@ -136,13 +152,24 @@ ul.dense2 {        pagging-top: 0;
       <td class="doc-name">sql</td>
       <td>Optional TSQL statement batch conformant with MS SQL Server 2005 TSQL. &quot;Sql&quot; and &quot;param[]&quot; parameters may be omitted when, for example, setting the new application log level.</td>
     </tr>
-    <tr>
+    <tr id="sql_param">
       <td class="doc-name">paramX</td>
-      <td>Optional postfix-numbered set of colon-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional SQL parameters to be bound into the SQL query. Output parameters are not supported. Parameters should come as an integer-indexed zero-based sequence. <span class="todo">Gaps in parameter indexes should cause notice-level errors</span>. SQL parameter values are expected to be URL-encoded. The accepted &laquo;<code>type</code>&raquo; values are <code>int</code>, <code>smallint</code>, <code>tinyint</code>, <code>numeric</code>, <code>float</code>, <code>real</code>, <code>char</code>, <code>varchar</code>, <code>datetime</code>, <code>smalldatetime</code>.</td>
+      <td>
+        <p>Optional postfix-numbered set of colon-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional SQL parameters to be bound into the SQL query. Output parameters are not supported. Parameters should come as an integer-indexed zero-based sequence. <span class="todo">Gaps in parameter indexes should cause notice-level errors</span>. SQL parameter values are expected to be URL-encoded. The accepted &laquo;<code>type</code>&raquo; values are <code>int</code>, <code>smallint</code>, <code>tinyint</code>, <code>numeric</code>, <code>float</code>, <code>real</code>, <code>char</code>, <code>varchar</code>, <code>datetime</code>, <code>smalldatetime</code>.</p>
+        <p>The &laquo;paramX&raquo; POST parameters may also be used by some <a href="#server_command">server commands</a>.</p>
+      </td>
     </tr>
     <tr>
       <td class="doc-name">error_style</td>
       <td>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</td>
+    </tr>
+    <tr>
+      <td class="doc-name">js_callback</td>
+      <td>If present, the HTML parameter specifies a javascript callback, which will receive the json response as a parameter. Assuming the <code>js_callback</code> was set to <code>jsc</code>, the returned JavaScript would look something like &laquo;<code>jsc({'data':...});</code>&raquo;, where the original JSON response is the text in curly parenthesis.</td>
+    </tr>
+    <tr>
+      <td class="doc-name">js_error</td>
+      <td>This parameter only has effect if <code>js_callback</code> is present. If that is the case, then the value of <code>js_error</code> parameter is used as a javascript callback function whenever there is an error condition and the <code>error</code> entry present in JSON return. If <code>js_error</code> is not specified, then <code>js_callback</code> used for any response regardless of an error.</td>
     </tr>
   </tbody>
 </table>
@@ -164,9 +191,14 @@ ul.dense2 {        pagging-top: 0;
       <td class="doc-name">status</td>
       <td>Request the server status as a part of the administrative http request.</td>
     </tr>
-    <tr>
+    <tr id="server_command">
       <td class="doc-name">cmd</td>
-      <td>Execute a command on the sever. <span class="todo">Specific commands and their format to be decided later in the project.</span></td>
+      <td>Execute a command on the sever. <span class="todo">The following are currently planned commands:</span>
+        <dl>
+          <dd><code>kill</code></dd>
+          <dt>The &laquo;<code>kill</code>&raquo; command kills a specific worker process on the server in case it is misbehaving or running a long query which needs to be stopped. It takes one <a href="#sql_param">parameter</a> which is a socket path of the worker process. The socket path can be found via the &laquo;<code>status</code>&raquo; administrative request.</dt>
+        </dl>
+      </td>
     </tr>
   </tbody>
 </table>
@@ -185,55 +217,55 @@ ul.dense2 {        pagging-top: 0;
     <tr>
       <td width="130">RESPONSE</td>
       <td class="doc-codefont"><pre>{
-request : request_object ,
-data : rowsets_array , 
-log : log_object 
+  request : REQUEST_OBJECT ,
+  data :    ROWSETS_ARRAY , 
+  log :     LOG_OBJECT 
 }</pre></td>
     </tr>
     <tr>
       <td>REQUEST_OBJECT</td>
       <td class="doc-codefont"><pre>{
-query_tag : string , 
-sql_server : string ,
-sql_port : int , 
-sql_database : string , 
-sql_user : string ,
-connection_name : string 
+  query_tag :       string , 
+  sql_server :      string ,
+  sql_port :        int , 
+  sql_database :    string , 
+  sql_user :        string ,
+  connection_name : string 
 }</pre></td>
     </tr>
     <tr>
       <td>ROWSETS_ARRAY</td>
-      <td class="doc-codefont"><pre>[ rowset , ...] </pre></td>
+      <td class="doc-codefont"><pre>[ ROWSET , ...] </pre></td>
     </tr>
     <tr>
       <td>ROWSET</td>
       <td class="doc-codefont"><pre>{
-fields : field_list , 
-count : int ,
-rows : rows_arrray 
+  fields : FIELD_LIST , 
+  count :  int ,
+  rows :   ROWS_ARRRAY 
 } </pre></td>
     </tr>
     <tr>
       <td>FIELD_LIST</td>
-      <td class="doc-codefont"><pre>[ field, ...] </pre></td>
+      <td class="doc-codefont"><pre>[ FIELD, ...] </pre></td>
     </tr>
     <tr>
       <td>FIELD</td>
       <td class="doc-codefont"><pre>{
-name: field_name ,
-sql_type: field_type ,
-length: int ,
-precision: int , 
-scale: int 
+  name:      FIELD_NAME ,
+  sql_type:  FIELD_TYPE ,
+  length:    int ,
+  precision: int ,
+  scale:     int
 } </pre></td>
     </tr>
     <tr>
       <td>ROWS_ARRAY</td>
-      <td class="doc-codefont"><pre>[ row , ...]</pre></td>
+      <td class="doc-codefont"><pre>[ ROW , ...]</pre></td>
     </tr>
     <tr>
       <td>ROW</td>
-      <td class="doc-codefont"><pre>{ field_name : value , ...} </pre></td>
+      <td class="doc-codefont"><pre>{ FIELD_NAME : value , ...} </pre></td>
     </tr>
     <tr>
       <td>FIELD_NAME</td>
