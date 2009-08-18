@@ -1,4 +1,4 @@
-/* viacore */
+/* dbrelay core */
 /* sqlObject */
 
 function viaductQuery(connection,sql,callback,query_tag){connection["sql"]=sql;if(query_tag!==undefined)connection["query_tag"]=query_tag;$.post('/sql',connection,callback,"json");};sqlObject=function(){function throwError(name,message,body,hard){if(window.console&&window.console.error){console.error({"name":name,"message":message,"body":body});};alert(message)

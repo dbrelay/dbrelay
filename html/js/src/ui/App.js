@@ -42,7 +42,7 @@ va.App = function(){
 						unstyled:true,
 						layout:'column',   
 						border:false,
-						cls:'va-dbactions',  
+						cls:'dbr-dbactions',  
 						
 						items:[
 							{ 
@@ -62,26 +62,26 @@ va.App = function(){
 									{
 										xtype:'button',
 										text:'Tables',
-										iconCls:'vaicon-tables',  
+										iconCls:'icon-tables',  
 										menu: [   
 				
 											//open
 											{
 												text:'Edit Table',
-												iconCls:'vaicon-opentable',
+												iconCls:'icon-opentable',
 												menu: _tablesMenuOpen
 											},
 											//Drop Table
 											{
 												text:'Drop Table',
-												iconCls:'vaicon-minus',   
+												iconCls:'icon-minus',   
 												menu: _tablesMenuDrop
 											},
 											'-',
 											//Add Table
 											{
 												text:'Add Table',
-												iconCls:'vaicon-plus',
+												iconCls:'icon-plus',
 												handler:function(){
 													this.showCreateTableWindow(true);
 												},
@@ -93,7 +93,7 @@ va.App = function(){
 									{
 										xtype:'button',
 										text:'SQL',
-										iconCls:'vaicon-sql',
+										iconCls:'icon-sql',
 										handler:function(){
 											this.addSqlPanel();
 										},
@@ -103,7 +103,7 @@ va.App = function(){
 									{
 										xtype:'button',
 										text:'Conn',
-										iconCls:'vaicon-gear',
+										iconCls:'icon-gear',
 										handler:function(){
 											this.showConnectionWindow(true);
 										},
@@ -112,29 +112,29 @@ va.App = function(){
 									{
 										xtype:'button',
 										text:'Log',
-										iconCls:'vaicon-log',
+										iconCls:'icon-log',
 										handler:this.openSqlLog,
 										scope:this 
 									},
 									{
 										xtype:'button',
 										text:'More',
-										iconCls:'vaicon-info',
+										iconCls:'icon-info',
 										menu:[   
 										{
 											text:'Documentation Home',
-											iconCls:'vaicon-doc', 
+											iconCls:'icon-doc', 
 											handler:function(){window.open('/doc/index.html');}    
 										},  
 										'-',
 										{
 												text:'Viaduct Status',
-												iconCls:'vaicon-monitor',
+												iconCls:'icon-monitor',
 												handler:function(){window.open('/status.html');}
 										},  
 											{
 												text:'Old UI',
-												iconCls:'vaicon-home', 
+												iconCls:'icon-home', 
 												handler:function(){window.open('/oldindex.html');}
 											}
 											
@@ -269,41 +269,43 @@ va.App = function(){
 										var changed = false, oldconn = this.sqlDb.connection;
 									 
 									  for(var p in conncfg){
-											if( conncfg[p].trim() !==  oldconn[p]){
+											if( conncfg[p] !==  oldconn[p]){
 												var changed = true;
 												break;
 											}
 										}
 										
-										if(changed){  
-											var ok = true;
+										if(!changed){
+											return true;
+										}
+										else {  
 											         
 											Ext.Msg.confirm('Confirm connection info change','Changing the connection information will close any openend table editor tabs.  Do you want to continue?',
 											 function(btn, text){      
 													if(btn == 'yes'){
 														this.sqlDb.connection = Ext.apply(oldconn, conncfg);                             
-														//remove existing table editors
-														for( var n in this.tables ){
+														//remove existing table editors 
+														var tables = this.tables;
+														for( var n in tables ){
 															this.tables[n].ownerCt.remove(this.tables[n]);  
 															this.tables[n] = null;
 														}
 														_viewport.doLayout();  
 													} 
 													else{  
-														ok = false;
+														return false;
 													}               
 													
 											},this);
 
-											return ok;
 										}
-								 		
+ 	
 								 }
                    
 								//update window title with db name
 								 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
 								 this.refreshTablesMenu();
-									return true; 						
+								 return true; 						
 							},
 							scope:this
 						}
@@ -488,7 +490,7 @@ va.App = function(){
 					
 				 	 _tablesMenuOpen.addMenuItem(	{
 						text:name, 
-						iconCls:'vaicon-table',
+						iconCls:'icon-table',
 						handler:openTableHandler,  
 						isClicky:true,
 						scope:this
@@ -496,7 +498,7 @@ va.App = function(){
 					
 						_tablesMenuDrop.addMenuItem(	{
 							text:name, 
-							iconCls:'vaicon-table',
+							iconCls:'icon-table',
 							handler:dropTableHandler,  
 							isClicky:true, 
 							scope:this
@@ -534,7 +536,7 @@ va.App = function(){
 						
 						{
 							text:'Refresh',
-							iconCls:'vaicon-refresh',
+							iconCls:'icon-refresh',
 							handler:function(){
 								this.sqlLogWindow.body.update(this.sqlDb.getLog().join('<hr/>'));  
 							},
@@ -542,7 +544,7 @@ va.App = function(){
 						},
 						{
 							text:'Clear Log',
-							iconCls:'vaicon-minus',
+							iconCls:'icon-minus',
 							handler:function(){
 								this.sqlDb.clearLog();   
 								this.sqlLogWindow.body.update('');   

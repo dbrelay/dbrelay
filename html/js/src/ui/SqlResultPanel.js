@@ -9,18 +9,51 @@
 Ext.namespace('va');
 
 va.SqlResultPanel = Ext.extend(Ext.Panel,{
-  cls:'va-sqlresultpanel',
-	iconCls:'vaicon-sql',
+  cls:'dbr-sqlresultpanel',
+	iconCls:'icon-sql',
   layout:'border',  
 	closable:true, 
-	grids:[],
 
 	initComponent : function(){
 	 var idpfx = Ext.id(); //ensure unique ids   
 	
 		//blank for now, these will change based on db queries
 		this.cm = new Ext.grid.ColumnModel([]);
-		this.store = new Ext.data.Store();
+		this.store = new Ext.data.Store();   
+		//used to hold multiple result sets
+		this.grids = [];
+		
+		this.tbar = [ 
+			{
+				text:'Hide Query',
+				enableToggle:true,  
+				pressed:true,
+				handler: function(b,e){                  
+					b.setText(this.northRegion.hidden ? 'Hide Query' : 'Show Query');
+					this.northRegion.setVisible(this.northRegion.hidden);    
+					this.doLayout();
+				},
+				scope:this
+			},
+			 {
+				text:'Run (CTRL + Enter)',
+				iconCls:'icon-tick',            
+				tooltip:'Execute SQL [Shift + Enter]',
+				handler: this.execSql,
+				scope:this
+			},
+			'->',
+			{
+				iconCls:'icon-minus', 
+				text:'Clear',
+				handler:function(){
+					this.fldSqlCode.setValue('');
+					this.fldUrl.setValue('');  
+					this.showMsgPanel('Enter query to execute.');
+				},
+				scope:this
+			}    
+		];
 		
 		this.items = [
 			{
@@ -31,6 +64,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 				layout:'form',
 				unstyled:true,  
 				labelWidth:80,
+				id: 'north' + idpfx,
 				items:[
 					{
 						fieldLabel:'SQL',
@@ -58,30 +92,11 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 						id:'url'+idpfx
 					}
 				], 
-				tbar:[ 
-					 {
-						text:'Run (CTRL + Enter)',
-						iconCls:'vaicon-tick',            
-						tooltip:'Execute SQL [Shift + Enter]',
-						handler: this.execSql,
-						scope:this
-					},
-					'->',
-					{
-						iconCls:'vaicon-minus', 
-						text:'Clear',
-						handler:function(){
-							this.fldSqlCode.setValue('');
-							this.fldUrl.setValue('');  
-							this.showMsgPanel('Enter query to execute.');
-						},
-						scope:this
-					}    
-				],
+				
 				listeners:{
 					'resize':{
 						fn: function(p,aw,ah){ 
-							 this.fldSqlCode.setHeight(ah - 60);
+							 this.fldSqlCode.setHeight(ah - 30);
 						},
 						scope:this
 					},
@@ -118,9 +133,11 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 	   
 		this.fldSqlCode = this.findById('sqlcode'+ idpfx); 
 		this.msgPanel = this.findById('msg'+idpfx);  
-		this.fldUrl = this.findById('url'+idpfx); 
+		this.fldUrl = this.findById('url'+idpfx);        
 		
-		this.centerRegion = Ext.getCmp('resultsRegion'+idpfx);
+		this.northRegion = Ext.getCmp('north'+idpfx);
+		this.centerRegion = Ext.getCmp('resultsRegion'+idpfx);    
+
                
 		//save postfix, to be accessed externally later if needed
 		this.idpfx = idpfx;
@@ -185,7 +202,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
   showResultGrids : function(dataSets){      
 	
 		var tb = this.centerRegion.getTopToolbar(), numResults = dataSets.length, count=0; 
-		tb.removeAll();             
+		tb.removeAll();                   
 
     for (var i=0; i<numResults; i++){   
 			var data = dataSets[i];           
@@ -193,12 +210,13 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 			if(!data.count && data.count !== 0){continue;}
 			
 			var name ='Result Set ' + (count+1);
-			
+
 			//grid
-		  if(!this.grids[count]){
+		  if(!this.grids[count]){ 
+			
 			//create the grid if it doesn't exist yet 
 
-				this.grids[count] = new va.SqlSelectGrid({
+				var grid = new va.SqlSelectGrid({
 					resultName:'Viewing ' + name, 
 					dataSet:data,
 					listeners:{
@@ -214,15 +232,17 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 					}
 				 }); 
 			 	//add to layout
-				this.centerRegion.add(this.grids[count]); 
-				 
+				this.centerRegion.add(grid);      
+				
+				this.grids[count] = grid;                
+				
 			}
 			
 			//use existing grid
 			else{    
 				var grid = this.grids[count];
 				grid.refresh(data);
-				grid.setResultName(name);      
+				grid.setResultName(name);
 			}
 		
 		
@@ -231,7 +251,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 				text: name,    
 				gridIndex : count, 
 				id:'showgrid-' + count + this.idpfx,
-				iconCls:'vaicon-sql',    
+				iconCls:'icon-sql',    
 				enableToggle:true,
 				enableDepress:false, 
 				toggleGroup:'grids' + this.idpfx,

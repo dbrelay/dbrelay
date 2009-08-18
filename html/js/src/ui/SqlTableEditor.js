@@ -8,9 +8,9 @@
 Ext.namespace('va');
 
 va.SqlTableEditor = Ext.extend(Ext.Panel,{
-  cls:'va-sqltableeditor',
+  cls:'dbr-sqltableeditor',
 	layout:'border',
-	iconCls:'vaicon-table',
+	iconCls:'icon-table',
 	
 
 	/** {sqlTable} sqlTable object, created by the editor */
@@ -19,8 +19,8 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 	pkeyColumns:[], 
 	pkeyStyle:'color:#00761c;font-weight:bold;',      
 
-	DELETE_INDEX: 'va-deletebox',  
-	ADD_INDEX: 'va-newrow',   
+	DELETE_INDEX: 'dbr-deletebox',  
+	ADD_INDEX: 'dbr-newrow',   
 	disableDelete: false,
 	
 
@@ -49,7 +49,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         xtype:'button',
         text: 'Run/Refresh',  
 				tooltip:'Refresh columns & data from server',
-        iconCls:'vaicon-refresh',
+        iconCls:'icon-refresh',
 				handler:function(){          
 					Ext.Msg.confirm('Confirm Refresh?','Refreshing will revert and outstanding edits you may have. Are you sure you want to refresh?',
 					 function(btn, text){      
@@ -67,7 +67,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
         xtype:'button',
         text: 'Commit Changes', 
 				tooltip:'Commit all changes (adds, deletes, edits) to table in database',
-        iconCls:'vaicon-disk',
+        iconCls:'icon-disk',
 				handler: function(){       
 					Ext.Msg.confirm('Confirm Commit?','Are you sure you want to save changes to the server?',
 					 function(btn, text){      
@@ -84,7 +84,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			{
 			  text:'Add Row',              
 				tooltip:'Add new row to table',
-				iconCls:'vaicon-plus',
+				iconCls:'icon-plus',
 				handler:function(){
           var grid=this.grid, store= grid.getStore(), Row = store.recordType; 
           var newRec = new Row(Ext.apply({},this.addRowDefaults));               
@@ -99,7 +99,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			}, 
 			'-',
 			{   
-				iconCls:'vaicon-find',
+				iconCls:'icon-find',
 				enableToggle:true,  
 				pressed:true,
 				text:'Filtering',
@@ -113,7 +113,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			'-',  
 			{
 				text:'Export View',
-				iconCls:'vaicon-tableexport',
+				iconCls:'icon-tableexport',
 				menu:[
 					{
 						text:'Current page to HTML',
@@ -150,7 +150,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			'/page', 
 			'-',
 			{ 
-				iconCls:'vaicon-first',
+				iconCls:'icon-first',
 				tooltip:'Go to first page',
 				handler:function(){ 
 					this.showPage(1); 
@@ -158,7 +158,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 				scope:this
 			}, 
 			{ 
-				iconCls:'vaicon-back',
+				iconCls:'icon-back',
 				tooptip:'Go to previous page',
 				handler:function(){
 					var page = this.pageNumberField.getValue();
@@ -191,7 +191,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			},
 			'of <span id="totalPages'+idpfx+'"></span>',
 			{ 
-				iconCls:'vaicon-next',
+				iconCls:'icon-next',
 				tooltip:'Go to next page',
 				handler:function(){
 					var page = this.pageNumberField.getValue(); 
@@ -200,7 +200,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 				scope:this
 			},
 			{ 
-				iconCls:'vaicon-last',     
+				iconCls:'icon-last',     
 				tooltip:'Go to last page',
 				handler:function(){
 					this.showPage(this.totalPages); 
@@ -778,7 +778,7 @@ va.DeleteBox.prototype ={
             
 						var tbl = Ext.get(t).findParentNode('.x-grid3-row-table',10,true);  
 
-						tbl.addClass('va-deletetablerow');
+						tbl.addClass('dbr-deletetablerow');
             record.set(this.dataIndex, record.data[this.dataIndex] ? false : true);
         }
     },

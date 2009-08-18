@@ -22,7 +22,7 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			'->',
 			{
 				text:'Export View',
-				iconCls:'vaicon-tableexport',
+				iconCls:'icon-tableexport',
 				menu:[
 					{
 						text:'All rows as HTML',
@@ -63,14 +63,14 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			'/page',
 			'-',
 			{ 
-				iconCls:'vaicon-first',
+				iconCls:'icon-first',
 				handler:function(){ 
 					this.showPage(1); 
 				},
 				scope:this
 			}, 
 			{ 
-				iconCls:'vaicon-back',
+				iconCls:'icon-back',
 				handler:function(){
 					var page = this.pageNumberField.getValue();
 					this.showPage(page === 1 ? 1 : page-1); 
@@ -101,7 +101,7 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			},
 			'of <span id="totalPages'+idpfx+'"></span>',
 			{ 
-				iconCls:'vaicon-next',
+				iconCls:'icon-next',
 				handler:function(){ 
 					var page = this.pageNumberField.getValue(); 
 					this.showPage(page === this.totalPages ? page : page + 1);
@@ -109,7 +109,7 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 				scope:this
 			},
 			{ 
-				iconCls:'vaicon-last',
+				iconCls:'icon-last',
 				handler:function(){
 					this.showPage( this.totalPages); 
 				},

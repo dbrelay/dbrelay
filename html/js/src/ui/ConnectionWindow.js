@@ -1,6 +1,4 @@
-/**
-  Connection window, where user edits connection information
-
+/**Connection window, where user edits connection information
 */ 
 Ext.namespace('va');
 va.ConnectionWindow = Ext.extend(Ext.Window,{
@@ -33,7 +31,9 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 							id: 'sql_server' + _idpfx,
 							allowBlank:false,   
 							selectOnFocus:true,   
-							enableKeyEvents:true,
+							enableKeyEvents:true,  
+							value: defaultConn.sql_server || '',
+						//value: '172.16.115.135',
 							listeners:{
 								'keyup':{
 									fn:function(fld, e){
@@ -43,9 +43,8 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 									},
 									scope:this
 								}
-							},   
-							//value: '172.16.115.128',
-						  value: defaultConn.sql_server || ''
+							}   
+						  
 						}
 					},
 					{
@@ -94,6 +93,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								allowBlank:true,
 								selectOnFocus:true, 
 								value:defaultConn.sql_database ||'',
+								//value:'viaducttest',
 								enableKeyEvents:true,
 								listeners:{
 									'keyup':{
@@ -196,13 +196,13 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 		this.buttons = [
 			{
 				text:'Test & Save',
-				iconCls:'vaicon-tick',
+				iconCls:'icon-tick',
 				handler: this.onTestAndSave,
 				scope:this
 			},
 			{
 				text:'Cancel',
-				iconCls:'vaicon-minus',
+				iconCls:'icon-minus',
 				handler:function(){this.hide()},
 				scope:this
 			}
@@ -257,7 +257,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 	    //TODO: test connection
 			var testDb = new sqlDbAccess(values); 
 	    testDb.testConnection(function(sqld, success){
-			   if(success){
+			   if(success){    
 						if(this.fireEvent('connectionupdate', this, values)){  
 							this.hide();
 				 		}

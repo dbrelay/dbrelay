@@ -27,26 +27,30 @@ body {
 }
 
 
-.x-grid3-row-table.va-deletetablerow td {  
+.x-grid3-row-table.dbr-deletetablerow td {  
 	background-color:#ff0000 !important;
 }
 
-.va-dbactions{ 
+.dbr-dbactions{ 
 	padding:5px;
 	background-color:#dedede;
 }      
+ 
+.dbr-sqlresultpanel .x-layout-split {
+}
 
-.va-dbactions .x-btn{
+
+.dbr-dbactions .x-btn{
  margin-bottom:5px;
 }              
  
-.va-msg{
+.dbr-msg{
 	border:1px solid black;
 	background-color:#fff;    
 	width:250;
 	height:100;
 }     
-.va-msg h3{
+.dbr-msg h3{
 	font-weight:bold;
 }
 
@@ -56,78 +60,78 @@ label{
 }
 
 /* Icons */
-.vaicon-plus{
+.icon-plus{
 	background-image: url('../images/plus-circle.png') !important;
 }  
-.vaicon-minus{
+.icon-minus{
 	background-image: url('../images/cross-circle.png') !important;
 }  
-.vaicon-sql{
+.icon-sql{
 	background-image: url('../images/script-attribute-s.png') !important;
 }
-.vaicon-disk{
+.icon-disk{
 	background-image: url('../images/disk.png') !important;
 }      
-.vaicon-opentable{
+.icon-opentable{
 	background-image: url('../images/folder-open-table.png') !important;
 }   
-.vaicon-gear{
+.icon-gear{
 	background-image: url('../images/gear.png') !important;
 }
-.vaicon-table{
+.icon-table{
 	background-image: url('../images/table.png') !important;
 }
-.vaicon-tick{
+.icon-tick{
 	background-image: url('../images/tick.png') !important;
 }
-.vaicon-refresh{
+.icon-refresh{
 	background-image: url('../images/refresh.gif') !important;
 }
-.vaicon-back{
+.icon-back{
 	background-image: url('../images/control-180.png') !important;
 }
-.vaicon-next{
+.icon-next{
 	background-image: url('../images/control.png') !important;
 }
-.vaicon-first{
+.icon-first{
 	background-image: url('../images/control-skip-180.png') !important;
 }
-.vaicon-last{
+.icon-last{
 	background-image: url('../images/control-skip.png') !important;
 }
-.vaicon-monitor{
+.icon-monitor{
 	background-image: url('../images/monitor.png') !important;
 }
-.vaicon-help{
+.icon-help{
 	background-image: url('../images/question.png') !important;
 }      
-.vaicon-home{
+.icon-home{
 	background-image: url('../images/home.png') !important;
 }
-.vaicon-pdf{
+.icon-pdf{
 	background-image: url('../images/document-pdf-text.png') !important;
 }  
-.vaicon-info{
+.icon-info{
 	background-image: url('../images/information.png') !important;
 }  
-.vaicon-tables{
+.icon-tables{
 	background-image: url('../images/tables.png') !important;
 }  
-.vaicon-tableexport{
+.icon-tableexport{
 	background-image: url('../images/table-export.png') !important;
 } 
-.vaicon-log{
+.icon-log{
 	background-image: url('../images/document-attribute-l.png') !important;
 }
-.vaicon-link{
+.icon-link{
 	background-image: url('../images/chain.png') !important;
 }
-.vaicon-find{
+.icon-find{
 	background-image: url('../images/binocular.png') !important;
 } 
-.vaicon-doc{
+.icon-doc{
 	background-image: url('../images/document-list.png') !important;
 }
-.vaicon-eg{
+.icon-eg{
 	background-image: url('../images/document-globe.png') !important;
 }
