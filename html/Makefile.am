@@ -1,10 +1,10 @@
 htmldir = $(prefix)/html
 
-FILES = index.htm \
-50x.html \
-index-dev.htm \
-status.htm \
-oldindex.htm \
+FILES = ./index.htm \
+./50x.html \
+./index-dev.htm \
+./status.htm \
+./oldindex.htm \
 css/viaadmin.css \
 doc/doc.css \
 doc/environment.htm \
@@ -363,7 +363,7 @@ install-data-local:
 	for f in $(FILES) ; do \
 	d=`echo $$f | sed -e 's,/[^/]*$$,,'`; \
 	$(mkinstalldirs) $(DESTDIR)$(htmldir)/$$d; \
-	$(INSTALL_DATA) $$f $(DESTDIR)$(htmldir)/$$f; \ 
+	$(INSTALL_DATA) $$f $(DESTDIR)$(htmldir)/$$f; \
 	echo $$f $$d; \
 	done
 
