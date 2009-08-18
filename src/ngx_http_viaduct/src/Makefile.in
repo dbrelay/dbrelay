@@ -53,7 +53,7 @@ connector_OBJECTS = $(am_connector_OBJECTS)
 @FREETDS_TRUE@connector_DEPENDENCIES = mssql.o
 am_viaduct_OBJECTS = db.$(OBJEXT) log.$(OBJEXT) json.$(OBJEXT) \
 	stringbuf.$(OBJEXT) shmem.$(OBJEXT) client.$(OBJEXT) \
-	socket.$(OBJEXT) main.$(OBJEXT)
+	socket.$(OBJEXT) main.$(OBJEXT) admin.$(OBJEXT)
 viaduct_OBJECTS = $(am_viaduct_OBJECTS)
 @FREETDS_FALSE@@MYSQL_TRUE@viaduct_DEPENDENCIES = mysql.o
 @FREETDS_TRUE@viaduct_DEPENDENCIES = mssql.o
@@ -163,7 +163,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -DCMDLINE @DB_INCS@
 AM_LDFLAGS = @DB_LIBS@ @VIADUCT_EXTRA_LIBS@
-viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c socket.c main.c libsybdb.a libtds.a
+viaduct_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c socket.c main.c admin.c libsybdb.a libtds.a
 connector_SOURCES = viaduct.h db.c log.c json.c stringbuf.c shmem.c client.c socket.c connector.c 
 EXTRA_viaduct_SOURCES = mssql.h mssql.c vmysql.h mysql.c
 @FREETDS_TRUE@viaduct_LDADD = mssql.o @DB_STATICLIBS@ @LIBS@
@@ -241,6 +241,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/admin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/connector.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/db.Po@am__quote@

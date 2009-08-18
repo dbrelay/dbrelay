@@ -24,6 +24,7 @@ static void *ngx_http_viaduct_create_loc_conf(ngx_conf_t *cf);
 static ngx_int_t ngx_http_viaduct_send_response(ngx_http_request_t *r);
 ngx_int_t ngx_http_viaduct_init_master(ngx_log_t *log);
 void ngx_http_viaduct_exit_master(ngx_cycle_t *cycle);
+static void write_flag_values(viaduct_request_t *request, char *value);
 
 static ngx_command_t  ngx_http_viaduct_commands[] = {
 
@@ -340,7 +341,8 @@ ngx_http_viaduct_send_response(ngx_http_request_t *r)
 
     strncpy(request->remote_addr, (char *) r->connection->addr_text.data, VIADUCT_OBJ_SZ);
 
-    if (request->status) json_output = (u_char *) viaduct_db_status(request);
+    if (strlen(request->cmd)) json_output = (u_char *) viaduct_db_cmd(request);
+    else if (request->status) json_output = (u_char *) viaduct_db_status(request);
     else json_output = (u_char *) viaduct_db_run_query(request);
     viaduct_free_request(request);
 
@@ -436,7 +438,9 @@ write_value(viaduct_request_t *request, char *key, char *value)
    ngx_unescape_uri(&dst, &src, strlen(value), 0);
    *dst = '\0';
 
-   if (!strcmp(key, "status")) {
+   if (!strcmp(key, "cmd")) {
+      copy_value(request->cmd, value, VIADUCT_OBJ_SZ);
+   } else if (!strcmp(key, "status")) {
       request->status = 1;
    } else if (!strcmp(key, "sql_dbtype")) {
       copy_value(request->sql_dbtype, value, VIADUCT_OBJ_SZ);
@@ -474,12 +478,26 @@ write_value(viaduct_request_t *request, char *key, char *value)
       } else if (i>0) {
          request->params[i-1] = strdup(value);
       }
+   } else if (!strcmp(key, "flags")) {
+      write_flag_values(request, value);
    }
    
    if (!noprint) {
       viaduct_log_debug(request, "key %s", key);
       viaduct_log_debug(request, "value %s", value);
    }
+}
+static void 
+write_flag_values(viaduct_request_t *request, char *value)
+{
+   char *flags = strdup(value);
+   char *tok;
+
+   while ((tok = strsep(&flags, ";"))) {
+      if (!strcmp(tok, "echosql")) request->flags|=VIADUCT_FLAG_ECHOSQL; 
+      if (!strcmp(tok, "pp")) request->flags|=VIADUCT_FLAG_PP; 
+   }
+   free(flags);
 }
 void parse_post_query_string(ngx_chain_t *bufs, viaduct_request_t *request)
 {

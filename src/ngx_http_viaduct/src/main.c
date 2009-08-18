@@ -95,13 +95,14 @@ int main(int argc, char **argv)
     viaduct_request_t *request;
     viaduct_connection_t *connections;
     pid_t pid;
-    char *s, *s2;
+    char *s, *s2, *m2;
     char *cmd = NULL;
     int line = 0;
     char prompt[20];
     char *mybuf;
     int bufsz = 4096;
     size_t buflen = 0;
+    char *param0;
 
     istty = isatty(0);
 
@@ -138,16 +139,25 @@ int main(int argc, char **argv)
          if (s == NULL) break;
 
          s2 = strdup(s);
-         if ((cmd = strtok(s2, " \t")) == NULL) cmd = "";
+	 if ((cmd = strtok(s2, " \t")) == NULL) cmd = "";
 
-         if (!strcasecmp(cmd, "exit") || 
-             !strcasecmp(cmd, "quit") || 
-             !strcasecmp(cmd, "bye")) {
-                 break;
-         } else if (!strcasecmp(cmd, "go")) {
-            printf("mybuf %s\n", mybuf);
-            if (strlen(mybuf)>=6 && !strncmp(mybuf, "status", 6)) {
-               json_output = (u_char *) viaduct_db_status(request);
+	 if (!strcasecmp(cmd, "exit") || 
+	     !strcasecmp(cmd, "quit") || 
+	     !strcasecmp(cmd, "bye")) {
+		 break;
+	 } else if (!strcasecmp(cmd, "go")) {
+	    printf("mybuf %s\n", mybuf);
+	    if (strlen(mybuf)>=6 && !strncmp(mybuf, "status", 6)) {
+	       json_output = (u_char *) viaduct_db_status(request);
+	    } else if (strlen(mybuf)>=4 && !strncmp(mybuf, "kill", 4)) {
+	       m2 = strdup(mybuf);
+	       strtok(m2, " \t");
+	       param0 = strtok(NULL, " \t");
+	       fprintf(stderr, "killing %s\n", param0);
+               strcpy(request->cmd,"kill");
+               request->params[0] = param0;
+	       json_output = viaduct_db_cmd(request);
+	       free(m2);
             } else {
                request->sql = mybuf;
                json_output = (u_char *) viaduct_db_run_query(request);
@@ -161,7 +171,9 @@ int main(int argc, char **argv)
             mybuf[0] = '\0';
             buflen = 0;
          } else if (!strcasecmp(cmd, "load")) {
-            slurp_input_file(strtok(NULL, " \t"), &mybuf, &bufsz, &buflen, &line);
+            param0 = strtok(NULL, " \t");
+            fprintf(stderr, "reading %s\n", param0);
+            slurp_input_file(param0, &mybuf, &bufsz, &buflen, &line);
          } else {
             while (buflen + strlen(s) + 2 > bufsz) {
                 char *newbuf;
