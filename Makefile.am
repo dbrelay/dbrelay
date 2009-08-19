@@ -1,1 +1,1 @@
-SUBDIRS = src html
+SUBDIRS = src util html

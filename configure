@@ -3277,7 +3277,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile html/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile util/Makefile html/Makefile"
 
 
 
@@ -4015,6 +4015,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "util/Makefile") CONFIG_FILES="$CONFIG_FILES util/Makefile" ;;
     "html/Makefile") CONFIG_FILES="$CONFIG_FILES html/Makefile" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

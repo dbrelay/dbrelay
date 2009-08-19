@@ -1,5 +1,10 @@
 htmldir = $(prefix)/html
 
+#js/viaadmin-all-min.js 
+#js/viaadmin-sqlresultpanel-min.js 
+#js/viaadmin-sqltableeditor-min.js 
+#js/viacore-min.js 
+
 FILES = ./index.htm \
 ./50x.html \
 ./index-dev.htm \
