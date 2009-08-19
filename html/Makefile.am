@@ -20,10 +20,9 @@ js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/Sq
 
 FILES = ./index.html \
 ./50x.html \
-./index-dev.html \
 ./status.html \
 ./oldindex.html \
-css/viaadmin.css \
+css/dbrelay.css \
 doc/doc.css \
 doc/environment.html \
 doc/example.html \
@@ -41,7 +40,9 @@ doc/viaduct_architecture.graffle \
 doc/viaduct_architecture.pdf \
 doc/viaduct_specification.html \
 eg/inlinetable_example.html \
-eg/python_example.html \
+eg/python_example.html \    
+images/application-split-vertical.png \
+images/application.png \
 images/binocular.png \
 images/chain.png \
 images/control-180.png \
@@ -56,7 +57,8 @@ images/document-list.png \
 images/document-pdf-text.png \
 images/folder-open-table.png \
 images/gear.png \
-images/home.png \
+images/home.png \   
+images/html.png \  
 images/information.png \
 images/monitor.png \
 images/pencil.png \
