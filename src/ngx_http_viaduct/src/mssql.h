@@ -34,5 +34,7 @@ int viaduct_mssql_colscale(void *db, int colnum);
 int viaduct_mssql_fetch_row(void *db);
 char *viaduct_mssql_colvalue(void *db, int colnum, char *dest);
 char *viaduct_mssql_error(void *db);
+char *viaduct_mssql_catalogsql(int dbcmd, char **params);
+int viaduct_mssql_isalive(void *db);
 
 #endif
