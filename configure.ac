@@ -98,7 +98,9 @@ echo Now configuring nginx
 echo
 cd $BUILD
 cd src/$NGXDIR
-patch -N -p0 < ../../patches/wrapper.patch
+patch -N -p0 < ../../patches/nginx.wrapper.patch
+patch -N -p0 < ../../patches/nginx.conf.patch
+patch -N -p0 < ../../patches/nginx.makefile.patch
 
 ./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/dbrelay/src
 
