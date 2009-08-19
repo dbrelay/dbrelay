@@ -53,7 +53,7 @@ AM_CONDITIONAL(ODBC, test "$odbc" = "true")
 
 TDSDIR=freetds-0.82
 PCREDIR=pcre-7.8
-NGXDIR=nginx-0.7.22
+NGXDIR=nginx-0.7.61
 
 BUILD=`pwd`
 cd src
