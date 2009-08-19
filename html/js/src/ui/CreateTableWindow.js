@@ -2,7 +2,7 @@
   Connection window, where user edits connection information
 
 */
-va.CreateTableWindow = Ext.extend(Ext.Window,{
+dbrui.CreateTableWindow = Ext.extend(Ext.Window,{
 	layout:'form',
 	title:'Create Table',
 	width:550,
@@ -151,7 +151,7 @@ va.CreateTableWindow = Ext.extend(Ext.Window,{
 
 		];
 		
-		va.CreateTableWindow.superclass.initComponent.call(this);
+		dbrui.CreateTableWindow.superclass.initComponent.call(this);
 		                            
 		this.fields = {    
 			table : this.findById('name'+ idpfx),  

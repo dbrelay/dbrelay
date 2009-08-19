@@ -134,4 +134,13 @@ label{
 }
 .icon-eg{
 	background-image: url('../images/document-globe.png') !important;
+}     
+.icon-app-split{
+	background-image: url('../images/application-split-vertical.png') !important;    
+}   
+.icon-app{
+	background-image: url('../images/application.png') !important;    
+}  
+.icon-html{
+	background-image: url('../images/html.png') !important;    
 }

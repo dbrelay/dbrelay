@@ -53,7 +53,7 @@
 				connection_timeout : 60
 			});
 		
-			var tableEdit = new va.SqlTableEditor({ 
+			var tableEdit = new dbrui.SqlTableEditor({ 
 				tableName: 'people',
 				sqlDb: sqlDb,
 				serverSidePaging:true,
@@ -127,9 +127,9 @@ var sqlDb = sqlDbAccess({
 });   
        
 
-<span class="comment">/* Create a new va.SqlTableEditor instance.</span>
-<span class="comment">(va.SqlTableEditor extends Ext.Panel, so standard Ext.Panel config options can be used as well) */</span>
-var tableEdit = new va.SqlTableEditor({  
+<span class="comment">/* Create a new dbrui.SqlTableEditor instance.</span>
+<span class="comment">(dbrui.SqlTableEditor extends Ext.Panel, so standard Ext.Panel config options can be used as well) */</span>
+var tableEdit = new dbrui.SqlTableEditor({  
 	<span class="comment">//table name</span>
 	tableName: 'people',	 
 	   

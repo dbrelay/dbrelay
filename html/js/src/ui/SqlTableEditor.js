@@ -5,9 +5,9 @@
 		sqlDb*      :  {sqlDbAccess} sqlDb instance to use
 */
 
-Ext.namespace('va');
+Ext.namespace('dbrui');
 
-va.SqlTableEditor = Ext.extend(Ext.Panel,{
+dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
   cls:'dbr-sqltableeditor',
 	layout:'border',
 	iconCls:'icon-table',
@@ -44,10 +44,28 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
   
 
 		this.tbar =[  
+		{   
+			text:'Hide Adv Filter', 
+			iconCls:'icon-app',
+			enableToggle:true,  
+			pressed:true,
+			tooltip:'More options',
+			handler: function(b,e){ 
+				var hidden = this.optionsPanel.hidden;
+				                
+				b.setText(hidden ? 'Hide Adv Filter' : 'Show Adv Filter'); 
+				b.setIconClass(hidden ? 'icon-app' : 'icon-app-split');
+				this.optionsPanel.setVisible(hidden);    
+				this.doLayout();
+				
+			},
+			scope:this
+		},
+		'-',
 			//Refresh
 			{
         xtype:'button',
-        text: 'Run/Refresh',  
+        text: ' Refresh',  
 				tooltip:'Refresh columns & data from server',
         iconCls:'icon-refresh',
 				handler:function(){          
@@ -65,7 +83,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			//Update Rows
 			{
         xtype:'button',
-        text: 'Commit Changes', 
+        text: 'Commit', 
 				tooltip:'Commit all changes (adds, deletes, edits) to table in database',
         iconCls:'icon-disk',
 				handler: function(){       
@@ -82,7 +100,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			'-',
 			//Add Row
 			{
-			  text:'Add Row',              
+			  text:'Row',              
 				tooltip:'Add new row to table',
 				iconCls:'icon-plus',
 				handler:function(){
@@ -97,26 +115,15 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 				},
 				scope:this
 			}, 
-			'-',
-			{   
-				iconCls:'icon-find',
-				enableToggle:true,  
-				pressed:true,
-				text:'Filtering',
-				tooltip:'More options',
-				handler: function(b,e){ 
-					this.optionsPanel.setVisible(this.optionsPanel.hidden);    
-					this.doLayout();
-				},
-				scope:this
-			}, 
+			
 			'-',  
 			{
-				text:'Export View',
+				text:'Export',
 				iconCls:'icon-tableexport',
 				menu:[
 					{
-						text:'Current page to HTML',
+						text:'Current page to HTML', 
+						iconCls:'icon-html', 
 						handler:function(){this.exportHtml();},
 						scope:this
 					}
@@ -212,7 +219,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 		
 		 
 		//delete checkbox plugin for grid
-		 this.deleteBox = new va.DeleteBox({
+		 this.deleteBox = new dbrui.DeleteBox({
 			   header: 'Del',
 			   id: 'check', 
 				 dataIndex: this.DELETE_INDEX,
@@ -332,7 +339,7 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 			}  
 		 ];
 			
-		va.SqlTableEditor.superclass.initComponent.call(this);
+		dbrui.SqlTableEditor.superclass.initComponent.call(this);
 	  
 		this.on('render',function(p){                                                                                                                                           
 	 		this.pageNumberField = Ext.getCmp('page'+idpfx);
@@ -747,13 +754,13 @@ va.SqlTableEditor = Ext.extend(Ext.Panel,{
 	}
 
 });
-Ext.reg('va_sqltableeditor', va.SqlTableEditor);           
+Ext.reg('va_sqltableeditor', dbrui.SqlTableEditor);           
 
 
 
 
 
-va.DeleteBox = function(config){
+dbrui.DeleteBox = function(config){
     Ext.apply(this, config);
     if(!this.id){
         this.id = Ext.id();
@@ -761,7 +768,7 @@ va.DeleteBox = function(config){
     this.renderer = this.renderer.createDelegate(this);
 };
 
-va.DeleteBox.prototype ={
+dbrui.DeleteBox.prototype ={
     init : function(grid){
         this.grid = grid;
         this.grid.on('render', function(){ 

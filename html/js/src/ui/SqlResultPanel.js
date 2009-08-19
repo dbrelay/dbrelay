@@ -6,9 +6,9 @@
 		sqlDb*   :  {sqlDbAccess} sqlDb instance to use
 */
 
-Ext.namespace('va');
+Ext.namespace('dbrui');
 
-va.SqlResultPanel = Ext.extend(Ext.Panel,{
+dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
   cls:'dbr-sqlresultpanel',
 	iconCls:'icon-sql',
   layout:'border',  
@@ -26,15 +26,20 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.tbar = [ 
 			{
 				text:'Hide Query',
+				iconCls:'icon-app',
 				enableToggle:true,  
 				pressed:true,
-				handler: function(b,e){                  
-					b.setText(this.northRegion.hidden ? 'Hide Query' : 'Show Query');
-					this.northRegion.setVisible(this.northRegion.hidden);    
+				handler: function(b,e){  
+					var hidden = this.northRegion.hidden;
+					                
+					b.setText(hidden ? 'Hide Query' : 'Show Query'); 
+					b.setIconClass(hidden ? 'icon-app' : 'icon-app-split');
+					this.northRegion.setVisible(hidden);    
 					this.doLayout();
 				},
 				scope:this
-			},
+			}, 
+			'-',
 			 {
 				text:'Run (CTRL + Enter)',
 				iconCls:'icon-tick',            
@@ -129,7 +134,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 		];
 		
 
-		va.SqlResultPanel.superclass.initComponent.call(this);
+		dbrui.SqlResultPanel.superclass.initComponent.call(this);
 	   
 		this.fldSqlCode = this.findById('sqlcode'+ idpfx); 
 		this.msgPanel = this.findById('msg'+idpfx);  
@@ -216,7 +221,7 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 			
 			//create the grid if it doesn't exist yet 
 
-				var grid = new va.SqlSelectGrid({
+				var grid = new dbrui.SqlSelectGrid({
 					resultName:'Viewing ' + name, 
 					dataSet:data,
 					listeners:{
@@ -278,6 +283,6 @@ va.SqlResultPanel = Ext.extend(Ext.Panel,{
 
 }); 
 
-Ext.reg('va_sqlresultpanel', va.SqlResultPanel);         
+Ext.reg('va_sqlresultpanel', dbrui.SqlResultPanel);         
 
 

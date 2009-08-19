@@ -1,7 +1,7 @@
 /**Connection window, where user edits connection information
 */ 
-Ext.namespace('va');
-va.ConnectionWindow = Ext.extend(Ext.Window,{
+Ext.namespace('dbrui');
+dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 	layout:'anchor',
 	title:'Database Connection Information',
 	width:400,
@@ -113,7 +113,8 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								id:'sql_user'+ _idpfx,
 								allowBlank:false, 
 								selectOnFocus:true,  
-								value:defaultConn.sql_user ||'',
+								value:defaultConn.sql_user ||'',    
+							 // value:'sa',  
 								enableKeyEvents:true,
 								listeners:{
 									'keyup':{
@@ -133,7 +134,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 								fieldLabel:'Password', 
 								selectOnFocus:true,  
 								id:'sql_password'+ _idpfx,
-								value: defaultConn.sql_password || '',
+								value: defaultConn.sql_password || '', 
 								enableKeyEvents:true,
 								listeners:{
 									'keyup':{
@@ -209,7 +210,7 @@ va.ConnectionWindow = Ext.extend(Ext.Window,{
 
 		];
 		
-		va.ConnectionWindow.superclass.initComponent.call(this);
+		dbrui.ConnectionWindow.superclass.initComponent.call(this);
 		                            
 		this.fields = {    
 			sql_server : this.findById('sql_server'+ _idpfx),

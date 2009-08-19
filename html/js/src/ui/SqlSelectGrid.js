@@ -1,7 +1,7 @@
                                    /**
 Grid for the SQL Result Panel
 */
-va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
+dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 	viewConfig:{
 		forceFit:true,
 		autoFill:true,
@@ -21,16 +21,18 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			'<span id="name'+idpfx+'" style="font-weight:bold;color:green">Viewing '+(this.resultName || '') +'</span>',
 			'->',
 			{
-				text:'Export View',
+				text:'Export',
 				iconCls:'icon-tableexport',
 				menu:[
 					{
 						text:'All rows as HTML',
+						iconCls:'icon-html',
 						handler:function(){this.exportHtml(true);},
 						scope:this
 					},
 					{
-						text:'Selected rows as HTML',
+						text:'Selected rows as HTML',   
+						iconCls:'icon-html', 
 						handler:function(){this.exportHtml(false)},
 						scope:this
 					}
@@ -120,7 +122,7 @@ va.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.store = this.store || new Ext.data.Store();
 		this.cm = this.cm || new Ext.grid.ColumnModel([]);
 		
-		va.SqlSelectGrid.superclass.initComponent.call(this);  
+		dbrui.SqlSelectGrid.superclass.initComponent.call(this);  
 		
 
 		this.idpfx = idpfx;

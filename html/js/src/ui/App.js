@@ -1,6 +1,6 @@
-Ext.namespace('va');  
+Ext.namespace('dbrui');  
 
-va.App = function(){
+dbrui.App = function(){
    var _viewport;       //private var for viewport object
    var _numSqls = 0;	//count of current SQL panels open 
 
@@ -221,7 +221,7 @@ va.App = function(){
 			if(!show && !this.createTableWindow){return;}
 			
   		if(!this.createTableWindow){
-				this.createTableWindow = new va.CreateTableWindow({
+				this.createTableWindow = new dbrui.CreateTableWindow({
 					listeners:{
 						'ok':{
 							fn: function(w, table, columns){    
@@ -249,7 +249,7 @@ va.App = function(){
 			if(!show && !this.connectionWindow){return;}
 			
   		if(!this.connectionWindow){
-				this.connectionWindow = new va.ConnectionWindow({
+				this.connectionWindow = new dbrui.ConnectionWindow({
 					defaultConnection : this.restoredConnection || {},
 					listeners:{
 						'connectionupdate':{
@@ -320,7 +320,7 @@ va.App = function(){
 		*/
      addSqlPanel : function(defaultSql){
 
-			var p = Ext.getCmp('maintabs').add(new va.SqlResultPanel({
+			var p = Ext.getCmp('maintabs').add(new dbrui.SqlResultPanel({
 				sqlDb: this.sqlDb,
 				border: false,
 				title: 'Run SQL ' + (++_numSqls),
@@ -339,7 +339,7 @@ va.App = function(){
 			var editor = this.tables[table];
 			 
 			if(!editor){
-				editor = new va.SqlTableEditor({
+				editor = new dbrui.SqlTableEditor({
 					tableName: table,
 					sqlDb: this.sqlDb,
 					border: false,
@@ -565,4 +565,4 @@ va.App = function(){
 }();         
 
 
-Ext.onReady(va.App.init, va.App, true);                           
+Ext.onReady(dbrui.App.init, dbrui.App, true);                           
