@@ -1,34 +1,47 @@
 htmldir = $(prefix)/html
 
-#js/viaadmin-all-min.js 
-#js/viaadmin-sqlresultpanel-min.js 
-#js/viaadmin-sqltableeditor-min.js 
-#js/viacore-min.js 
+JSMIN=../util/jsmin
+JSSRC=js/src
 
-FILES = ./index.htm \
+all: js/dbrelay-core-min.js js/dbrelay-ui-all-min.js js/dbrelay-ui-sqltableeditor-min.js js/dbrelay-ui-sqlresultpanel-min.js 
+
+js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
+	$(JSMIN) < $? > $@
+
+js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
+	$(JSMIN) < $? > $@
+
+js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/SqlTableEditor.js
+	$(JSMIN) < $? > $@
+
+js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
+	$(JSMIN) < $? > $@
+
+
+FILES = ./index.html \
 ./50x.html \
-./index-dev.htm \
-./status.htm \
-./oldindex.htm \
+./index-dev.html \
+./status.html \
+./oldindex.html \
 css/viaadmin.css \
 doc/doc.css \
-doc/environment.htm \
-doc/example.htm \
-doc/features.htm \
-doc/index.htm \
-doc/interaction.htm \
-doc/interfaces.htm \
-doc/jsapi-sqldbaccess.htm \
-doc/jsapi-sqlobject.htm \
-doc/jsapi-sqltable.htm \
-doc/nav.htm \
-doc/overview.htm \
+doc/environment.html \
+doc/example.html \
+doc/features.html \
+doc/index.html \
+doc/interaction.html \
+doc/interfaces.html \
+doc/jsapi-sqldbaccess.html \
+doc/jsapi-sqlobject.html \
+doc/jsapi-sqltable.html \
+doc/nav.html \
+doc/overview.html \
 doc/SQL_query_interface.html \
 doc/viaduct_architecture.graffle \
 doc/viaduct_architecture.pdf \
 doc/viaduct_specification.html \
-eg/inlinetable_example.htm \
-eg/python_example.htm \
+eg/inlinetable_example.html \
+eg/python_example.html \
 images/binocular.png \
 images/chain.png \
 images/control-180.png \
@@ -335,34 +348,15 @@ js/ext-3.0.0/resources/images/default/window/top-bottom.psd \
 js/jquery/jquery-1.3.2.min.js \
 js/jquery/jquery-ui-1.7.min.js \
 js/jquery/jquery.getUrlParam.js \
-js/src/sqlDbAccess.js \
-js/src/sqlObject.js \
-js/src/sqlTable.js \
-js/src/viaadmin/App.js \
-js/src/viaadmin/ConnectionWindow.js \
-js/src/viaadmin/CreateTableWindow.js \
-js/src/viaadmin/MultiSelect.js \
-js/src/viaadmin/SqlResultPanel.js \
-js/src/viaadmin/SqlSelectGrid.js \
-js/src/viaadmin/SqlTableEditor.js \
-js/viaadmin-all-min.js \
-js/viaadmin-sqlresultpanel-min.js \
-js/viaadmin-sqltableeditor-min.js \
-js/viacore-min.js \
+js/dbrelay-core-min.js \
+js/dbrelay-ui-all-min.js \
+js/dbrelay-ui-sqltableeditor-min.js \
+js/dbrelay-ui-sqlresultpanel-min.js \
 tablesorter/asc.png \
 tablesorter/bg.png \
 tablesorter/desc.png \
 tablesorter/jquery.tablesorter.min.js \
-tablesorter/style.css \
-viaplot/date.js \
-viaplot/ex1.json \
-viaplot/ex2.json \
-viaplot/excanvas.pack.js \
-viaplot/index.html \
-viaplot/index_home.js \
-viaplot/jquery.flot.js \
-viaplot/jquery.viaplot.js \
-viaplot/styles.css 
+tablesorter/style.css
 
 install-data-local:
 	for f in $(FILES) ; do \
