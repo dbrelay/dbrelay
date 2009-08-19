@@ -2,13 +2,22 @@
 //     if (window.console && window.console.error) {
 //         console.error(arguments);
 //     }
-// });
+// });            
+
+/* global var to hold DBRelay host (default to "" for same domain) */
+
 
 
 function viaductQuery( connection, sql, callback, query_tag) {
   connection[ "sql" ] = sql;
   if ( query_tag !== undefined ) connection[ "query_tag" ] = query_tag;
-  $.post( '/sql', connection, callback, "json" );
+	if(connection.dbrelay_host){           
+		jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', connection , callback);   
+	} 
+	else{
+		$.post( '/sql', connection, callback, "json" );    
+	}  
+	
 };
 
 sqlObject = function() { // Module pattern, called immediately

@@ -114,7 +114,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 								allowBlank:false, 
 								selectOnFocus:true,  
 								value:defaultConn.sql_user ||'',    
-							 // value:'sa',  
+							  //value:'sa',  
 								enableKeyEvents:true,
 								listeners:{
 									'keyup':{

@@ -10,7 +10,7 @@ sqlDbAccess = function(){
 		
 		var _sqlDbAccess = function(){
 			var cn = connection.connection_name;
-			connection.connection_name = (cn && cn !== '') ? cn : '';
+			connection.connection_name = (cn && cn !== '') ? cn : '';  
 
 			//Create the sqlObject
 			this.so =sqlObject( connection , {
@@ -74,8 +74,6 @@ sqlDbAccess = function(){
 					+" WHERE dbrelayRowNum BETWEEN {{{minRow}}} and {{{maxRow}}}",
 					this._onVerb
 				],
-				
-
 				
 				/*fetch_paged_rows: [
 				  "select * from ("
