@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Viaduct JavaScript Documentation : sqlTable</title>
+    <title>DBRelay JavaScript Documentation : sqlTable</title>
 
 	 <link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                                     
 
@@ -21,25 +21,29 @@
 var sqlDb = sqlDbAccess({   
 
 	<span class="comment">//Hostname on which the SQL server is running. </span>
-	sql_server : '172.16.115.128', 
+	sql_server : '99.99.99.99.99', 
 
 	<span class="comment">//Optional port number, on which the SQL server is listening. 1433 is the default.</span>
 	sql_port : '',  
 	<span class="comment">//Optional name of the primary database for the connection. User's default database is used, if not specified.</span>
-	sql_database : 'viaducttest', 
+	sql_database : 'mydatabase', 
 
 	<span class="comment">//Username string recognised by the SQL server.</span>   
-	sql_user : 'sa',                
+	sql_user : 'myuser',                
 
-	<span class="comment">//Optional password for the sql_user.</span>   
-	sql_password : '',              
+	<span class="comment">//password for the sql_user.</span>   
+	sql_password : 'mypass',              
 
 	<span class="comment">//Optional name to persist this connection under.</span>   
-	connection_name : 'tabledemo',  
+	connection_name : 'example2',  
 
 	<span class="comment">/*Optional number of seconds from the response to the last query before the connection will be considered idle</span> 
 	<span class="comment">and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours). */</span>   
-	connection_timeout : 60  
+	connection_timeout : 60,
+	
+	
+	<span class="comment">/*Optional parameter for xss scripting.  Leave out for same-domain scripts  */</span>   
+	dbrelay_host : 'http://dbrelay_host'
 });	
 
 <span class="comment">//Create an sqlTable for the table 'people', using the above sqlDbAccess</span>   

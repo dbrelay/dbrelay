@@ -259,6 +259,12 @@ dbrui.App = function(){
 								if(!this.sqlDb){  
 									//create sqlDb object
 									this.sqlDb = sqlDbAccess(conncfg); 
+									//add echosql by default
+									this.sqlDb.setFlag('echosql', true);
+									//pretty print option      
+									this.sqlDb.setFlag('pp', conncfg.flags_pp ); 
+									delete conncfg.flags_pp;   
+									
                   //open a SQL panel by default
 									this.addSqlPanel(this.restoredConnection.sql);
 					       }
@@ -267,23 +273,30 @@ dbrui.App = function(){
 								 else {      
 										//see if info has changed
 										var changed = false, oldconn = this.sqlDb.connection;
-									 
-									  for(var p in conncfg){
-											if( conncfg[p] !==  oldconn[p]){
-												var changed = true;
-												break;
-											}
+									  
+										if(conncfg.sql_server !== oldconn.sql_server ||
+											 conncfg.sql_database !== oldconn.sql_database || 
+											conncfg.sql_user !== oldconn.sql_user){
+											 
+											changed = true;
 										}
 										
+									 
 										if(!changed){
 											return true;
 										}
 										else {  
 											         
-											Ext.Msg.confirm('Confirm connection info change','Changing the connection information will close any openend table editor tabs.  Do you want to continue?',
+											Ext.Msg.confirm('Confirm connection info change', 'Changing the connection information will close any openend table editor tabs.  Do you want to continue?',
 											 function(btn, text){      
 													if(btn == 'yes'){
-														this.sqlDb.connection = Ext.apply(oldconn, conncfg);                             
+														this.sqlDb.connection = Ext.apply(oldconn, conncfg);      
+														//add echosql by default
+														this.sqlDb.setFlag('echosql', true);
+														//pretty print option      
+														this.sqlDb.setFlag('pp', conncfg.flags_pp );      
+														delete conncfg.flags_pp;
+														                       
 														//remove existing table editors 
 														var tables = this.tables;
 														for( var n in tables ){

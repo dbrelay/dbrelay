@@ -39,8 +39,9 @@ doc/SQL_query_interface.html \
 doc/viaduct_architecture.graffle \
 doc/viaduct_architecture.pdf \
 doc/viaduct_specification.html \
-eg/inlinetable_example.html \
-eg/python_example.html \    
+eg/inlinetable_example.html \   
+eg/dbrelay_interactive_xss.html \
+eg/python_example.html \ 
 images/application-split-vertical.png \
 images/application.png \
 images/binocular.png \
@@ -67,7 +68,8 @@ images/question.png \
 images/refresh.gif \
 images/script-attribute-s.png \
 images/spinner.gif \
-images/table.png \
+images/table.png \  
+images/table-export.png \  
 images/tables.png \
 images/tick.png \
 js/ext-3.0.0/adapter/jquery/ext-jquery-adapter.js \

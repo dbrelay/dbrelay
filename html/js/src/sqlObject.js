@@ -8,16 +8,25 @@
 
 
 
-function viaductQuery( connection, sql, callback, query_tag) {
-  connection[ "sql" ] = sql;
-  if ( query_tag !== undefined ) connection[ "query_tag" ] = query_tag;
+function dbrelayQuery( connection, sql, callback, query_tag) {
+  //copy connection info into params
+	var params = {
+		sql: sql,
+		query_tag: query_tag || null
+	};
+	
+	for(var k in connection){
+		if(k !== 'dbrelay_host'){
+			params[k] = connection[k];       
+		}
+	}
+
 	if(connection.dbrelay_host){           
-		jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', connection , callback);   
+		jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', params , callback);   
 	} 
 	else{
-		$.post( '/sql', connection, callback, "json" );    
+		$.post( '/sql', params, callback, "json" );    
 	}  
-	
 };
 
 sqlObject = function() { // Module pattern, called immediately
@@ -91,7 +100,7 @@ sqlObject = function() { // Module pattern, called immediately
   return function ( connection, sql_queries ) {  
 
     function exec( query, callback, tag ) {
-      viaductQuery( connection, query, function(response){
+      dbrelayQuery( connection, query, function(response){
         if (response.log.error) {
           throwError( "sqlError", response.log.error, {
             request: response.request,

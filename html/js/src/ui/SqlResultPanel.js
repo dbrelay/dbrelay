@@ -94,7 +94,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 					{
 						xtype:'displayfield',
 						fieldLabel:'',
-						id:'url'+idpfx
+						id:'url'+idpfx,
+						style:'font-size:10px;'
 					}
 				], 
 				
@@ -181,6 +182,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 				conn.query_tag = null;        
 				//don't pass password     
 				conn.sql_password = null;
+
 
 				var sqlUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
 		        + Ext.urlEncode(conn) + '&' + window.location.hash;   

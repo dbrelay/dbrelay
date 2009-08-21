@@ -114,7 +114,6 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 								allowBlank:false, 
 								selectOnFocus:true,  
 								value:defaultConn.sql_user ||'',    
-							  //value:'sa',  
 								enableKeyEvents:true,
 								listeners:{
 									'keyup':{
@@ -185,6 +184,11 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 										scope:this
 									 }
 								}
+							},
+							{
+								xtype:'checkbox',         
+								fieldLabel:'Pretty Print JSON',
+								id:'flags_pp'+ _idpfx
 							}
 							
 						]
@@ -220,7 +224,9 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 			sql_user : this.findById('sql_user'+ _idpfx),
 			sql_password : this.findById('sql_password'+ _idpfx),
 			connection_name : this.findById('connection_name'+ _idpfx),
-			connection_timeout : this.findById('connection_timeout'+ _idpfx)
+			connection_timeout : this.findById('connection_timeout'+ _idpfx),
+			
+			flags_pp : this.findById('flags_pp'+ _idpfx)
 		};
 		
 		this.addEvents({    
@@ -249,7 +255,9 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 				sql_user : this.fields['sql_user'].getValue(),
 				sql_password : this.fields['sql_password'].getValue(),  
 				connection_name : this.fields['connection_name'].getValue(),
-				connection_timeout : this.fields['connection_timeout'].getValue()
+				connection_timeout : this.fields['connection_timeout'].getValue(),
+				
+				flags_pp : this.fields['flags_pp'].getValue()
 			};
       
 			//save to caches
@@ -257,7 +265,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
              
 	    //TODO: test connection
 			var testDb = new sqlDbAccess(values); 
-	    testDb.testConnection(function(sqld, success){
+	    testDb.testConnection(function(success){
 			   if(success){    
 						if(this.fireEvent('connectionupdate', this, values)){  
 							this.hide();

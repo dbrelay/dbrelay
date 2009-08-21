@@ -62,7 +62,18 @@ sqlTable = function(){
 				
 				this);                    
 				
-			},     
+			}, 
+			
+			//dbrui.App.tables.sample.sqlTable.queryColumns2()
+			queryColumns2 : function(callback, scope){
+				this.sqlDb.adminQuery({cmd:'columns', param0: table}, function(resp){  
+					  console.dir(resp);
+					
+					 	if (callback) {
+	        		callback.call(scope || window, this, resp);
+	        	}
+				 }, this);
+			},    
 			
 			/**
 				Fetches all columns for all rows.  Wrapper for fetchRows 
@@ -367,8 +378,20 @@ sqlTable = function(){
 					    callback.call(scope || window, this, resp, keys);  
 					 }
 				});
+			},   
+			
+			//dbrui.App.tables.sample.sqlTable.queryColumns2()
+			queryPrimaryKeys2 : function(callback, scope){
+				this.sqlDb.adminQuery({cmd:'pkey', param0: table}, function(resp){  
+					  console.dir(resp);
+					
+					 	if (callback) {
+	        		callback.call(scope || window, this, resp);
+	        	}
+				 }, this);
 			},
-     
+			
+
   		/** 
 			Queries for the total number of records in the table that meet an optional condition
 			@param cfg : configuration for this query.  Options are:

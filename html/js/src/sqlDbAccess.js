@@ -10,7 +10,9 @@ sqlDbAccess = function(){
 		
 		var _sqlDbAccess = function(){
 			var cn = connection.connection_name;
-			connection.connection_name = (cn && cn !== '') ? cn : '';  
+			connection.connection_name = (cn && cn !== '') ? cn : '';   
+			connection.flags = connection.flags || '';
+
 
 			//Create the sqlObject
 			this.so =sqlObject( connection , {
@@ -25,12 +27,6 @@ sqlDbAccess = function(){
 					"drop table {{{table}}}",
 					this._onVerb
 				],
-				
-				list_tables : [
-					"select * from INFORMATION_SCHEMA.tables where TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME ASC",
-					this._onVerb
-				],
-				
 				
 				/* generic Table specific actions */
 				
@@ -74,17 +70,6 @@ sqlDbAccess = function(){
 					+" WHERE dbrelayRowNum BETWEEN {{{minRow}}} and {{{maxRow}}}",
 					this._onVerb
 				],
-				
-				/*fetch_paged_rows: [
-				  "select * from ("
-				 +"select top {{{pagingSize}}} {{{columns}}} from ( "
-				 +"    select top {{{absMax}}} {{{columns}}} "
-				 +"     from {{{table}}} {{{where}}}"
-				 +"    order by {{{orderBy}}} asc"
-				 +"  ) as newtbl {{{where}}} order by {{{orderBy}}} desc"
-				 +" ) as newtbl2 order by {{{orderBy}}} asc",
-					this._onVerb
-				],     */
 				
 				get_primary_keys :[
 					"select 	c.COLUMN_NAME " 
@@ -161,15 +146,43 @@ sqlDbAccess = function(){
 						
 				@param {Object} scope of callback
 			*/ 
-			testConnection : function(callback, scope){
-				this.run('list_tables',{}, function(resp){
+			testConnection : function(callback, scope){ 
+				this.getTables(function(resp){
 
 					 if(callback){
 					    callback.call(scope || window, this, resp.data ? true : false);  
 					 }
 
 				}, this);
+			},      
+			
+			/**
+			Sets a value for a flag.  Current flags are:
+			  pp  - pretty print json
+			  echosql - echo SQL 
+			
+			@param flag {string} flag name
+			@param on {bool} true to turn it on, false to turn it off
+			*/
+			setFlag : function( flag, on ){
+				var flags = this.connection.flags + ';', isInFlags = flags.indexOf(flag + ';') !== -1;
+				
+				if(on){ 
+					//not in flags, and want to turn it on 
+					if(!isInFlags){    
+						this.connection.flags +=  ';' + flag;
+					}
+				} 
+				
+				//turn off       
+				else{     
+					if(isInFlags){                 
+						this.connection.flags = flags.replace( flag + ';' ,'');
+					}
+				}
+
 			},
+			
 			
 			/**
 				Executes arbitrary sql code
@@ -180,13 +193,44 @@ sqlDbAccess = function(){
 				@param {Object} scope of callback
 			*/
 			executeSql: function(sql, callback, scope){
-			  	viaductQuery( this.connection, sql, function(resp){
+			  	dbrelayQuery( this.connection, sql, function(resp){
 		        if (callback) {
 		        	callback.call(scope || window, this, resp);
 		        }      
 	      });
+			},       
+		 
+		/**
+		Executes an admin query (i.e. list tables)
+		@param params {Object} object of additional parameters from the connection info
+		*/ 
+			adminQuery : function(params, callback, scope){   
+				//copy connection info into params
+				for(var k in this.connection){
+					if(k !== 'dbrelay_host' && k!=='sql'){
+						params[k] = this.connection[k];       
+					}
+				}
+				
+				//xss consideration
+				var dbrhost = this.connection.dbrelay_host;
+				
+				if(dbrhost){           
+					jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , function(data){
+							if (callback) {
+		        		callback.call(scope || window, data);
+		        	}
+					});   
+				} 
+				else{
+					$.post( '/sql', params, function(data){
+							if (callback) {
+		        		callback.call(scope || window, data);
+		        	}
+					}, "json" );    
+				}
 			},
-			
+		 
 			/**
 				Queries for a list of tables in this database.
 				
@@ -196,21 +240,23 @@ sqlDbAccess = function(){
 						@cbparam {Array} array of table names
 						
 				@param {Object} scope of callback
-			*/
+			*/ 
 			getTables : function(callback, scope){
-				this.run('list_tables', {}, function(resp){
-					 var rows = resp.data[0].rows, tableNames =[]; 
+				 this.adminQuery({cmd:'tables'}, function(resp){  
+					  var rows = resp.data[0].rows, tableNames =[]; 
 
-					 for(var i=0; i<rows.length; i++){
-						 tableNames[i] = rows[i].TABLE_NAME;
-					 }
+					 	for(var i=0; i<rows.length; i++){
+						 	tableNames[i] = rows[i].TABLE_NAME;
+					 	}
 					
-					 if(callback){
-					    callback.call(scope || window, this, resp, tableNames);  
-					 }
-				}, this);
-			}, 
-		 
+					 	if (callback) {
+	        		callback.call(scope || window, this, resp, tableNames);
+	        	}
+				 }, this);
+
+			},
+			
+
 			/**
 				Creates a new table on this database
 				
