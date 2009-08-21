@@ -27,6 +27,7 @@ function dbrelayQuery( connection, sql, callback, query_tag) {
 	else{
 		$.post( '/sql', params, callback, "json" );    
 	}  
+
 };
 
 sqlObject = function() { // Module pattern, called immediately
