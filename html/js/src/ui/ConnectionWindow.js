@@ -93,7 +93,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 								allowBlank:true,
 								selectOnFocus:true, 
 								value:defaultConn.sql_database ||'',
-								//value:'viaducttest',
+							//	value:'viaducttest',
 								enableKeyEvents:true,
 								listeners:{
 									'keyup':{

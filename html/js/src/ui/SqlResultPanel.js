@@ -161,7 +161,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 	  this.sqlDb.executeSql(this.fldSqlCode.getValue(), function(sqld, resp){        
 
 			//show results
-			if(resp.log.error){
+			if(resp.log.error || !resp.data){
 				this.showMsgPanel('<p style="color:red">Error:</p><pre style="color:red">'+resp.log.error+'</pre>');      
 				this.centerRegion.body.unmask();  
 			}

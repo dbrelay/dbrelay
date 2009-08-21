@@ -181,8 +181,13 @@ sqlObject = function() { // Module pattern, called immediately
 
       run_batch: function( batch_name, callback ){
         exec( batches.get( batch_name ), callback, this);
-        batches.empty( batch_name );
-      }
+        batches.empty( batch_name );      
+      },
+                           
+			/** returns string of statements in a batch */
+			get_batch: function(batch_name){
+				return batches.get( batch_name );
+			}
     };
 
     return (new sqlObjectConstructor());

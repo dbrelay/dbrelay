@@ -28,6 +28,18 @@ sqlDbAccess = function(){
 					this._onVerb
 				],
 				
+				commit_transaction : [
+						"BEGIN TRANSACTION "
+						+"BEGIN TRY "
+						+" {{{statements}}} "
+						+"    COMMIT TRANSACTION "
+						+"END TRY "
+						+"BEGIN CATCH "
+						+"   ROLLBACK TRANSACTION "
+						+"END CATCH", 
+					this._onVerb
+				],
+				
 				/* generic Table specific actions */
 				
 				
@@ -193,12 +205,54 @@ sqlDbAccess = function(){
 				@param {Object} scope of callback
 			*/
 			executeSql: function(sql, callback, scope){
-			  	dbrelayQuery( this.connection, sql, function(resp){
+			  	dbrelayQuery( this.connection, sql, function(resp){ 
+						if(resp.data){
+							_log.push('<p style="color:blue">'+resp.log.sql + '</p>');
+						}
+						else{
+							_log.push('<p style="color:red">FAIL: ('+ (resp.log.error || 'Unknown Reason') +')' + resp.log.sql + '</p>');   
+						}
+						
 		        if (callback) {
 		        	callback.call(scope || window, this, resp);
 		        }      
 	      });
-			},       
+			},   
+			
+			/**
+			Wrapper for commitTransaction, except with a batch name 
+			*/
+			commitBatchTransaction : function(batch, callback, scope){
+				this.commitTransaction( this.getBatch(batch), callback, scope );
+			},  
+			
+			
+			getBatch : function(batch){
+				return this.so.get_batch(batch);
+			},     
+			
+			emptyBatch : function(batch){
+				this.so.empty_batch(batch);
+			},
+			  
+			/**  Commit a batch transaction, rolling back on any errors
+			@param {string} statements : statements to run
+			
+			@param {function} callback : optional callback function.
+					@cbparam {sqlDbAccess} this
+					@cbparam {Object} raw json response from server
+			@param {Object} scope of callback
+			*/
+			commitTransaction : function(statements, callback, scope){  
+
+        this.run('commit_transaction',{statements: statements}, function(resp){  
+	
+						 if(callback){
+						   callback.call(scope || window, this, resp);  
+						 }
+				 }, this);
+				
+			},    
 		 
 		/**
 		Executes an admin query (i.e. list tables)
@@ -295,6 +349,7 @@ sqlDbAccess = function(){
 			dropTable: function(table, callback, scope){
 				 this.run('drop_table',{table:table},callback, scope);
 			},
+			
 			
 			
 			/* private - default verb handler */

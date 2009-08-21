@@ -425,48 +425,55 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				updatedRecs.push(rec);  
 			}
 		}                      
-	
-	 //delete first.  run update on callback
-		if(!this.disableDelete && deleteRows.length > 0){
-			this.sqlTable.deleteRows(deleteRows, function(sqlt, resp){
-			  if(resp.data){
-				 	//delete from UI, don't refresh
-					for(var i=0;i<removedRecs.length;i++){
-				   this.grid.getStore().remove(removedRecs[i]);
-					} 
-					
-				}
-					
-					
-			},this);
+	                                         
+		var sqlTable = this.sqlTable, sqlDb = sqlTable.sqlDb, sqlStatements = "";
+		
+	 //delete
+		if(!this.disableDelete && deleteRows.length > 0){  
+			var batch = sqlTable.setDeleteRowsBatch(deleteRows);
+			sqlStatements += sqlDb.getBatch(batch)+ ';';       
+			//don't need this batch anymore
+			sqlDb.emptyBatch(batch);
 	  }
 	
-		//next run add
+		//add
 		if(addRows.length > 0){
-		  this.sqlTable.addRows(addRows, function(sqlt, resp){     
-				if(resp.data){
-					for(var i=0;i<addedRecs.length;i++){
-				  	addedRecs[i].commit();
-					}    
-				}    
-			}, this);
+		  var batch = sqlTable.setAddRowsBatch(addRows);
+			sqlStatements += sqlDb.getBatch(batch)+ ';';       
+			//don't need this batch anymore
+			sqlDb.emptyBatch(batch);
 	  }
 	
-		//run update last
+		// update
 		if( updateRows.length > 0){ 
-			 this.sqlTable.updateRows(updateRows, updateWhereRows, function(sqlt, resp){
-				  if(resp.data){    
-						for(var i=0;i<updatedRecs.length;i++){
-					  	updatedRecs[i].commit();
-						}     
-						
-
-					}
-
-				},this);      
-				
-				
+			var batch = sqlTable.setUpdateRowsBatch(updateRows, updateWhereRows);
+			sqlStatements += sqlDb.getBatch(batch) + ';';       
+			//don't need this batch anymore
+			sqlDb.emptyBatch(batch);   
+		}  
+		
+		if(sqlStatements !== ''){
+			Ext.Msg.alert("Table was successfully updated");
+			//run it!  woohoo!
+			sqlDb.commitTransaction( sqlStatements , function(sdb, resp){
+				 //success cleanup
+				for(var i=0;i<removedRecs.length;i++){
+			   this.grid.getStore().remove(removedRecs[i]);
+				}        
+				for(var i=0;i<addedRecs.length;i++){
+			  	addedRecs[i].commit();
+				}  
+				for(var i=0;i<updatedRecs.length;i++){
+			  	updatedRecs[i].commit();
+				}
+			}, this);
+			
+			
 		}
+		
+		     
+		
+		
 		         
 
 	},  

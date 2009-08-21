@@ -210,7 +210,23 @@ sqlTable = function(){
 				
 			*/
       addRows : function(rows, callback, scope) {    
-				if(rows.length === 0){return;}
+				var batch = this.setAddRowsBatch(rows);    
+				if(!batch){return;}
+
+				//run batch 
+				sqlDb.commitBatchTransaction( batch , function(sdb, resp){
+						//empty batch when done
+					 sqlDb.emptyBatch(batch);                
+					 	if(callback){
+						   callback.call(scope || window, this, resp);  
+						 }
+				}, this);
+			},   
+			
+			/** Created solely for commit transaction.
+			*/
+			setAddRowsBatch : function(rows) {    
+				if(rows.length === 0){return false;}
 				var batch = 'add' + new Date().getTime();  
 				 
 				for(var i=0,len=rows.length; i<len; i++){
@@ -229,16 +245,7 @@ sqlTable = function(){
 					}, batch );
         }
 
-				//run batch 
-				try{
-	         sqlDb.so.run_batch(batch, function(resp){  
-						  sqlDb.so.empty_batch(batch);    
-					
-						 if(callback){
-						   callback.call(scope || window, this, resp);  
-						 }
-					});
-				}catch(e){}
+				return batch;
 			},
 			
 			/**   SQL'ify a string value
@@ -262,8 +269,23 @@ sqlTable = function(){
 				@param {Object} scope : scope of callback function (defaults to global scope)  
 			*/
 			deleteRows : function(rows, callback, scope){
-
-				if(rows.length === 0){return;}
+        var batch = this.setDeleteRowsBatch(rows);    
+				if(!batch){return;}     
+				
+				//run batch 
+				sqlDb.commitBatchTransaction( batch , function(sdb, resp){
+						//empty batch when done
+					 sqlDb.emptyBatch(batch);                
+					 	if(callback){
+						   callback.call(scope || window, this, resp);  
+						 }
+				}, this);     
+			},   
+			
+			/** Created solely for commit transaction.
+			*/
+			setDeleteRowsBatch : function(rows){
+				if(rows.length === 0){return false;}
 				
 				var batch = 'delete' + new Date().getTime();  
 				 
@@ -281,17 +303,7 @@ sqlTable = function(){
 					}, batch );
         }
         
-				//run batch 
-				try{
-	         sqlDb.so.run_batch(batch, function(resp){  
-	
-						  sqlDb.so.empty_batch(batch);    
-					
-						 if(callback){
-						   callback.call(scope || window, this, resp);  
-						 }
-					});
-				}catch(e){}      
+				return batch;   
 			},
 			
 			/** Batch update table rows.  This function assumes each row to be updated have the same where column(s), and that all WHERE clauses are AND'd together.
@@ -306,7 +318,23 @@ sqlTable = function(){
 			@param {Object} scope : scope of callback function (defaults to global scope)
 			*/
 		 	updateRows : function(set, wheres, callback, scope){
-				if(set.length === 0){return;}  
+				var batch = this.setUpdateRowsBatch(set, wheres);    
+				if(!batch){return;}
+   			
+				sqlDb.commitBatchTransaction( batch , function(sdb, resp){
+						//empty batch when done
+					 sqlDb.emptyBatch(batch);                 
+					 	if(callback){
+						   callback.call(scope || window, this, resp);  
+						 }
+				}, this);       
+				
+      },  
+      
+			/** Created solely for commit transaction.
+			*/  
+			setUpdateRowsBatch : function(set, wheres){       
+				if(set.length === 0){return false;}  
 
 				var batch = 'update' + new Date().getTime();
 
@@ -331,26 +359,19 @@ sqlTable = function(){
 							where = whereparam.join(' AND '); 
 						} 
 					
-          //add to batch 
+          //use the batch functionality to compile the queries
         	 sqlDb.so.update_row({
 						 table:table,
 						 setvalues : valueparam.join(','),
 						 where : where
-					}, batch );
-        }
-        
-				//run batch
-        try{
-	 					sqlDb.so.run_batch(batch, function(resp){  
-	
-						  sqlDb.so.empty_batch(batch);    
+					}, batch ); 
 					
-						 if(callback){
-						   callback.call(scope || window, this, resp);  
-						 }
-					});
-				}catch(e){}    
-      },
+					
+        } 
+
+				return batch;  
+			},
+			
 
  
 		 /** 
