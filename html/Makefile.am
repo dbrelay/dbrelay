@@ -43,7 +43,8 @@ eg/inlinetable_example.html \
 eg/dbrelay_interactive_xss.html \
 eg/python_example.html \ 
 images/application-split-vertical.png \
-images/application.png \
+images/application.png \     
+images/bullet_arrow_up.png \
 images/binocular.png \
 images/chain.png \
 images/control-180.png \
