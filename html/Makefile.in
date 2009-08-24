@@ -13,6 +13,7 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -29,6 +30,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+noinst_PROGRAMS = js/dbrelay-core-min.js$(EXEEXT) \
+	js/dbrelay-ui-all-min.js$(EXEEXT) \
+	js/dbrelay-ui-sqltableeditor-min.js$(EXEEXT) \
+	js/dbrelay-ui-sqlresultpanel-min.js$(EXEEXT)
 subdir = html
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -37,8 +42,39 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
-SOURCES =
-DIST_SOURCES =
+PROGRAMS = $(noinst_PROGRAMS)
+js_dbrelay_core_min_js_SOURCES = js/dbrelay-core-min.c
+js_dbrelay_core_min_js_OBJECTS = dbrelay-core-min.$(OBJEXT)
+js_dbrelay_core_min_js_LDADD = $(LDADD)
+am__dirstamp = $(am__leading_dot)dirstamp
+js_dbrelay_ui_all_min_js_SOURCES = js/dbrelay-ui-all-min.c
+js_dbrelay_ui_all_min_js_OBJECTS = dbrelay-ui-all-min.$(OBJEXT)
+js_dbrelay_ui_all_min_js_LDADD = $(LDADD)
+js_dbrelay_ui_sqlresultpanel_min_js_SOURCES =  \
+	js/dbrelay-ui-sqlresultpanel-min.c
+js_dbrelay_ui_sqlresultpanel_min_js_OBJECTS =  \
+	dbrelay-ui-sqlresultpanel-min.$(OBJEXT)
+js_dbrelay_ui_sqlresultpanel_min_js_LDADD = $(LDADD)
+js_dbrelay_ui_sqltableeditor_min_js_SOURCES =  \
+	js/dbrelay-ui-sqltableeditor-min.c
+js_dbrelay_ui_sqltableeditor_min_js_OBJECTS =  \
+	dbrelay-ui-sqltableeditor-min.$(OBJEXT)
+js_dbrelay_ui_sqltableeditor_min_js_LDADD = $(LDADD)
+DEFAULT_INCLUDES = -I.@am__isrc@
+depcomp = $(SHELL) $(top_srcdir)/depcomp
+am__depfiles_maybe = depfiles
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = js/dbrelay-core-min.c js/dbrelay-ui-all-min.c \
+	js/dbrelay-ui-sqlresultpanel-min.c \
+	js/dbrelay-ui-sqltableeditor-min.c
+DIST_SOURCES = js/dbrelay-core-min.c js/dbrelay-ui-all-min.c \
+	js/dbrelay-ui-sqlresultpanel-min.c \
+	js/dbrelay-ui-sqltableeditor-min.c
+ETAGS = etags
+CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -471,6 +507,7 @@ tablesorter/style.css
 all: all-am
 
 .SUFFIXES:
+.SUFFIXES: .c .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -500,12 +537,141 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+js/$(am__dirstamp):
+	@$(MKDIR_P) js
+	@: > js/$(am__dirstamp)
+
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT)
+
+distclean-compile:
+	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-core-min.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-ui-all-min.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-ui-sqltableeditor-min.Po@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+dbrelay-core-min.o: js/dbrelay-core-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-core-min.o -MD -MP -MF $(DEPDIR)/dbrelay-core-min.Tpo -c -o dbrelay-core-min.o `test -f 'js/dbrelay-core-min.c' || echo '$(srcdir)/'`js/dbrelay-core-min.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-core-min.Tpo $(DEPDIR)/dbrelay-core-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-core-min.c' object='dbrelay-core-min.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-core-min.o `test -f 'js/dbrelay-core-min.c' || echo '$(srcdir)/'`js/dbrelay-core-min.c
+
+dbrelay-core-min.obj: js/dbrelay-core-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-core-min.obj -MD -MP -MF $(DEPDIR)/dbrelay-core-min.Tpo -c -o dbrelay-core-min.obj `if test -f 'js/dbrelay-core-min.c'; then $(CYGPATH_W) 'js/dbrelay-core-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-core-min.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-core-min.Tpo $(DEPDIR)/dbrelay-core-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-core-min.c' object='dbrelay-core-min.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-core-min.obj `if test -f 'js/dbrelay-core-min.c'; then $(CYGPATH_W) 'js/dbrelay-core-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-core-min.c'; fi`
+
+dbrelay-ui-all-min.o: js/dbrelay-ui-all-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-all-min.o -MD -MP -MF $(DEPDIR)/dbrelay-ui-all-min.Tpo -c -o dbrelay-ui-all-min.o `test -f 'js/dbrelay-ui-all-min.c' || echo '$(srcdir)/'`js/dbrelay-ui-all-min.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-ui-all-min.Tpo $(DEPDIR)/dbrelay-ui-all-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-ui-all-min.c' object='dbrelay-ui-all-min.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-all-min.o `test -f 'js/dbrelay-ui-all-min.c' || echo '$(srcdir)/'`js/dbrelay-ui-all-min.c
+
+dbrelay-ui-all-min.obj: js/dbrelay-ui-all-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-all-min.obj -MD -MP -MF $(DEPDIR)/dbrelay-ui-all-min.Tpo -c -o dbrelay-ui-all-min.obj `if test -f 'js/dbrelay-ui-all-min.c'; then $(CYGPATH_W) 'js/dbrelay-ui-all-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-ui-all-min.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-ui-all-min.Tpo $(DEPDIR)/dbrelay-ui-all-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-ui-all-min.c' object='dbrelay-ui-all-min.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-all-min.obj `if test -f 'js/dbrelay-ui-all-min.c'; then $(CYGPATH_W) 'js/dbrelay-ui-all-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-ui-all-min.c'; fi`
+
+dbrelay-ui-sqlresultpanel-min.o: js/dbrelay-ui-sqlresultpanel-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-sqlresultpanel-min.o -MD -MP -MF $(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Tpo -c -o dbrelay-ui-sqlresultpanel-min.o `test -f 'js/dbrelay-ui-sqlresultpanel-min.c' || echo '$(srcdir)/'`js/dbrelay-ui-sqlresultpanel-min.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Tpo $(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-ui-sqlresultpanel-min.c' object='dbrelay-ui-sqlresultpanel-min.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-sqlresultpanel-min.o `test -f 'js/dbrelay-ui-sqlresultpanel-min.c' || echo '$(srcdir)/'`js/dbrelay-ui-sqlresultpanel-min.c
+
+dbrelay-ui-sqlresultpanel-min.obj: js/dbrelay-ui-sqlresultpanel-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-sqlresultpanel-min.obj -MD -MP -MF $(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Tpo -c -o dbrelay-ui-sqlresultpanel-min.obj `if test -f 'js/dbrelay-ui-sqlresultpanel-min.c'; then $(CYGPATH_W) 'js/dbrelay-ui-sqlresultpanel-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-ui-sqlresultpanel-min.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Tpo $(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-ui-sqlresultpanel-min.c' object='dbrelay-ui-sqlresultpanel-min.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-sqlresultpanel-min.obj `if test -f 'js/dbrelay-ui-sqlresultpanel-min.c'; then $(CYGPATH_W) 'js/dbrelay-ui-sqlresultpanel-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-ui-sqlresultpanel-min.c'; fi`
+
+dbrelay-ui-sqltableeditor-min.o: js/dbrelay-ui-sqltableeditor-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-sqltableeditor-min.o -MD -MP -MF $(DEPDIR)/dbrelay-ui-sqltableeditor-min.Tpo -c -o dbrelay-ui-sqltableeditor-min.o `test -f 'js/dbrelay-ui-sqltableeditor-min.c' || echo '$(srcdir)/'`js/dbrelay-ui-sqltableeditor-min.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-ui-sqltableeditor-min.Tpo $(DEPDIR)/dbrelay-ui-sqltableeditor-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-ui-sqltableeditor-min.c' object='dbrelay-ui-sqltableeditor-min.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-sqltableeditor-min.o `test -f 'js/dbrelay-ui-sqltableeditor-min.c' || echo '$(srcdir)/'`js/dbrelay-ui-sqltableeditor-min.c
+
+dbrelay-ui-sqltableeditor-min.obj: js/dbrelay-ui-sqltableeditor-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-sqltableeditor-min.obj -MD -MP -MF $(DEPDIR)/dbrelay-ui-sqltableeditor-min.Tpo -c -o dbrelay-ui-sqltableeditor-min.obj `if test -f 'js/dbrelay-ui-sqltableeditor-min.c'; then $(CYGPATH_W) 'js/dbrelay-ui-sqltableeditor-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-ui-sqltableeditor-min.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/dbrelay-ui-sqltableeditor-min.Tpo $(DEPDIR)/dbrelay-ui-sqltableeditor-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='js/dbrelay-ui-sqltableeditor-min.c' object='dbrelay-ui-sqltableeditor-min.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-sqltableeditor-min.obj `if test -f 'js/dbrelay-ui-sqltableeditor-min.c'; then $(CYGPATH_W) 'js/dbrelay-ui-sqltableeditor-min.c'; else $(CYGPATH_W) '$(srcdir)/js/dbrelay-ui-sqltableeditor-min.c'; fi`
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -fID $$unique
 tags: TAGS
-TAGS:
 
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	if test -z "$(ETAGS_ARGS)$$tags$$unique"; then :; else \
+	  test -n "$$unique" || unique=$$empty_fix; \
+	  $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	    $$tags $$unique; \
+	fi
 ctags: CTAGS
-CTAGS:
+CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(CTAGS_ARGS)$$tags$$unique" \
+	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
+	     $$tags $$unique
 
+GTAGS:
+	here=`$(am__cd) $(top_builddir) && pwd` \
+	  && cd $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) $$here
+
+distclean-tags:
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
@@ -535,7 +701,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile
+all-am: Makefile $(PROGRAMS)
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -557,17 +723,20 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-rm -f js/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic mostlyclean-am
+clean-am: clean-generic clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-tags
 
 dvi: dvi-am
 
@@ -598,12 +767,13 @@ install-ps: install-ps-am
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-generic
+mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
 pdf: pdf-am
 
@@ -617,19 +787,19 @@ uninstall-am:
 
 .MAKE: install-am install-strip
 
-.PHONY: all all-am check check-am clean clean-generic distclean \
-	distclean-generic distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am \
-	install-data-local install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
-	pdf-am ps ps-am uninstall uninstall-am
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-noinstPROGRAMS ctags distclean distclean-compile \
+	distclean-generic distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-data-local install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am
 
-
-all: js/dbrelay-core-min.js js/dbrelay-ui-all-min.js js/dbrelay-ui-sqltableeditor-min.js js/dbrelay-ui-sqlresultpanel-min.js 
 
 js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
 	cat $? | $(JSMIN) > $@

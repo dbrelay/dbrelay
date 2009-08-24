@@ -3,7 +3,7 @@ htmldir = $(prefix)/html
 JSMIN=../util/jsmin
 JSSRC=js/src
 
-all: js/dbrelay-core-min.js js/dbrelay-ui-all-min.js js/dbrelay-ui-sqltableeditor-min.js js/dbrelay-ui-sqlresultpanel-min.js 
+noinst_PROGRAMS = js/dbrelay-core-min.js js/dbrelay-ui-all-min.js js/dbrelay-ui-sqltableeditor-min.js js/dbrelay-ui-sqlresultpanel-min.js 
 
 js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
 	cat $? | $(JSMIN) > $@
