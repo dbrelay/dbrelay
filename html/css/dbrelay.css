@@ -145,4 +145,7 @@ label{
 }  
 .icon-html{
 	background-image: url('../images/html.png') !important;    
+}      
+.icon-disconnect{
+	background-image: url('../images/plug.png') !important;    
 }

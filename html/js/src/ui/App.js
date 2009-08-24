@@ -125,7 +125,15 @@ dbrui.App = function(){
 											text:'Documentation Home',
 											iconCls:'icon-doc', 
 											handler:function(){window.open('/doc/index.html');}    
-										},  
+										}, 
+										{
+												text:'Status Window',
+												iconCls:'icon-monitor',
+												handler:function(){
+													this.showStatusWindow(true);
+												},
+												scope:this
+										}, 
 										'-',
 										{
 												text:'Viaduct Status',
@@ -240,6 +248,16 @@ dbrui.App = function(){
 			}
 	    
 			this.createTableWindow.setVisible(show);
+		}, 
+		
+		showStatusWindow : function(show){
+			if(!show && !this.statusWindow){return;}
+			
+  		if(!this.statusWindow){
+				this.statusWindow = new dbrui.StatusWindow();
+			}
+	    
+			this.statusWindow.setVisible(show);
 		},
 		
      /* Create the connection window (if needed), and show/hide it
@@ -260,7 +278,7 @@ dbrui.App = function(){
 									//create sqlDb object
 									this.sqlDb = sqlDbAccess(conncfg); 
 									//add echosql by default
-									this.sqlDb.setFlag('echosql', true);
+								 // this.sqlDb.setFlag('echosql', true);
 									//pretty print option      
 									this.sqlDb.setFlag('pp', conncfg.flags_pp ); 
 									delete conncfg.flags_pp;   
@@ -292,7 +310,7 @@ dbrui.App = function(){
 													if(btn == 'yes'){
 														this.sqlDb.connection = Ext.apply(oldconn, conncfg);      
 														//add echosql by default
-														this.sqlDb.setFlag('echosql', true);
+													//	this.sqlDb.setFlag('echosql', true);
 														//pretty print option      
 														this.sqlDb.setFlag('pp', conncfg.flags_pp );      
 														delete conncfg.flags_pp;
