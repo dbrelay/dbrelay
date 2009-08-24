@@ -28,8 +28,45 @@ function dbrelayQuery( connection, sql, callback, query_tag) {
 		$.post( '/sql', params, callback, "json" );    
 	}  
 
-};
+}; 
+ 
+/**
+Cross-domain compatible dbrelay status call
+@param callback {function} callback function
+@param dbrhost {string} optional dbrelay host (xss) in format "http(s)://hostname"
+*/
+function dbrelayStatus(callback, dbrhost) {
+	var params = {
+		status: 1
+	};
 
+	if(dbrhost){           
+		jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , callback);   
+	} 
+	else{
+		$.post( '/sql', params, callback, "json" );    
+	}  
+};
+      
+
+/**
+Cross-domain compatible dbrelay kill connection
+@param callback {function} callback function
+@param dbrhost {string} optional dbrelay host (xss) in format "http(s)://hostname"
+*/
+function dbrelayKillConnection(sockpath, callback, dbrhost) {
+	var params = {
+		cmd: 'kill',
+		param0 : sockpath
+	};
+
+	if(dbrhost){           
+		jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , callback);   
+	} 
+	else{
+		$.post( '/sql', params, callback, "json" );    
+	}  
+};
 sqlObject = function() { // Module pattern, called immediately
 
   function throwError( name, message, body, hard ) {

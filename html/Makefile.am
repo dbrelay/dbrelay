@@ -8,7 +8,7 @@ noinst_PROGRAMS = js/dbrelay-core-min.js js/dbrelay-ui-all-min.js js/dbrelay-ui-
 js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
 	cat $? | $(JSMIN) > $@
 
-js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
+js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
 	cat $? | $(JSMIN) > $@
 
 js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/SqlTableEditor.js
@@ -64,6 +64,7 @@ images/html.png \
 images/information.png \
 images/monitor.png \
 images/pencil.png \
+images/plug.png \
 images/plus-circle.png \
 images/question.png \
 images/refresh.gif \
