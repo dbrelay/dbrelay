@@ -185,7 +185,6 @@ sqlTable = function(){
 				
 					//sqlDbAccess callback 
 					function(results){
-
 						//final callback
 						if(callback){
 							callback.call(scope || window, this, results, cfg);

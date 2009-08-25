@@ -38,6 +38,25 @@ sqlDbAccess = function(){
 						+"   ROLLBACK TRANSACTION "
 						+"END CATCH", 
 					this._onVerb
+				],  
+				
+				get_rowcounts:[
+					"SELECT t.name, sum(p.rows) as [rows] "
+						+"FROM   sys.tables t "
+						+"JOIN   sys.indexes i "
+						+"ON     t.object_id = i.object_id "
+						+"JOIN   sys.partitions p "
+						+"ON     i.object_id = p.object_id "
+						+"AND    i.index_id = p.index_id "
+						+"WHERE  i.index_id in (0,1) "
+						+"group by t.name "
+						+"ORDER BY SUM(P.ROWS) DESC",
+						this._onVerb
+				],  
+				
+				get_columncounts:[
+					"SELECT TABLE_NAME, COUNT(COLUMN_NAME) as 'columns' FROM INFORMATION_SCHEMA.COLUMNS GROUP BY TABLE_NAME ",
+					this._onVerb
 				],
 				
 				/* generic Table specific actions */
@@ -92,7 +111,7 @@ sqlDbAccess = function(){
 						+"and	c.TABLE_NAME = pk.TABLE_NAME "
 						+"and	c.CONSTRAINT_NAME = pk.CONSTRAINT_NAME",
 						this._onVerb   
-			 	],
+			 	],      
 			
 			 	update_row :[
 					 "UPDATE {{{table}}} SET {{{setvalues}}} WHERE {{{where}}}",
@@ -135,7 +154,7 @@ sqlDbAccess = function(){
 						_log.push('<p style="color:red">FAIL: ('+ (results.log.error || 'Unknown Reason') +')' + results.log.sql + '</p>');   
 					}
 					//call callback with defined scope
-					if(callback){
+					if(callback){                          
 						callback.call(scope || window, results);
 					}
 				});
@@ -151,20 +170,26 @@ sqlDbAccess = function(){
 			},
 			    
 			/**
-				Tests the db connection
+				Tests the db connection by running a rows count on all tables
 				@param {function} callback :  callback function.
 						@cbparam {sqlDbAccess} this
 						@cbparam {bool} true if succeeded, false if failed    
 						
 				@param {Object} scope of callback
 			*/ 
-			testConnection : function(callback, scope){ 
-				this.getTables(function(resp){
-
+			testConnection : function(callback, scope){      
+				
+				this.getAllRowCounts(
+					function(dba, resp){
 					 if(callback){
-					    callback.call(scope || window, this, resp.data ? true : false);  
+					    callback.call(scope || window, this, true);  
 					 }
-
+					},
+					//error
+          function(dba, resp){ 
+						 if(callback){
+						    callback.call(scope || window, this, false);  
+						 } 
 				}, this);
 			},      
 			
@@ -254,6 +279,87 @@ sqlDbAccess = function(){
 				
 			},    
 		 
+		/** Query for all tables and number of rows
+		   
+		@param {function} callback : optional success callback function.
+				@cbparam {sqlDbAccess} this
+				@cbparam {Object} raw json response from server 
+				@cbparam {Object} object of key/value pairs (table => number of rows)   
+	 @param {function} errorfn : optional error callback function
+			@cbparam {sqlDbAccess} this
+			@cbparam {Object} raw json response from server      
+		@param {Object} scope of callback
+		*/        
+		 getAllRowCounts : function(callback, errorfn, scope){  
+				this.run('get_rowcounts',{}, function(resp){  
+					if(resp.data){
+						var rows = resp.data[0].rows, countObj = {};  
+						
+						for(var i=0; i<rows.length; i++){  
+							var row = rows[i];
+							
+						 	countObj[row.name] = row.rows;
+					 	}
+						
+					 	if(callback){
+					   	callback.call(scope || window, this, resp, countObj );  
+					 	}
+				  }
+					else{
+						if(errorfn){
+						   errorfn.call(scope || window, this, resp);  
+						 }
+					}
+				 }, this);
+			
+		 },    
+		                                                     
+		/** Query for all tables and number of cells (rows * columns)   
+		@param {function} callback : optional success callback function.
+				@cbparam {sqlDbAccess} this
+				@cbparam {Object} raw json response from server 
+				@cbparam {Object} object of key/value pairs (table => number of cells)   
+	 @param {function} errorfn : optional error callback function
+			@cbparam {sqlDbAccess} this
+			@cbparam {Object} raw json response from server      
+		@param {Object} scope of callback
+		*/
+		 getAllCellCounts : function(callback, errorfn, scope){   
+			//first get row counts     
+			this.getAllRowCounts(
+				//success
+				function(sqld, resp, rowcounts){     
+					  //get column counts
+						this.run('get_columncounts',{}, function(colresp){  
+							if(resp.data){
+								var rows = colresp.data[0].rows, cellCounts = {};  
+
+								for(var i=0; i<rows.length; i++){  
+									var row = rows[i];
+
+								 	cellCounts[row.TABLE_NAME] = rowcounts[row.TABLE_NAME] * row.columns;
+							 	}
+                //final success
+							 	if(callback){
+							   	callback.call(scope || window, this, resp, cellCounts );  
+							 	}
+						  }
+							else{
+								if(errorfn){
+								   errorfn.call(scope || window, this, resp);  
+								 }
+							}
+						 }, this);
+				},                    
+				
+				//error
+				function(sqld, resp){
+					if(errorfn){
+					   errorfn.call(scope || window, this, resp);  
+					 }
+				},
+				this);
+		 },
 		/**
 		Executes an admin query (i.e. list tables)
 		@param params {Object} object of additional parameters from the connection info

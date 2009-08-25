@@ -265,14 +265,15 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
              
 	    //TODO: test connection
 			var testDb = new sqlDbAccess(values); 
-	    testDb.testConnection(function(success){
+	    testDb.testConnection(function(dba, success){  
+
 			   if(success){    
 						if(this.fireEvent('connectionupdate', this, values)){  
 							this.hide();
 				 		}
 				 }
 				else{
-					alert('Couldn\'t connect to database.\nPlease make sure the above information is correct.');
+					Ext.Msg.alert('Something Went Wrong','Couldn\'t connect to database.\nPlease make sure the connection information entered is correct.');
 				}
 			},this); 
 	

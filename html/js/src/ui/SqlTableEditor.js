@@ -122,9 +122,15 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				iconCls:'icon-tableexport',
 				menu:[
 					{
-						text:'Current page to HTML', 
+						text:'Current page view to HTML', 
 						iconCls:'icon-html', 
 						handler:function(){this.exportHtml();},
+						scope:this
+					},
+					{
+						text:'Current page view to CSV',
+						iconCls:'icon-excel',
+						handler:function(){this.exportCSV();},
 						scope:this
 					}
 				]
@@ -467,14 +473,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			  	updatedRecs[i].commit();
 				}
 			}, this);
-			
-			
-		}
-		
-		     
-		
-		
-		         
+		}    
 
 	},  
 	
@@ -758,6 +757,66 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
     win.document.writeln('</body></html>');   
 		win.document.close();
 		
+	},
+	
+	exportCSV : function(){
+		var rows = this.grid.store.data.items, csv='', cols=[], temp = [];   
+
+		var cm = this.grid.getColumnModel();   
+		var numCols = cm.getColumnCount();    
+		
+		function _csv(v){    
+			v += "";
+			return v.replace(/"/g, '"""'); 
+			if(v.indexOf(',')){   
+				return '"' + v + '"';
+			}                      
+			return v;
+			
+		}
+    
+		//start at 1 to ignore the delete box
+		for(var c=1; c<numCols; c++){        
+			//only export the visible columns
+			if(!cm.isHidden(c)){    
+				var cname = cm.getDataIndex(c);
+				cols.push(cname);  
+				temp.push( _csv(cname) );
+			}                          
+		}                            
+		csv += temp.join(',') + '\n';
+		      
+
+		//entire data set
+		for(var i=0, len=rows.length; i<len; i++){
+			temp = [];          
+			var row = rows[i];
+			
+			for(var c=1; c<cols.length; c++){   
+				temp.push( _csv(row.data[cols[c]]) ); 
+			}
+			
+			csv += temp.join(',') + '\n'; 
+		}
+
+		
+		var win = window.open('','',
+		  'width=600,height=500'
+		   +',menubar=0'
+		   +',toolbar=1'
+		   +',status=0'
+		   +',scrollbars=1'
+		   +',resizable=1');
+		
+		
+   /*	win.document.writeln('<html><head><style>');    
+		win.document.writeln('pre{padding:0;margin:0;font-family:Arial, Helvetica, "sans serif";font-size:11px;}');
+		win.document.writeln('</style></head><body><pre>');       */
+		win.document.writeln(csv); 
+	 /* win.document.writeln('</pre></body></html>');     */
+		win.document.close();        
+		
+		Ext.Msg.alert('CSV Generated in Popup Window','Save popup window as .csv file');
 	}
 
 });

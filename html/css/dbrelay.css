@@ -59,6 +59,10 @@ body {
 label{
 	font-size:11px;
 	color:#000099;
+}  
+
+.dbr-largetable{
+	color:#009900;
 }
 
 /* Icons */
@@ -121,7 +125,10 @@ label{
 }  
 .icon-tableexport{
 	background-image: url('../images/table-export.png') !important;
-} 
+}     
+.icon-excel{
+	background-image: url('../images/table-excel.png') !important;
+}
 .icon-log{
 	background-image: url('../images/document-attribute-l.png') !important;
 }
