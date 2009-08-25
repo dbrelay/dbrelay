@@ -299,14 +299,10 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		var cm = this.getColumnModel();   
 		var numCols = cm.getColumnCount();    
 		
-		function _csv(v){
-			v += ""; //stringify first
-			return v.replace(/"/g, '"""'); 
-			if(v.indexOf(',')){   
-				return '"' + v + '"';
-			}                      
-			return v;
-			
+		function _csv(v){    
+			v += "";
+			v =  v.replace(/"/g, '"""');  
+			return '"' + v + '"';	
 		}
     
  

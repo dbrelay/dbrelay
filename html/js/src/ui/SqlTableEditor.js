@@ -767,12 +767,8 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 		
 		function _csv(v){    
 			v += "";
-			return v.replace(/"/g, '"""'); 
-			if(v.indexOf(',')){   
-				return '"' + v + '"';
-			}                      
-			return v;
-			
+			v =  v.replace(/"/g, '"""');  
+			return '"' + v + '"';	
 		}
     
 		//start at 1 to ignore the delete box
