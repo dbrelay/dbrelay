@@ -10,7 +10,7 @@
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE.
+# PARTICULAR PURPOSE.ff
 
 @SET_MAKE@
 
@@ -213,7 +213,7 @@ images/script-attribute-s.png \
 images/spinner.gif \
 images/table.png \
 images/table-export.png \
-images/table-excel.png \ 
+images/table-excel.png \
 images/tables.png \
 images/tick.png \
 js/ext-3.0.0/adapter/jquery/ext-jquery-adapter.js \
