@@ -285,7 +285,11 @@ dbrui.App = function(){
 									delete conncfg.flags_pp;   
 									
                   //open a SQL panel by default
-									this.addSqlPanel(this.restoredConnection.sql);
+									this.addSqlPanel(this.restoredConnection.sql);  
+									
+									//update window title with db name
+									 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
+									 this.refreshTablesMenu();
 					       }
 
 					       //update information
@@ -319,9 +323,19 @@ dbrui.App = function(){
 														//remove existing table editors 
 														var tables = this.tables;
 														for( var n in tables ){
-															this.tables[n].ownerCt.remove(this.tables[n]);  
-															this.tables[n] = null;
-														}
+															try{
+																var table = this.tables[n];
+																table.ownerCt.remove(table);  
+																delete this.tables[n]
+															}
+															catch(e){}
+															}             
+															
+														 //update window title with db name
+														 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
+														 this.refreshTablesMenu();
+															
+															
 														_viewport.doLayout();  
 													} 
 													else{  
@@ -334,9 +348,7 @@ dbrui.App = function(){
  	
 								 }
                    
-								//update window title with db name
-								 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
-								 this.refreshTablesMenu();
+								
 								 return true; 						
 							},
 							scope:this
@@ -495,8 +507,22 @@ dbrui.App = function(){
 
 
             //should these really be in here???  
-						function openTableHandler(item, e){ 
-							this.showTableEditor(item.tableName);
+						function openTableHandler(item, e){  
+							if(item.largeTable){
+								Ext.Msg.confirm('Are you sure?', 'This table has a very large amount of data.  Opening this table for editing may be costly to the database server.  Do you want to continue?',
+								 function(btn, text){      
+										if(btn == 'yes'){
+											this.showTableEditor(item.tableName); 
+										} 
+										else{  
+											return false;
+										}               
+										
+								},this);
+								 
+							}else{  
+								this.showTableEditor(item.tableName);   
+							}
 						}
 
 						function dropTableHandler(item, e){ 
@@ -531,6 +557,7 @@ dbrui.App = function(){
 						 	 _tablesMenuOpen.addMenuItem(	{
 								text:label, 
 								tableName:name,
+								largeTable: cells >= _NUMCELLS_THRESHOLD,
 								iconCls:'icon-table',
 								handler:openTableHandler,  
 								isClicky:true,

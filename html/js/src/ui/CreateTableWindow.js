@@ -137,14 +137,14 @@ dbrui.CreateTableWindow = Ext.extend(Ext.Window,{
 		this.buttons = [
 			{
 				text:'OK',
-				iconCls:'vaicon-tick', 
+				iconCls:'icon-tick', 
 				id:'okbtn'+idpfx,
 				handler: this.onOK,
 				scope:this
 			},
 			{
 				text:'Cancel',
-				iconCls:'vaicon-minus',
+				iconCls:'icon-minus',
 				handler:function(){this.hide()},
 				scope:this
 			}
