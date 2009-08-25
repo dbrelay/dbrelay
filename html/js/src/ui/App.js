@@ -3,6 +3,7 @@ Ext.namespace('dbrui');
 dbrui.App = function(){
    var _viewport;       //private var for viewport object
    var _numSqls = 0;	//count of current SQL panels open 
+	 var _NUMCELLS_THRESHOLD = 20000; //threshold for indicating that a table is very big
 
 	//dynamic tables menus
   var _tablesMenuOpen =  new Ext.menu.Menu();    
@@ -278,7 +279,7 @@ dbrui.App = function(){
 									//create sqlDb object
 									this.sqlDb = sqlDbAccess(conncfg); 
 									//add echosql by default
-								 // this.sqlDb.setFlag('echosql', true);
+								  this.sqlDb.setFlag('echosql', true);
 									//pretty print option      
 									this.sqlDb.setFlag('pp', conncfg.flags_pp ); 
 									delete conncfg.flags_pp;   
@@ -310,7 +311,7 @@ dbrui.App = function(){
 													if(btn == 'yes'){
 														this.sqlDb.connection = Ext.apply(oldconn, conncfg);      
 														//add echosql by default
-													//	this.sqlDb.setFlag('echosql', true);
+														this.sqlDb.setFlag('echosql', true);
 														//pretty print option      
 														this.sqlDb.setFlag('pp', conncfg.flags_pp );      
 														delete conncfg.flags_pp;
@@ -449,99 +450,120 @@ dbrui.App = function(){
 		
 		/** refresh tables lists from server for the open & drop table menus
 		*/
-		refreshTablesMenu : function(){ 
-			//retrieve tables from server
-			this.sqlDb.getTables(function(sqld, res, tableNames){
+		refreshTablesMenu : function(){  
+			//retrieve number of rows from all tables first
+			this.sqlDb.getAllCellCounts(
+				//success
+				function(sqld, resp, cellcounts){  
+           // console.dir(cellcounts);
 
-				_tablesMenuOpen.removeAll();      
-				_tablesMenuDrop.removeAll(); 
-				
-				_tablesMenuOpen.add('Table Name + Enter'); 
-				_tablesMenuOpen.addMenuItem({
-					xtype:'textfield',
-					width:140,
-					enableKeyEvents:true, 
-					selectOnFocus:true,
-					listeners:{
-						'keyup':{
-							fn: this._freeEditTableHandler,
-							scope:this  
-						}
-					}
-				});   
-        _tablesMenuOpen.addSeparator(); 
-				_tablesMenuOpen.add('<b>Select to Edit</b>');  
-				
-				
-				_tablesMenuDrop.add('Table Name + Enter'); 
-				_tablesMenuDrop.addMenuItem({
-					xtype:'textfield',
-					width:140,
-					enableKeyEvents:true, 
-					selectOnFocus:true,
-					listeners:{
-						'keyup':{
-							fn: this._freeDropTableHandler,
-							scope:this  
-						}
-					}
-				});   
-        _tablesMenuDrop.addSeparator(); 
-				_tablesMenuDrop.add('<b>Select to Drop</b>');
-				
-				
- 
-				function openTableHandler(item, e){ 
-					this.showTableEditor(item.text);
-				}
-				
-				function dropTableHandler(item, e){ 
-					var n =item.text;
-					
-					Ext.Msg.confirm('Confirm Commit?','Are you sure you want to drop table '+ n,
-					 function(btn, text){      
-							if(btn == 'yes'){
-								this.sqlDb.dropTable(n, function(resp){
-									if(resp.data){             
-										if(this.tables[n]){
-											this.tables[n].ownerCt.remove(this.tables[n]);  
-											this.tables[n] = null;
-										}
-										this.refreshTablesMenu();
-									}
-								}, this);  
-							}    
-					},this);
-					
+						_tablesMenuOpen.removeAll();      
+						_tablesMenuDrop.removeAll(); 
 
-				}
-				
-				 for(var i=0,len=tableNames.length; i<len; i++){
-					 var name = tableNames[i];
-					
-				 	 _tablesMenuOpen.addMenuItem(	{
-						text:name, 
-						iconCls:'icon-table',
-						handler:openTableHandler,  
-						isClicky:true,
-						scope:this
-				 	 });    
-					
-						_tablesMenuDrop.addMenuItem(	{
-							text:name, 
-							iconCls:'icon-table',
-							handler:dropTableHandler,  
-							isClicky:true, 
-							scope:this
-					 	}); 
-				 }                      
-				
-				_tablesMenuOpen.doLayout();   
-				_tablesMenuDrop.doLayout();
+						_tablesMenuOpen.add('Table Name + Enter'); 
+						_tablesMenuOpen.addMenuItem({
+							xtype:'textfield',
+							width:140,
+							enableKeyEvents:true, 
+							selectOnFocus:true,
+							listeners:{
+								'keyup':{
+									fn: this._freeEditTableHandler,
+									scope:this  
+								}
+							}
+						});   
+		        _tablesMenuOpen.addSeparator(); 
+						_tablesMenuOpen.add('<b>Select to Edit (#cells)</b>');  
+
+
+						_tablesMenuDrop.add('Table Name + Enter'); 
+						_tablesMenuDrop.addMenuItem({
+							xtype:'textfield',
+							width:140,
+							enableKeyEvents:true, 
+							selectOnFocus:true,
+							listeners:{
+								'keyup':{
+									fn: this._freeDropTableHandler,
+									scope:this  
+								}
+							}
+						});   
+		        _tablesMenuDrop.addSeparator(); 
+						_tablesMenuDrop.add('<b>Select to Drop (#cells)</b>');
+
+
+            //should these really be in here???  
+						function openTableHandler(item, e){ 
+							this.showTableEditor(item.tableName);
+						}
+
+						function dropTableHandler(item, e){ 
+							var n =item.tableName;
+
+							Ext.Msg.confirm('Confirm Commit?','Are you sure you want to drop table '+ n,
+							 function(btn, text){      
+									if(btn == 'yes'){
+										this.sqlDb.dropTable(n, function(resp){
+											if(resp.data){             
+												if(this.tables[n]){
+													this.tables[n].ownerCt.remove(this.tables[n]);  
+													this.tables[n] = null;
+												}
+												this.refreshTablesMenu();
+											}
+										}, this);  
+									}    
+							},this);
+
+
+						}
+              
+						 //add table menu items 
+						 var tableNames = [];
+						 for(var name in cellcounts){   
+							 var cells = cellcounts[name];
+
+							 var label = '<span '+(cells >= _NUMCELLS_THRESHOLD ? 'class="dbr-largetable"' : '')+'>' + name + ' ('+ cells + ')</span>';
+							 
+
+						 	 _tablesMenuOpen.addMenuItem(	{
+								text:label, 
+								tableName:name,
+								iconCls:'icon-table',
+								handler:openTableHandler,  
+								isClicky:true,
+								scope:this
+						 	 });    
+
+							 _tablesMenuDrop.addMenuItem(	{
+								 text:label,          
+								 tableName:name,
+								 iconCls:'icon-table',
+								 handler:dropTableHandler,  
+								 isClicky:true, 
+								 scope:this
+							 });              
+							
+							 //save for later
+							 tableNames.push(name);
+						 }                      
+
+						_tablesMenuOpen.doLayout();   
+						_tablesMenuDrop.doLayout();
+
+						this.tableNames = tableNames;
+
+				//end success fn	
+				}, 
+				//error
+				function(sqld, resp){    
+					Ext.Msg.alert('Something went wrong', (resp.log.error || 'Unknown error occured when retrieving row counts'));
+				},
+		 this); 
 			
-				this.tableNames = tableNames;
-			}, this);
-			
+
 			
 		},
 		

@@ -467,14 +467,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			  	updatedRecs[i].commit();
 				}
 			}, this);
-			
-			
-		}
-		
-		     
-		
-		
-		         
+		}    
 
 	},  
 	
@@ -734,6 +727,58 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			var row = rows[i];
 			
 			for(var c=0; c<cols.length; c++){   
+				 html += '<td>'+ row.data[cols[c]] +'</td>';
+			}
+			
+			html+='</tr>';
+		}
+		html += '</tbody></table>';
+		
+		var win = window.open('','',
+		  'width=600,height=500'
+		   +',menubar=0'
+		   +',toolbar=1'
+		   +',status=0'
+		   +',scrollbars=1'
+		   +',resizable=1');
+		
+		
+		win.document.writeln('<html><head><style>');    
+		win.document.writeln('table{width:100%;border-collapse:collapse;padding:0;margin:0;font-family:Arial, Helvetica, "sans serif"}');
+		win.document.writeln('td,th{font-size:11px;text-align:left;border:1px solid black;}');
+		win.document.writeln('</style></head><body>');     
+		win.document.writeln(html); 
+    win.document.writeln('</body></html>');   
+		win.document.close();
+		
+	},
+	
+	exportCSV : function(){
+		var rows = this.grid.store.data.items, html='', cols=[];   
+		
+		html = '<table>';     
+		
+		var cm = this.grid.getColumnModel();   
+		var numCols = cm.getColumnCount(); 
+    
+		html+= '<thead><tr>';   
+		//start at 1 to ignore the delete box
+		for(var c=1; c<numCols; c++){        
+			//only export the visible columns
+			if(!cm.isHidden(c)){    
+				var cname = cm.getDataIndex(c);
+				cols.push(cname);
+				html += '<th>'+cname+'</th>';
+			}
+		}       
+		html+= '</tr></thead><tbody>';  
+		
+		//entire data set
+		for(var i=0, len=rows.length; i<len; i++){
+			html+= '<tr>';          
+			var row = rows[i];
+			
+			for(var c=1; c<cols.length; c++){   
 				 html += '<td>'+ row.data[cols[c]] +'</td>';
 			}
 			
