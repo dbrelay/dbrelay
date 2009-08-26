@@ -306,22 +306,30 @@ dbrui.App = function(){
 										
 									 
 										if(!changed){
-											return true;
+											this.sqlDb.connection = Ext.apply(oldconn, conncfg);      
+											//add echosql by default
+											this.sqlDb.setFlag('echosql', true);
+											//pretty print option     
+											this.sqlDb.setFlag('pp', conncfg.flags_pp );        
+											delete conncfg.flags_pp;    
+											return true;   
+				
 										}
 										else {  
 											         
-											Ext.Msg.confirm('Confirm connection info change', 'Changing the connection information will close any openend table editor tabs.  Do you want to continue?',
+											Ext.Msg.confirm('Confirm connection info change', 'Changing the connection information will close any open tabs.  Do you want to continue?',
 											 function(btn, text){      
 													if(btn == 'yes'){
 														this.sqlDb.connection = Ext.apply(oldconn, conncfg);      
 														//add echosql by default
 														this.sqlDb.setFlag('echosql', true);
-														//pretty print option      
+														//pretty print option   
 														this.sqlDb.setFlag('pp', conncfg.flags_pp );      
 														delete conncfg.flags_pp;
-														                       
-														//remove existing table editors 
-														var tables = this.tables;
+
+														Ext.getCmp('maintabs').removeAll();
+														this.tables = []; 
+													 /* var tables = this.tables;
 														for( var n in tables ){
 															try{
 																var table = this.tables[n];
@@ -329,7 +337,7 @@ dbrui.App = function(){
 																delete this.tables[n]
 															}
 															catch(e){}
-															}             
+															}      */       
 															
 														 //update window title with db name
 														 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
@@ -533,7 +541,7 @@ dbrui.App = function(){
 									if(btn == 'yes'){
 										this.sqlDb.dropTable(n, function(resp){
 											if(resp.data){             
-												if(this.tables[n]){
+												if(this.tables[n]){    
 													this.tables[n].ownerCt.remove(this.tables[n]);  
 													this.tables[n] = null;
 												}

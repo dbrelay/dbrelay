@@ -10,7 +10,7 @@
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE.ff
+# PARTICULAR PURPOSE.
 
 @SET_MAKE@
 
@@ -205,8 +205,8 @@ images/html.png \
 images/information.png \
 images/monitor.png \
 images/pencil.png \
-images/plus-circle.png \
 images/plug.png \
+images/plus-circle.png \
 images/question.png \
 images/refresh.gif \
 images/script-attribute-s.png \
