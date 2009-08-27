@@ -87,3 +87,11 @@ td.doc-name{
 .doc-codefont{
 	font-family:Courier, monospace;
 }
+
+
+td.done{
+	background-color:#C7EA89;
+}
+td.todo{
+	background-color:#F9F2A3;
+}

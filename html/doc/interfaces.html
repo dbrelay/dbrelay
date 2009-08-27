@@ -56,6 +56,9 @@ td > dl > dd {
 td > dl > dt {
   margin-left: 1em;
 }
+
+
+
 -->
   </style>
   </head>
@@ -67,6 +70,29 @@ td > dl > dt {
 	      <h2>HTTP request</h2>
 <p>The SQL Bridge module should be configurable to be invoked on one or many URIs. By default it must respond to get and post requests at the <code>/sql</code> path.</p>
 <p>HTTP request carries information in the HTTP header and parameter <code>key=value</code> pairs. The application <span class="em">must not</span> expect request information in HTTP headers. Only request parameters must be used. All defaults are configured in the build header files. The parameters below are grouped for the clarity:</p>
+<table cellspacing="3">
+	<thead>
+    <tr>
+      <th colspan="2">Color Key/ Legend</th>
+    </tr>
+  </thead>
+<tbody>
+	<tr>
+		<td class="doc-name done">Green</td>
+		<td>Implemented/Done</td>
+	</tr>
+	<tr>
+		<td class="doc-name todo">Yellow</td>
+		<td>In progress/planned</td>
+	</tr>
+	<tr>
+		<td class="doc-name">None</td>
+		<td>Not implemented</td>
+	</tr>
+</tbody>
+</table>
+
+
 <h3><strong>Database Server:</strong></h3>
 <table class="doc-table">
   <thead>
@@ -77,27 +103,27 @@ td > dl > dt {
   </thead>
   <tbody>
     <tr>
-      <td class="doc-name">sql_dbtype</td>
+      <td class="doc-name done">sql_dbtype</td>
       <td>Database driver name in viaduct. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; . The &laquo;mssql&raquo;  value is default, if the field is missing.</td>
     </tr>
     <tr>
-      <td class="doc-name">sql_server</td>
+      <td class="doc-name done">sql_server</td>
       <td>Hostname on which the SQL server is running.</td>
     </tr>
     <tr>
-      <td class="doc-name">sql_port</td>
+      <td class="doc-name done">sql_port</td>
       <td>Optional port number, on which the SQL server is listening. 1433 is the default.</td>
     </tr>
     <tr>
-      <td class="doc-name">sql_database</td>
+      <td class="doc-name done">sql_database</td>
       <td>Optional name of the primary database for the connection. User's default database is used, if not specified.</td>
     </tr>
     <tr>
-      <td class="doc-name">sql_user</td>
+      <td class="doc-name done">sql_user</td>
       <td>Username string recognised by the SQL server.</td>
     </tr>
     <tr>
-      <td class="doc-name">sql_password</td>
+      <td class="doc-name done">sql_password</td>
       <td>Optional password for the sql_user.</td>
     </tr>
   </tbody>
@@ -113,27 +139,27 @@ td > dl > dt {
   </thead>
   <tbody>
     <tr>
-      <td class="doc-name">connection_name</td>
+      <td class="doc-name done">connection_name</td>
       <td>Optional name to persist this connection under.</td>
     </tr>
     <tr>
-      <td class="doc-name">connection_timeout</td>
+      <td class="doc-name done">connection_timeout</td>
       <td>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</td>
     </tr>
     <tr>
-      <td class="doc-name">http_keepalive</td>
+      <td class="doc-name done">http_keepalive</td>
       <td>Optional flag to support broken HTTP clients.  When set to <span>0</span> Viaduct will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></td>
     </tr>
     <tr>
-      <td class="doc-name">query_tag</td>
+      <td class="doc-name done">query_tag</td>
       <td>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</td>
     </tr>
     <tr>
-      <td class="doc-name">log_level</td>
+      <td class="doc-name todo">log_level</td>
       <td>Optional log level setting for the whole application, connection or the specific query.</td>
     </tr>
     <tr>
-      <td class="doc-name">log_level_scope</td>
+      <td class="doc-name todo">log_level_scope</td>
       <td>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</td>
     </tr>
   </tbody>
@@ -149,10 +175,10 @@ td > dl > dt {
   </thead>
   <tbody>
     <tr>
-      <td class="doc-name">sql</td>
+      <td class="doc-name done">sql</td>
       <td>Optional TSQL statement batch conformant with MS SQL Server 2005 TSQL. &quot;Sql&quot; and &quot;param[]&quot; parameters may be omitted when, for example, setting the new application log level.</td>
     </tr>
-    <tr id="sql_param">
+    <tr id="sql_param done">
       <td class="doc-name">paramX</td>
       <td>
         <p>Optional postfix-numbered set of colon-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional SQL parameters to be bound into the SQL query. Output parameters are not supported. Parameters should come as an integer-indexed zero-based sequence. <span class="todo">Gaps in parameter indexes should cause notice-level errors</span>. SQL parameter values are expected to be URL-encoded. The accepted &laquo;<code>type</code>&raquo; values are <code>int</code>, <code>smallint</code>, <code>tinyint</code>, <code>numeric</code>, <code>float</code>, <code>real</code>, <code>char</code>, <code>varchar</code>, <code>datetime</code>, <code>smalldatetime</code>.</p>
@@ -160,15 +186,15 @@ td > dl > dt {
       </td>
     </tr>
     <tr>
-      <td class="doc-name">error_style</td>
+      <td class="doc-name todo">error_style</td>
       <td>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</td>
     </tr>
     <tr>
-      <td class="doc-name">js_callback</td>
+      <td class="doc-name done">js_callback</td>
       <td>If present, the HTML parameter specifies a javascript callback, which will receive the json response as a parameter. Assuming the <code>js_callback</code> was set to <code>jsc</code>, the returned JavaScript would look something like &laquo;<code>jsc({'data':...});</code>&raquo;, where the original JSON response is the text in curly parenthesis.</td>
     </tr>
     <tr>
-      <td class="doc-name">js_error</td>
+      <td class="doc-name done">js_error</td>
       <td>This parameter only has effect if <code>js_callback</code> is present. If that is the case, then the value of <code>js_error</code> parameter is used as a javascript callback function whenever there is an error condition and the <code>error</code> entry present in JSON return. If <code>js_error</code> is not specified, then <code>js_callback</code> used for any response regardless of an error.</td>
     </tr>
   </tbody>
@@ -184,15 +210,15 @@ td > dl > dt {
   </thead>
   <tbody>
     <tr>
-      <td class="doc-name">admin</td>
+      <td class="doc-name todo">admin</td>
       <td>A keyword to get to the set of administrative commands. When specified, only administrative request&#x27;s parameters are taken in consideration. A specific administrative parameter is expected in the same http request.</td>
     </tr>
     <tr>
-      <td class="doc-name">status</td>
+      <td class="doc-name todo">status</td>
       <td>Request the server status as a part of the administrative http request.</td>
     </tr>
     <tr id="server_command">
-      <td class="doc-name">cmd</td>
+      <td class="doc-name todo">cmd</td>
       <td>Execute a command on the sever. <span class="todo">The following are currently planned commands:</span>
         <dl>
           <dd><code>kill</code></dd>
@@ -215,7 +241,7 @@ td > dl > dt {
   </thead>
   <tbody>
     <tr>
-      <td width="130">RESPONSE</td>
+      <td width="130" class="done">RESPONSE</td>
       <td class="doc-codefont"><pre>{
   request : REQUEST_OBJECT ,
   data :    ROWSETS_ARRAY , 
@@ -223,7 +249,7 @@ td > dl > dt {
 }</pre></td>
     </tr>
     <tr>
-      <td>REQUEST_OBJECT</td>
+      <td class="done">REQUEST_OBJECT</td>
       <td class="doc-codefont"><pre>{
   query_tag :       string , 
   sql_server :      string ,
@@ -234,7 +260,7 @@ td > dl > dt {
 }</pre></td>
     </tr>
     <tr>
-      <td>ROWSETS_ARRAY</td>
+      <td class="done">ROWSETS_ARRAY</td>
       <td class="doc-codefont"><pre>[ ROWSET , ...] </pre></td>
     </tr>
     <tr>
@@ -246,7 +272,7 @@ td > dl > dt {
 } </pre></td>
     </tr>
     <tr>
-      <td>FIELD_LIST</td>
+      <td class="done">FIELD_LIST</td>
       <td class="doc-codefont"><pre>[ FIELD, ...] </pre></td>
     </tr>
     <tr>
@@ -260,15 +286,15 @@ td > dl > dt {
 } </pre></td>
     </tr>
     <tr>
-      <td>ROWS_ARRAY</td>
+      <td class="done">ROWS_ARRAY</td>
       <td class="doc-codefont"><pre>[ ROW , ...]</pre></td>
     </tr>
     <tr>
-      <td>ROW</td>
+      <td class="done">ROW</td>
       <td class="doc-codefont"><pre>{ FIELD_NAME : value , ...} </pre></td>
     </tr>
     <tr>
-      <td>FIELD_NAME</td>
+      <td class="done">FIELD_NAME</td>
       <td class="doc-codefont">string</td>
     </tr>
     <tr>
