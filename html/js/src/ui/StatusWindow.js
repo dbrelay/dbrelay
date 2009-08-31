@@ -139,9 +139,7 @@ dbrui.StatusWindow = Ext.extend(Ext.Window,{
 			var rec = rows[i];  
 
 			dbrelayKillConnection( rec.get('sock_path'), function(json){ 
-				if(json.log.error){
-					Ext.Msg.alert("Kill Failed", json.log.error);
-				}
+					Ext.Msg.alert("Result", json.cmd.status);
 
 			 });
 		}

@@ -57,7 +57,7 @@ Cross-domain compatible dbrelay kill connection
 function dbrelayKillConnection(sockpath, callback, dbrhost) {
 	var params = {
 		cmd: 'kill',
-		param0 : sockpath
+		param1 : sockpath
 	};
 
 	if(dbrhost){           

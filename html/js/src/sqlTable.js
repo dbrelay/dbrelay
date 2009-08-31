@@ -29,49 +29,33 @@ sqlTable = function(){
 						
 				@param {Ojbect} scope of callback (defaults to global)
 			*/
-			queryColumns: function(callback, scope){                      
+			queryColumns : function(callback, scope){
+				this.sqlDb.adminQuery({cmd:'columns', param1: table}, function(resp){  
+					  if(!resp || !resp.data){return;}
 
-				this.sqlDb.run('get_columns', {table : table}, function(resp){
-					if(!resp || !resp.data){return;}
-				 
-					var data = resp.data[0], count = data.count, rows = data.rows, columns = [];
+						var data = resp.data[0], count = data.count, rows = data.rows, columns = [];
 
-					//sanitize column data
-					for(var i=0,len=rows.length; i<len; i++){
-						var col = rows[i];
+						//sanitize column data
+						for(var i=0,len=rows.length; i<len; i++){
+							var col = rows[i];
 
-					  columns[i] = {
-							name: col.COLUMN_NAME,
-							required: col.IS_NULLABLE === 'NO' ? false : true, 
-							
-							//Data type values: http://www.mssqlcity.com/Articles/General/choose_data_type.htm
-							dataType: col.DATA_TYPE
-						};
+						  columns[i] = {
+								name: col.COLUMN_NAME,
+								required: col.IS_NULLABLE === 'NO' ? false : true, 
 
-					}              
-					
-					//cache the column data
-					this.tableColumns = columns;   
-					
-					//callback
-					if(callback){
-						callback.call(scope || window, this, resp, columns);     
-					}
+								//Data type values: http://www.mssqlcity.com/Articles/General/choose_data_type.htm
+								dataType: col.DATA_TYPE
+							};
 
-				},
-				
-				this);                    
-				
-			}, 
-			
-			//dbrui.App.tables.sample.sqlTable.queryColumns2()
-			queryColumns2 : function(callback, scope){
-				this.sqlDb.adminQuery({cmd:'columns', param0: table}, function(resp){  
-					  console.dir(resp);
-					
-					 	if (callback) {
-	        		callback.call(scope || window, this, resp);
-	        	}
+						}              
+
+						//cache the column data
+						this.tableColumns = columns;   
+
+						//callback
+						if(callback){
+							callback.call(scope || window, this, resp, columns);     
+						}
 				 }, this);
 			},    
 			
@@ -383,30 +367,20 @@ sqlTable = function(){
 					
 			@param {Object} scope : scope of callback function (defaults to global scope)
 		 */ 
+
 			queryPrimaryKeys : function(callback, scope){
-				this.sqlDb.run('get_primary_keys', {table:table}, function(resp){
-					 var rows = resp.data[0].rows, keys=[];
-					
-					 for(var i=0; i<rows.length; i++){
-						 keys[i] = rows[i].COLUMN_NAME;
-					 }            
-					
-					//store it for later maybe
-					 this.pkeyColumns = keys;
-					 
-					 if(callback){ 
-					    callback.call(scope || window, this, resp, keys);  
-					 }
-				});
-			},   
-			
-			//dbrui.App.tables.sample.sqlTable.queryColumns2()
-			queryPrimaryKeys2 : function(callback, scope){
-				this.sqlDb.adminQuery({cmd:'pkey', param0: table}, function(resp){  
-					  console.dir(resp);
+				this.sqlDb.adminQuery({cmd:'pkey', param1: table}, function(resp){  
+					  var rows = resp.data[0].rows, keys=[];
+
+						 for(var i=0; i<rows.length; i++){
+							 keys[i] = rows[i].COLUMN_NAME;
+						 }            
+
+						//store it for later maybe
+						 this.pkeyColumns = keys;
 					
 					 	if (callback) {
-	        		callback.call(scope || window, this, resp);
+	        		callback.call(scope || window, this, resp, keys);
 	        	}
 				 }, this);
 			},
