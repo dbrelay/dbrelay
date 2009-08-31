@@ -139,9 +139,12 @@ dbrui.StatusWindow = Ext.extend(Ext.Window,{
 			var rec = rows[i];  
 
 			dbrelayKillConnection( rec.get('sock_path'), function(json){ 
+				var status = json.cmd.status;
+					this.refresh();
 					Ext.Msg.alert("Result", json.cmd.status);
+					
 
-			 });
+			 }, this);
 		}
 		
 	},

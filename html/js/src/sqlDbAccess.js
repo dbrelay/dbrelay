@@ -72,16 +72,11 @@ sqlDbAccess = function(){
 		       this._onVerb
 				],
 				
-				get_columns:[     
-					"SELECT COLUMN_NAME,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{{{table}}}'",
-	      	this._onVerb
-				], 
 				
 				get_count:[
 					"SELECT COUNT({{{columns}}}) FROM {{{table}}} {{{where}}}",
 					this._onVerb
 				],
-
 
 				row_add: [
 				  "INSERT INTO {{{table}}} {{{columns}}} VALUES {{{values}}}",
@@ -102,17 +97,6 @@ sqlDbAccess = function(){
 					this._onVerb
 				],
 				
-				get_primary_keys :[
-					"select 	c.COLUMN_NAME " 
-						+"from 	INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk , "
-						+"INFORMATION_SCHEMA.KEY_COLUMN_USAGE c "
-						+"where pk.TABLE_NAME = '{{{table}}}' "
-						+"and	CONSTRAINT_TYPE = 'PRIMARY KEY' "
-						+"and	c.TABLE_NAME = pk.TABLE_NAME "
-						+"and	c.CONSTRAINT_NAME = pk.CONSTRAINT_NAME",
-						this._onVerb   
-			 	],      
-			
 			 	update_row :[
 					 "UPDATE {{{table}}} SET {{{setvalues}}} WHERE {{{where}}}",
 					 this._onVerb
@@ -151,7 +135,7 @@ sqlDbAccess = function(){
 						_log.push('<p style="color:blue">'+results.log.sql + '</p>');
 					}
 					else{
-						_log.push('<p style="color:red">FAIL: ('+ (results.log.error || 'Unknown Reason') +')' + results.log.sql + '</p>');   
+						_log.push('<p style="color:red">FAIL: ('+ (results.log.error || 'Unknown Reason') +')' + results.log.sql + '</p>');  
 					}
 					//call callback with defined scope
 					if(callback){                          
