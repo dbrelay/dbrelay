@@ -17,7 +17,8 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
   sqlTable: null,            
 	//primary key columns
 	pkeyColumns:[], 
-	pkeyStyle:'color:#00761c;font-weight:bold;',      
+	pkeyStyle:'color:#00761c;font-weight:bold;',   
+	binStyle:'color:#bbbbbb;',   
 
 	DELETE_INDEX: 'dbr-deletebox',  
 	ADD_INDEX: 'dbr-newrow',   
@@ -589,14 +590,14 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	
 	/** Disable row deleting and editing (i.e. when table has no primary keys) */
 	disableEditing : function(){  
-		this.grid.on('beforeedit', function(e){
+		/*this.grid.on('beforeedit', function(e){
 		 var rec = e.record;
 			
 		 if(rec.data[this.ADD_INDEX] !== true){    
 				e.cancel = true; 
 		 }   
 	 	 
-		}, this);                       
+		}, this);     */                  
 		this.disableDelete = true;   
 		this.grid.getColumnModel().setHidden(0,true);
 	},
@@ -618,21 +619,58 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 		storeFields[0] = {name:this.DELETE_INDEX};
 		
 		for(var i=0,len=cols.length; i<len; i++){
-			var col = cols[i], name = col.name;
+			var col = cols[i], name = col.name, rawtype = col.dataType;
+
 			var iskey =pkeystr.indexOf('~'+name+'~') !== -1;
 			
+			//reduce type to the basics for editor purposes
+			var cellEditor, simpleType;
+			switch(rawtype){
+				case 'binary':
+				case 'varbinary':
+				case 'image':
+					simpleType='binary';
+					cellEditor = null;
+					break;
+				case 'bigint':
+				case 'int':
+				case 'smallint':
+				case 'tinyint':
+				case 'bit':
+					simpleType='int';
+					cellEditor = pkeys.length === 0 ? null : new Ext.form.NumberField({
+	            allowBlank: false,
+					    allowDecimals:false
+	        });
+					break;
+			  case 'numeric':
+			  case 'decimal':
+				case 'money':
+				case 'smallmoney':
+					simpleType='float';
+					cellEditor = pkeys.length === 0 ? null : new Ext.form.NumberField({
+	            allowBlank: false
+	        });
+					break;
+				//unhandled types default to text fields
+				default:
+					simpleType = rawtype;
+					cellEditor = pkeys.length === 0 ? null : new Ext.form.TextField({
+	            allowBlank: false
+	        });
+			}
 			//EXT column model definition 
 			cmData[i+1] = {
-				header: name + (iskey ? ' [KEY]' : ''),
+				header: name + ' ' + (iskey ? '[KEY]' : '') + '['+ rawtype+']',
 				sortable:true,
 				id: name,   
 				pkey: iskey,
-				css: iskey ? this.pkeyStyle : null, 
+				css: iskey ? this.pkeyStyle : ( simpleType === 'binary' ? this.binStyle : null), 
 				dataIndex:name,
-        editor: new Ext.form.TextField({
-            allowBlank: false
-        }) 
+        editor: cellEditor
 			};  
+			
+			
       
 			//default value / col def for add row
 			this.addRowDefaults[name] = '';
