@@ -186,19 +186,19 @@ sqlDbAccess = function(){
 			@param on {bool} true to turn it on, false to turn it off
 			*/
 			setFlag : function( flag, on ){
-				var flags = this.connection.flags + ';', isInFlags = flags.indexOf(flag + ';') !== -1;
+				var flags = this.connection.flags + ',', isInFlags = flags.indexOf(flag + ',') !== -1;
 				
 				if(on){ 
 					//not in flags, and want to turn it on 
 					if(!isInFlags){    
-						this.connection.flags +=  ';' + flag;
+						this.connection.flags +=  ',' + flag;
 					}
 				} 
 				
 				//turn off       
 				else{     
 					if(isInFlags){                 
-						this.connection.flags = flags.replace( flag + ';' ,'');
+						this.connection.flags = flags.replace( flag + ',' ,'');
 					}
 				}
 
