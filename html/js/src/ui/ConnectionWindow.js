@@ -8,7 +8,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 	height:350,
 	modal:true,
 	defaults:{border:false}, 
-  
+	
  	initComponent : function(){
 	  var _idpfx = Ext.id(); //ensure unique ids 
 		var defaultConn = this.defaultConnection || {};
@@ -39,6 +39,15 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 									fn:function(fld, e){
 										if(e.keyCode === e.ENTER){
 											 this.onTestAndSave();
+										}
+									},
+									scope:this
+								},
+								//fetch db list on change
+								'change':{
+									fn:function(fld, nv){
+										if(nv !== ''){
+											this.refreshDatabaseList();
 										}
 									},
 									scope:this
@@ -86,14 +95,23 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 						border:false,
 						items:[
 							{
-								xtype:'textfield',
+								xtype:'combo',
 								anchor:'98%',
 								fieldLabel:'Database',
 								id:'sql_database'+ _idpfx,
 								allowBlank:true,
 								selectOnFocus:true, 
+								typeAhead: true,
+						    triggerAction: 'all',
+						    lazyRender:true,
+						    mode: 'local',
+						    store: new Ext.data.ArrayStore({
+						        fields: ['name']
+						    }),
+						    valueField: 'name',
+								displayField:'name',
+								
 								value:defaultConn.sql_database ||'',
-							//	value:'viaducttest',
 								enableKeyEvents:true,
 								listeners:{
 									'keyup':{
@@ -123,7 +141,16 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 											}
 										},
 										scope:this
-									 }
+									},
+									//fetch db list on change
+									'change':{
+										fn:function(fld, nv){
+											if(nv !== ''){
+												this.refreshDatabaseList();
+											}
+										},
+										scope:this
+									}
 								}
 							},
 							{
@@ -229,12 +256,38 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 			flags_pp : this.findById('flags_pp'+ _idpfx)
 		};
 		
+		//on show, populate the database list
+		this.on('show', this.refreshDatabaseList, this);
+		
 		this.addEvents({    
 			/** Fired when test & save is clicked, fields are validated, AND testing is success */
 			'connectionupdate' : true
 		});
 		
 		
+	},
+	
+	/** SQL Server 2005 specific */
+	refreshDatabaseList : function(){
+		var sql_server = this.fields['sql_server'].getValue();
+		var sql_user = this.fields['sql_user'].getValue();
+		
+		if(sql_server === '' || sql_user === ''){return;}
+		
+		var testDb = new sqlDbAccess({sql_server:sql_server,sql_user:sql_user});
+		
+		testDb.getDatabases(
+			//success
+			function(dba, dbs){
+				var data = [];
+				for(var i=0,len=dbs.length; i<len; i++){
+					data[i] =[dbs[i]];
+				}
+				this.fields.sql_database.getStore().loadData(data);
+			},
+			null,
+		this);
+	
 	},
 	
 	/* private handler for test & save button */

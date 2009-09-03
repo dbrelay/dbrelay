@@ -460,7 +460,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 		}  
 		
 		if(sqlStatements !== ''){
-			Ext.Msg.alert("Table was successfully updated");
+			Ext.Msg.alert("Success","Table was successfully updated");
 			//run it!  woohoo!
 			sqlDb.commitTransaction( sqlStatements , function(sdb, resp){
 				 //success cleanup

@@ -101,6 +101,7 @@ sqlTable = function(){
 							callback.call(scope || window, this, results);
 						}
 					},
+					null,
 					this
 				);  
 			
@@ -176,6 +177,7 @@ sqlTable = function(){
 					
 					 
 					},
+					null,
 					//sqlDbAccess callback scope 
 					this      
 				);    
@@ -430,7 +432,9 @@ sqlTable = function(){
 	          }
 	
 						
-				});
+				},
+				null,
+				this);
 				  
 			}, 
 			

@@ -63,7 +63,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.items = [
 			{
 				region:'north',
-				height:80,
+				height:120,
 				split:true,
 				collapsible:true,
 				layout:'form',
@@ -92,6 +92,11 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 						}
 					},
 					{
+						xtype:'checkbox',
+						boxLabel:'Execute as a single Transaction',
+						id: 'xact' + idpfx
+					},
+					{
 						xtype:'displayfield',
 						fieldLabel:'',
 						id:'url'+idpfx,
@@ -102,7 +107,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 				listeners:{
 					'resize':{
 						fn: function(p,aw,ah){ 
-							 this.fldSqlCode.setHeight(ah - 30);
+							 this.fldSqlCode.setHeight(ah - 60);
 						},
 						scope:this
 					},
@@ -139,7 +144,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 	   
 		this.fldSqlCode = this.findById('sqlcode'+ idpfx); 
 		this.msgPanel = this.findById('msg'+idpfx);  
-		this.fldUrl = this.findById('url'+idpfx);        
+		this.fldUrl = this.findById('url'+idpfx);      
+		this.fldXact = this.findById('xact'+idpfx);  
 		
 		this.northRegion = Ext.getCmp('north'+idpfx);
 		this.centerRegion = Ext.getCmp('resultsRegion'+idpfx);    
@@ -158,39 +164,50 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		
 		this.centerRegion.body.mask();
 		
-	  this.sqlDb.executeSql(this.fldSqlCode.getValue(), function(sqld, resp){        
+		//set transaction flag
+	  this.sqlDb.executeSql(this.fldSqlCode.getValue(), (this.fldXact.getValue() ? ['xact'] : null),
+			//success
+			function(sqld, resp){        
 
-			//show results
-			if(resp.log.error || !resp.data){
-				this.showMsgPanel('<p style="color:red">Error:</p><pre style="color:red">'+resp.log.error+'</pre>');      
-				this.centerRegion.body.unmask();  
-			}
-			else{
-				 var data = resp.data[0];
-				
-				 if(data.fields.length === 0){
-					 this.showMsgPanel('<p style="color:green">Success: ' + data.count + ' rows affected.</p>');     
-					this.centerRegion.body.unmask();    
+				//show results
+				if(resp.log.error || !resp.data){
+					this.showMsgPanel('<p style="color:red">Error:</p><pre style="color:red">'+resp.log.error+'</pre>');      
+					this.centerRegion.body.unmask();  
 				}
 				else{
-					this.showResultGrids(resp.data);
-				}
+					 var data = resp.data[0];
 				
-				//update URL field
-				var conn = Ext.apply({},this.sqlDb.connection);
-				conn.sql =  this.fldSqlCode.getValue(); 
-				conn.query_tag = null;        
-				//don't pass password     
-				conn.sql_password = null;
+					 if(data.fields.length === 0){
+						 this.showMsgPanel('<p style="color:green">Success: ' + data.count + ' rows affected.</p>');     
+						this.centerRegion.body.unmask();    
+					}
+					else{
+						this.showResultGrids(resp.data);
+					}
+				
+					//update URL field
+					var conn = Ext.apply({},this.sqlDb.connection);
+					conn.sql =  this.fldSqlCode.getValue(); 
+					conn.query_tag = null;        
+					//don't pass password     
+					conn.sql_password = null;
+					//set transaction flag
+					if(this.fldXact.getValue()){
+						conn.flags += ',xact';
+					}
 
+					var sqlUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
+			        + Ext.urlEncode(conn) + '&' + window.location.hash;   
 
-				var sqlUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
-		        + Ext.urlEncode(conn) + '&' + window.location.hash;   
-
-				this.setUrlLink(sqlUrl);
-			}
+					this.setUrlLink(sqlUrl);
+				}
 			
-			},this);
+			},
+			//error
+			function(sqld, resp, err){
+				Ext.alert('Error', err);
+			}
+			,this);
 	},
               
   setUrlLink : function(url){    

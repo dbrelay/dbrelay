@@ -16,6 +16,10 @@ sqlDbAccess = function(){
 
 			//Create the sqlObject
 			this.so =sqlObject( connection , {
+				list_databases:[
+					"USE MASTER;SELECT NAME FROM sys.sysdatabases",
+					this._onVerb
+				],
 				
 				/* Db actions */
 				create_table :[
@@ -124,7 +128,7 @@ sqlDbAccess = function(){
 			 @param {Object} scope: scope of callback (defaults to global)
 	 
 			*/
-			run : function(verb, cfg, callback, scope){
+			run : function(verb, cfg, success, error, scope){
 				if(!this.so[verb]){
 				  alert('"'+verb+'" is not a valid action.'); 
 					return;
@@ -132,17 +136,23 @@ sqlDbAccess = function(){
 				
 				this.so[verb].call(window, cfg || {}, function(results){
 					if(results.data){
+						//call success with defined scope
+						if(success){                          
+							success.call(scope || window, results);
+						}
 						_log.push('<p style="color:blue">'+results.log.sql + '</p>');
 					}
 					else{
+						//call error with defined scope
+						if(error){                          
+							error.call(scope || window, results, results.log.error );
+						}
 						_log.push('<p style="color:red">FAIL: ('+ (results.log.error || 'Unknown Reason') +')' + results.log.sql + '</p>');  
 					}
-					//call callback with defined scope
-					if(callback){                          
-						callback.call(scope || window, results);
-					}
+					
 				});
 			},
+			
 			
 			getLog : function(){   
 				return _log;
@@ -153,6 +163,39 @@ sqlDbAccess = function(){
 				_log = [];
 			},
 			    
+			/** Retrieve list of databases */
+			getDatabases :function(success, error, scope){
+				this.run('list_databases', {}, 
+				//success
+				function(resp){
+					//should be 2 sets of data, one for use master & other for actual data
+					if(resp.data.length === 2){
+						var dbs = [], rows = resp.data[1].rows;
+						
+						for(var i=0,len=rows.length; i<len; i++){
+							dbs.push(rows[i].NAME);
+						}
+						//console.dir(dbs);
+						if (success) {
+		        	success.call(scope || window, this, dbs);
+		        }
+					}
+					else{
+						if (error) {
+		        	error.call(scope || window, this, resp, "sqlDbAccess.getDatabases > Data was missing");
+		        }
+					}
+					
+	        
+				},
+				//error
+				function(resp, err){
+					if (error) {
+	        	error.call(scope || window, this, resp, err);
+	        }
+				},
+				scope);
+			},
 			/**
 				Tests the db connection by running a rows count on all tables
 				@param {function} callback :  callback function.
@@ -208,23 +251,42 @@ sqlDbAccess = function(){
 			/**
 				Executes arbitrary sql code
 				@param {string} sql : code to execute
+				@param {array} flags : additional one-time flags to append to existing flags (optional)
 				@param {function} callback : optional callback function.
 						@cbparam {sqlDbAccess} this
 						@cbparam {Object} raw json response from server
 				@param {Object} scope of callback
 			*/
-			executeSql: function(sql, callback, scope){
-			  	dbrelayQuery( this.connection, sql, function(resp){ 
+			executeSql: function(sql, flags, success, error, scope){
+					var params = {};
+					//create copy of connection obj
+					for(var x in this.connection){
+						params[x] = this.connection[x];
+					}
+					
+					if(flags){
+							params.flags = params.flags || '';
+							
+						for(var i=0;i<flags.length;i++){
+							params.flags += ',' + flags[i];
+						}
+					}
+					
+			  	dbrelayQuery( params, sql, function(resp){ 
 						if(resp.data){
 							_log.push('<p style="color:blue">'+resp.log.sql + '</p>');
+							if (success) {
+			        	success.call(scope || window, this, resp);
+			        }
 						}
 						else{
 							_log.push('<p style="color:red">FAIL: ('+ (resp.log.error || 'Unknown Reason') +')' + resp.log.sql + '</p>');   
+							if (error) {
+			        	error.call(scope || window, this, resp, resp.log.error);
+			        }
 						}
 						
-		        if (callback) {
-		        	callback.call(scope || window, this, resp);
-		        }      
+		             
 	      });
 			},   
 			
@@ -259,7 +321,7 @@ sqlDbAccess = function(){
 						 if(callback){
 						   callback.call(scope || window, this, resp);  
 						 }
-				 }, this);
+				 },null,  this);
 				
 			},    
 		 
@@ -294,7 +356,7 @@ sqlDbAccess = function(){
 						   errorfn.call(scope || window, this, resp);  
 						 }
 					}
-				 }, this);
+				 }, null, this);
 			
 		 },    
 		                                                     
@@ -333,7 +395,7 @@ sqlDbAccess = function(){
 								   errorfn.call(scope || window, this, resp);  
 								 }
 							}
-						 }, this);
+						 }, null, this);
 				},                    
 				
 				//error
@@ -422,7 +484,7 @@ sqlDbAccess = function(){
 				 		if(callback){
 							callback.call(scope || window, resp);
 						}
-				});
+				},null, this);
 			},
 			
 	 /**
@@ -437,7 +499,7 @@ sqlDbAccess = function(){
 			@param {Object} scope of callback
 		*/ 
 			dropTable: function(table, callback, scope){
-				 this.run('drop_table',{table:table},callback, scope);
+				 this.run('drop_table',{table:table},callback, null,scope);
 			},
 			
 			
