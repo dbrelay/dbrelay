@@ -95,6 +95,35 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 						border:false,
 						items:[
 							{
+								xtype:'textfield',
+								anchor:'98%',
+								fieldLabel:'User',
+								id:'sql_user'+ _idpfx,
+								allowBlank:false, 
+								selectOnFocus:true,  
+								value:defaultConn.sql_user ||'',    
+								enableKeyEvents:true,
+								listeners:{
+									'keyup':{
+										fn:function(fld, e){
+											if( e.keyCode === e.ENTER){
+												 this.onTestAndSave();
+											}
+										},
+										scope:this
+									},
+									//fetch db list on change
+									'change':{
+										fn:function(fld, nv){
+											if(nv !== ''){
+												this.refreshDatabaseList();
+											}
+										},
+										scope:this
+									}
+								}
+							},
+							{
 								xtype:'combo',
 								anchor:'98%',
 								fieldLabel:'Database',
@@ -124,35 +153,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 									 }
 								}
 							},
-							{
-								xtype:'textfield',
-								anchor:'98%',
-								fieldLabel:'User',
-								id:'sql_user'+ _idpfx,
-								allowBlank:false, 
-								selectOnFocus:true,  
-								value:defaultConn.sql_user ||'',    
-								enableKeyEvents:true,
-								listeners:{
-									'keyup':{
-										fn:function(fld, e){
-											if( e.keyCode === e.ENTER){
-												 this.onTestAndSave();
-											}
-										},
-										scope:this
-									},
-									//fetch db list on change
-									'change':{
-										fn:function(fld, nv){
-											if(nv !== ''){
-												this.refreshDatabaseList();
-											}
-										},
-										scope:this
-									}
-								}
-							},
+							
 							{
 								xtype:'textfield',
 								anchor:'98%',

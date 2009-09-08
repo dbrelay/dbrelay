@@ -410,7 +410,7 @@ sqlDbAccess = function(){
 		Executes an admin query (i.e. list tables)
 		@param params {Object} object of additional parameters from the connection info
 		*/ 
-			adminQuery : function(params, callback, scope){   
+			adminQuery : function(params, success, error, scope){   
 				//copy connection info into params
 				for(var k in this.connection){
 					if(k !== 'dbrelay_host' && k!=='sql'){
@@ -423,15 +423,15 @@ sqlDbAccess = function(){
 				
 				if(dbrhost){           
 					jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , function(data){
-							if (callback) {
-		        		callback.call(scope || window, data);
+							if (success) {
+		        		success.call(scope || window, data);
 		        	}
 					});   
 				} 
 				else{
 					$.post( '/sql', params, function(data){
-							if (callback) {
-		        		callback.call(scope || window, data);
+							if (success) {
+		        		success.call(scope || window, data);
 		        	}
 					}, "json" );    
 				}

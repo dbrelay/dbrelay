@@ -13,6 +13,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 	iconCls:'icon-sql',
   layout:'border',  
 	closable:true, 
+	
+	directLink: true,
 
 	initComponent : function(){
 	 var idpfx = Ext.id(); //ensure unique ids   
@@ -107,7 +109,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 				listeners:{
 					'resize':{
 						fn: function(p,aw,ah){ 
-							 this.fldSqlCode.setHeight(ah - 60);
+							var offset = this.directLink ? 60 : 30;
+							 this.fldSqlCode.setHeight(ah - offset);
 						},
 						scope:this
 					},
@@ -211,7 +214,9 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 	},
               
   setUrlLink : function(url){    
-		this.fldUrl.setValue('<a href="'+url+'" target="_blank">' + url + '</a>'); 
+		if(this.directLink){
+			this.fldUrl.setValue('<a href="'+url+'" target="_blank">' + url + '</a>'); 
+		}
 	},
 	
  	showMsgPanel : function(msg){
