@@ -9,7 +9,7 @@ dbrui.App = function(){
   var _tablesMenuOpen =  new Ext.menu.Menu();    
   var _tablesMenuDrop =  new Ext.menu.Menu();
 		
-	var _appName = "Viaduct";
+	var _appName = "DBRelay";
 		
 	return {
 		/** {sqlDbAccess} sql db object that is bound to this UI */
@@ -123,10 +123,15 @@ dbrui.App = function(){
 										iconCls:'icon-info',
 										menu:[   
 										{
-											text:'Documentation Home',
+											text:'DBRelay Documentation',
 											iconCls:'icon-doc', 
-											handler:function(){window.open('/doc/index.html');}    
+											handler:function(){window.open('docs/index.html');}    
 										}, 
+										{
+											text:'Other Documentation',
+											iconCls:'icon-doc', 
+											handler:function(){window.open('/docs/index.html');}    
+										},
 										{
 												text:'Status Window',
 												iconCls:'icon-monitor',
@@ -137,7 +142,7 @@ dbrui.App = function(){
 										}, 
 										'-',
 										{
-												text:'Viaduct Status',
+												text:'DBRelay Status',
 												iconCls:'icon-monitor',
 												handler:function(){window.open('/status.html');}
 										},  
