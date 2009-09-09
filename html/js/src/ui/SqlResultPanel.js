@@ -208,7 +208,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 			},
 			//error
 			function(sqld, resp, err){
-				Ext.alert('Error', err);
+				Ext.Msg.alert('Error', err);
 			}
 			,this);
 	},

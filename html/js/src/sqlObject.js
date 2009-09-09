@@ -47,7 +47,8 @@ function dbrelayStatus(callback, dbrhost) {
 		$.post( '/sql', params, callback, "json" );    
 	}  
 };
-      
+     
+
 
 /**
 Cross-domain compatible dbrelay kill connection

@@ -29,7 +29,7 @@ sqlTable = function(){
 						
 				@param {Ojbect} scope of callback (defaults to global)
 			*/
-			queryColumns : function(callback, scope){
+			queryColumns : function(callback, error, scope){
 				this.sqlDb.adminQuery({cmd:'columns', param1: table}, function(resp){  
 					  if(!resp || !resp.data){return;}
 
@@ -51,12 +51,19 @@ sqlTable = function(){
 
 						//cache the column data
 						this.tableColumns = columns;   
-
+						
 						//callback
 						if(callback){
 							callback.call(scope || window, this, resp, columns);     
 						}
-				 }, this);
+				 },
+				//error
+				function(resp){
+					if(error){
+						error.call(scope || window, this, resp);
+					}
+				}
+				,this);
 			},    
 			
 			/**
@@ -125,7 +132,7 @@ sqlTable = function(){
 				@param {Object} scope : scope of callback function   
 
 			*/
-			fetchPagingRows: function(cfg, callback, scope){   
+			fetchPagingRows: function(cfg, callback, error, scope){   
 				//apply defaults to cfg parameter
 				cfg = this.applyProperties(cfg || {}, {
 					columns:'*',
@@ -142,9 +149,15 @@ sqlTable = function(){
 							//re-run fetchRows now that the columns have been successfully querued
 							if(resp && resp.data){
 								cfg.orderBy = columns[0].name + ' asc';
-								this.fetchRows(cfg, callback, scope);
+								this.fetchPagingRows(cfg, callback, error, scope);
 							}
-						}, this);
+						}, 
+						function(sqlt, err){
+							if(error){
+								error.call(scope || window, this, err);
+							}
+						},
+						this);
 						return;
 					}
 					else{
@@ -370,7 +383,7 @@ sqlTable = function(){
 			@param {Object} scope : scope of callback function (defaults to global scope)
 		 */ 
 
-			queryPrimaryKeys : function(callback, scope){
+			queryPrimaryKeys : function(callback, error, scope){
 				this.sqlDb.adminQuery({cmd:'pkey', param1: table}, function(resp){  
 					  var rows = resp.data[0].rows, keys=[];
 
@@ -384,7 +397,14 @@ sqlTable = function(){
 					 	if (callback) {
 	        		callback.call(scope || window, this, resp, keys);
 	        	}
-				 }, this);
+				 }, 
+				//error
+				function(resp){
+					if(error){
+						error.call(scope || window, this, resp);
+					}
+				},
+				this);
 			},
 			
 

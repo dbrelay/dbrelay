@@ -512,7 +512,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	  
 		if(this.serverSidePaging){ 
 			this.displayMask('Fetching Data...');      
-
+		
 			this.sqlTable.fetchPagingRows({
 					pagingSize: pageSize,
 					recordStart: this.pageSize*(pageNumber-1),
@@ -530,7 +530,12 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				this.grid.getStore().loadData({'rows':this.tableData});  
 				 
 				   
-			},this);
+			},
+			//error
+			function(sqld, err){
+				Ext.Msg.alert("Error", "An error occured while trying to fetch the data.  " + err.log.error);
+			}
+			,this);
 			
 			
 			
@@ -580,9 +585,19 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 					
 					this._finishRefresh(keys, cols);               
 
-				}, this);  
+				}, 
+				//error
+				function(sqlt, resp){
+					Ext.Msg.alert("Error","An error occurred while trying to fetch the primary keys");
+				},
+				this);  
 			
-			}, this);    
+			}, 
+			//error
+			function(sqlt, resp){
+				Ext.Msg.alert("Error","An error occurred while trying to fetch the table columns");
+			},
+			this);    
 		
 		
 
