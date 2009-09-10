@@ -1,10 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+s<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
 
 <html lang="en">
   <head>
   	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  	<title>Viaduct project specifications</title>
+  	<title>DBRelay project specifications</title>
   	<style type="text/css" media="print">
   	  body {
   	    font-size: 80%;
@@ -260,7 +260,7 @@
         </ol>
       </div>
       <div id="title" class="chapter">
-        <h1>Viaduct specifications</h1>
+        <h1>DBRelay specifications</h1>
         <p class="copyright">&copy; 2008 GETCO LLC. All Rights Reserved.</p>
       </div>
       <div id="revisions" class="chapter">
@@ -344,17 +344,17 @@
       </div>
       <div id="overview" class="chapter">
         <h2>Overview</h2>
-        <p>The Viaduct application is a protocol bridge allowing HTTP clients to access to Microsoft&reg; SQL Server databases. The primary goal is to make Microsoft&reg; SQL Server access easy for other (unrelated to this project) software, including Python, JavaScript, and Ruby scripts. That includes simple standards-bases request and data formats as well as the ease of installing, maintaining (log files, configuration, etc.) and managing (starting, stopping, inventorying, etc.) the application.</p>
+        <p>The DBRelay application is a protocol bridge allowing HTTP clients to access to Microsoft&reg; SQL Server databases. The primary goal is to make Microsoft&reg; SQL Server access easy for other (unrelated to this project) software, including Python, JavaScript, and Ruby scripts. That includes simple standards-bases request and data formats as well as the ease of installing, maintaining (log files, configuration, etc.) and managing (starting, stopping, inventorying, etc.) the application.</p>
         <p>The essense of the proposed solution is to have the application to accept HTTP requests containing SQL queries, relay them to specified database server, and return the server's reply back to HTTP client in JSON format.</p>
-          <p>The Viaduct application will be built from the existing and newly-developed code. Existing code includes, but not limited to, FreeTDS libraries, Nginx web server, unspecified JSON libraries, and other third-party software components necessary for the application. Code to be newly-developed includes a Nginx module and and Nginx server modifications, needed to &quot;glue&quot; the software components into a monolithic, statically linked application.</p>
-        <p>As the Viaduct application planned to be released under an open-source license, all existing code need to have a compatible license as reviewed and decided by GETCO LLC before any work to be done with such existing code.</p>
+          <p>The DBRelay application will be built from the existing and newly-developed code. Existing code includes, but not limited to, FreeTDS libraries, Nginx web server, unspecified JSON libraries, and other third-party software components necessary for the application. Code to be newly-developed includes a Nginx module and and Nginx server modifications, needed to &quot;glue&quot; the software components into a monolithic, statically linked application.</p>
+        <p>As the DBRelay application planned to be released under an open-source license, all existing code need to have a compatible license as reviewed and decided by GETCO LLC before any work to be done with such existing code.</p>
       </div>
       <div id="features" class="chapter">
         <h2>Features</h2>
-        <p>The Viaduct application will have client-facing, database-facing, and system interfaces. When referring to unspecified connections, this document means SQL Server connections as opposed to HTTP connections.</p>
+        <p>The DBRelay application will have client-facing, database-facing, and system interfaces. When referring to unspecified connections, this document means SQL Server connections as opposed to HTTP connections.</p>
         <div id="client_facing" class="chapter">
           <h3>Client-facing interface</h3>
-          <p>On the client-facing interface, the Viaduct application will act as a fully-functional HTTP 1.0 and 1.1 server within the abilities on the current stable Nginx release. Additional SQL Bridge module must be built to address the Viaduct-specific functionality. The following existing code modules must be build into the server:</p>
+          <p>On the client-facing interface, the DBRelay application will act as a fully-functional HTTP 1.0 and 1.1 server within the abilities on the current stable Nginx release. Additional SQL Bridge module must be built to address the DBRelay-specific functionality. The following existing code modules must be build into the server:</p>
           <ul>
             <li>Nginx Core
               <ul>
@@ -383,19 +383,19 @@
               </ul>
             </li>
           </ul>
-          <p>Note the absence of HTTP Upstream, AutoIndex, FastCGI, GEO, Gzip, HTTP Referer, Limit Zone, Map, Memcached, Proxy, and SSI standard modules - those must not be build into the Viaduct application.</p>
+          <p>Note the absence of HTTP Upstream, AutoIndex, FastCGI, GEO, Gzip, HTTP Referer, Limit Zone, Map, Memcached, Proxy, and SSI standard modules - those must not be build into the DBRelay application.</p>
           <p>If included modules rely on excluded or not mentioned modules, then GETCO LLC will decide if the dependency module should be included or dependant module should be excluded.</p>
-          <p>Besides the communications enabled by the existing-code modules, the Viaduct application will accept a specially formatted GET and POST requests containing database connectivity properties, authentication data, and a SQL query to be executed on a database server, and return to the client JSON-formatted result sets. Specifics of the request and response formats are in the <a href="#http_request">Interfaces chapter</a>. The rest of the specification addresses only the features and properties of the SQL bridge module unless mentioned otherwise.</p>
+          <p>Besides the communications enabled by the existing-code modules, the DBRelay application will accept a specially formatted GET and POST requests containing database connectivity properties, authentication data, and a SQL query to be executed on a database server, and return to the client JSON-formatted result sets. Specifics of the request and response formats are in the <a href="#http_request">Interfaces chapter</a>. The rest of the specification addresses only the features and properties of the SQL bridge module unless mentioned otherwise.</p>
         </div>
         <div id="database_facing" class="chapter">
           <h3>Database-facing interface</h3>
-          <p>On the database-facing interface, the Viaduct application will act as a FreeTDS-based client compliant with TDS version 9. It will not initially include the connection pooling. It must support time-limited named persistent connections.</p>
+          <p>On the database-facing interface, the DBRelay application will act as a FreeTDS-based client compliant with TDS version 9. It will not initially include the connection pooling. It must support time-limited named persistent connections.</p>
         </div>
         <div id="system" class="chapter">
           <h3>System interface</h3>
           <p>The application must be statically linked into a single (monolithic) executable file without a need for any libraries other than provided by standard initial installations of target operating systems.</p>
-          <p>The simpliest way to install and run Viaduct application on a system must be by running it without any parameters. In this case it must come up listening on the HTTP port 80, granted standard system limitations (like user permissions or port unavailable). It should have defaults for all configurable items and not need run-time configuration specified, using defaults specified at compile-time.</p>
-          <p>As the next level of configuration, the Viaduct executable must accept optional command-line parameters, including a reference to a full-blown Nginx configuration file. There command-line parameters are detailed in the <a href="#command_line">Interfaces chapter</a>.</p>
+          <p>The simpliest way to install and run DBRelay application on a system must be by running it without any parameters. In this case it must come up listening on the HTTP port 80, granted standard system limitations (like user permissions or port unavailable). It should have defaults for all configurable items and not need run-time configuration specified, using defaults specified at compile-time.</p>
+          <p>As the next level of configuration, the DBRelay executable must accept optional command-line parameters, including a reference to a full-blown Nginx configuration file. There command-line parameters are detailed in the <a href="#command_line">Interfaces chapter</a>.</p>
         </div>
         <div id="datatypes" class="chapter">
           <h3>Data types conversion</h3>
@@ -411,12 +411,12 @@
             <li>
               <p><div class="error_note todo">error handler</div>Client request expected to contain all nesessary information to locate and authenticate into the server to run the query as well as the query itself.</p>
             </li>
-            <li><p><div class="error_note todo">error handler</div>After receiving the client request, the Viaduct applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.</p></li>
+            <li><p><div class="error_note todo">error handler</div>After receiving the client request, the DBRelay applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.</p></li>
             <li><p><div class="error_note todo">error handler</div>When the request gets a connection assigned, it should queue it's SQL query for execution on that connection. Every query should run in a fresh context, meaning, that <span class="em">no</span> temporary objects or other context information from previous queries on the same connection should be visible and impacting the new query.</p></li>
             <li><p><div class="error_note todo">error handler</div>The resulting datasets should be formatted and returned to the client.</p></li>
             <li>
               <p><div class="error_note todo">error handler</div>There should be a connection &quot;garbage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.</p>
-              <p>As it is implemented now, a connection &laquo;garbage collector&raquo; only runs when there is an incoming viaduct request. In future releases, there may be an independant agent or thread running for administration/cleanup.</p>
+              <p>As it is implemented now, a connection &laquo;garbage collector&raquo; only runs when there is an incoming DBRelay request. In future releases, there may be an independant agent or thread running for administration/cleanup.</p>
             </li>
           </ol>
         </div>
@@ -434,7 +434,7 @@
           <h3>Application shutdown</h3>
           <p>Application behavior when receiving catchable signals:</p>
           <table>
-            <tr><th>Signal</th><th>Nginx behavior</th><th>Viaduct behavior</th></tr>
+            <tr><th>Signal</th><th>Nginx behavior</th><th>DBRelay behavior</th></tr>
             <tr><td>2(INT),15(TERM)</td><td>Quick shutdown</td><td>Close tcp connections, abandom queries and HTTP connections.</td></tr>
             <tr><td>3(QUIT)</td><td>Graceful shutdown</td><td>Do not accept new requests, finish and return existing data for queries in queues.</td></tr>
             <tr><td>1(HUP)</td><td>Configuration reload. Start the new worker processes with a new configuration. Gracefully shutdown the old worker processes.</td><td>Configuration reload. Start the new worker processes with a new configuration. Gracefully shutdown the old worker processes. Do the same for DB connection threads.</td></tr>
@@ -449,7 +449,7 @@
           <p>The SQL Bridge module should be configurable to be invoked on one or many URIs. By default it must respond to get and post requests at the <code>/sql</code> path.</p>
           <p>HTTP request carries information in the HTTP header and parameter <code>key=value</code> pairs. The application <span class="em">must not</span> expect request information in HTTP headers. Only request parameters must be used. All defaults are configured in the build header files. The parameters below are grouped for the clarity:</p>
           <h4 id="http_request_db">Database server</h4>
-          <p><span class="term done">sql_dbtype</span>Database driver name in viaduct. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; . The &laquo;mssql&raquo;  value is default, if the field is missing.</p>
+          <p><span class="term done">sql_dbtype</span>Database driver name in DBRelay. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; . The &laquo;mssql&raquo;  value is default, if the field is missing.</p>
           <p><span class="term done">sql_server</span>Hostname on which the SQL server is running.</p>
           <p><span class="term done">sql_port</span>Optional port number, on which the SQL server is listening. 1433 is the default.</p>
           <p><span class="term done">sql_database</span>Optional name of the primary database for the connection. User's default database is used, if not specified.</p>
@@ -458,7 +458,7 @@
           <h4 id="http_request_conn">Connection lifecycle</h4>
           <p><span class="term done">connection_name</span>Optional name to persist this connection under.</p>
           <p><span class="term done">connection_timeout</span>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</p>
-          <p><span class="term done">http_keepalive</span>Optional flag to support broken HTTP clients.  When set to <span>0</span> Viaduct will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></p>
+          <p><span class="term done">http_keepalive</span>Optional flag to support broken HTTP clients.  When set to <span>0</span> DBRelay will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></p>
           <p><span class="term done">query_tag</span>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</p>
           <p><span class="term todo">log_level</span>Optional log level setting for the whole application, connection or the specific query.</p>
           <p><span class="term todo">log_level_scope</span>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</p>
@@ -473,7 +473,7 @@
         </div>
         <div id="http_response" class="chapter">
           <h3>HTTP response (JSON)</h3>
-          <p>The Viaduct application will return the results as &quot;<code>application/json</code>&quot; ContentType.</p>
+          <p>The DBRelay application will return the results as &quot;<code>application/json</code>&quot; ContentType.</p>
           <p>An HTTP response is described as a JSON object below. Regular text is for literals, <span class="ab">italic caps</span> are for the terms defined later in the specification, and <span class="json_term">underlined</span> words are for <a href="http://json.org/">JSON-defined terms</a>. Object members may appear in any order inside the object. Members marked with &laquo;?&raquo; are optional. Array elements or object members, marked with &quot;&middot; &middot; &middot;&quot; after them, occur <span class="em">zero</span> or more times.</p>
           <p class="spec"><span class="term done"><span class="ab">response</span></span>
             {<br />
@@ -545,7 +545,7 @@
           <p><span class="term">debug</span>The complete http connection, request and database server lifecycle information, including full set of timings on both client and database sides.</p>
           <p><span class="term">informational</span>Live configuration changes. For now, this is only &laquo;<code>log_level</code>&raquo; for &laquo;<code>server</code>&raquo; and &laquo;<code>connection</code>&raquo; scopes.</p>
           <p><span class="term">notice</span>All query errors together with related requests' data, parameters, and client's data: ip address, http headers, excluding passwords.</p>
-          <p><span class="term">warning</span>Events, which may indicate misconfiguration or remote error condition, but do not threaten the Viaduct server integrity. Most events, which are likely to impact multiple clients. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
+          <p><span class="term">warning</span>Events, which may indicate misconfiguration or remote error condition, but do not threaten the DBRelay server integrity. Most events, which are likely to impact multiple clients. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
           <ul class="dense">
             <li>Timeouts on database server queries.</li>
             <li>Malformed requests.</li>
@@ -557,7 +557,7 @@
             <li>The affected connection data with all its parameters, excluding password. Include connection remote IP address, time established, requests per hour, data in and data out.</li>
             <li>Active and pending requests per each connection, with all the requests' parameters and client's data: ip address, http headers, excluding passwords.</li>
           </ul>
-          <p><span class="term">critical</span>Log only when Viaduct server can not continue and will shutdown. the following data is reported:</p>
+          <p><span class="term">critical</span>Log only when DBRelay server can not continue and will shutdown. the following data is reported:</p>
           <ul class="dense">
             <li>List of open connections with all their parameters, excluding passwords. Include connection remote IP addresses, time established, requests per hour, data in and data out.</li>
             <li>Active and pending requests per each connection, with all the requests' parameters and client data: ip address, http headers, excluding passwords.</li>
@@ -578,8 +578,8 @@
           <p>The application must have defaults for everything, so all command line parameters are optional.</p>
           <table>
             <tr><th>Parameter name</th><th>Value</th><th>Default</th><th>Description</th></tr>
-            <tr><td>--port</td><td>integer</td><td>80</td><td>A TCP port number for the Viaduct's HTTP server to listen on.</td></tr>
-              <tr><td>--root</td><td>directory</td><td>hardcoded per build target in header files</td><td>A directory for the Viaduct's HTTP server to serve the static files from.</td></tr>
+            <tr><td>--port</td><td>integer</td><td>80</td><td>A TCP port number for the DBRelay's HTTP server to listen on.</td></tr>
+              <tr><td>--root</td><td>directory</td><td>hardcoded per build target in header files</td><td>A directory for the DBRelay's HTTP server to serve the static files from.</td></tr>
             <tr><td>--config</td><td>file name</td><td>hardcoded per build target in header files</td><td>A file name for run-time configuration to load.</td></tr>
             <tr><td>--log-dir</td><td>directory name</td><td>hardcoded per build target in header files</td><td>A directory name where the log files should go.</td></tr>
             <tr><td>--pid-file</td><td>file name</td><td>hardcoded per build target in header files</td><td>A file name for the PID file.</td></tr>
@@ -588,24 +588,24 @@
       </div>
       <div id="environment" class="chapter">
         <h2>Environment</h2>
-        <p>The Viaduct application must run on plain installs of Linux distribution CentOS versions between 5.2 and 6.0, both 32 and 64 bit, and Mac OS X versions between 10.5.4 and 10.6, without development packages installed. It should compile on the same platforms with only their vendor-provided development environments installed. The HTTP capabilities on the Viaduct application should be compatible with those of Firefox version 2 and later on Mac OS X 10.5 and Windows XP and Internet Explorer version 7 or later on Windows XP.</p>
+        <p>The DBRelay application must run on plain installs of Linux distribution CentOS versions between 5.2 and 6.0, both 32 and 64 bit, and Mac OS X versions between 10.5.4 and 10.6, without development packages installed. It should compile on the same platforms with only their vendor-provided development environments installed. The HTTP capabilities on the DBRelay application should be compatible with those of Firefox version 2 and later on Mac OS X 10.5 and Windows XP and Internet Explorer version 7 or later on Windows XP.</p>
       </div>
       <div id="examples" class="chapter">
         <h2>Example</h2>
-        <p>The following is a Viaduct query example from client-side JavaScript. The example uses the <code>$.post()</code> function from external <code>jQuery</code> library to implement the AJAX post. It executes three asynchronous data retrievals at the end of the script. Queries&#x27; tags simply pop up on completion with an <code>alert()</code> function.</p>
+        <p>The following is a DBRelay query example from client-side JavaScript. The example uses the <code>$.post()</code> function from external <code>jQuery</code> library to implement the AJAX post. It executes three asynchronous data retrievals at the end of the script. Queries&#x27; tags simply pop up on completion with an <code>alert()</code> function.</p>
         <pre>
 &lt;script type=&quot;text/javascript&quot; src=&quot;jquery-1.2.6.pack.js&quot;&gt;&lt;/script&gt;
 &lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;
 
   // query function - will be included in external library
-  function viaductQuery( viaduct, connection, sql, callback, tag) {
+  function dbrelayQuery( DBRelay, connection, sql, callback, tag) {
     connection[ &quot;sql&quot; ] = sql;
     if ( tag !== undefined ) connection[ &quot;query_tag&quot; ] = tag;
-    $.post( viaduct, connection, callback, &quot;json&quot;);
+    $.post( DBRelay, connection, callback, &quot;json&quot;);
   };
 
   // connectivity setup
-  var viaduct = &quot;http://viaduct/sql&quot;;
+  var DBRelay = &quot;http://DBRelay/sql&quot;;
   var sql_conn = {
     sql_server : &quot;dbserver&quot;,
     sql_user   : &quot;public&quot;
@@ -617,9 +617,9 @@
   };
 
   // run the queries
-  viaductQuery( viaduct, sql_conn, &quot;exec ExampleProc1&quot;, gotResponse, &quot;First&quot; );
-  viaductQuery( viaduct, sql_conn, &quot;exec ExampleProc2&quot;, gotResponse, &quot;Second&quot; );
-  viaductQuery( viaduct, sql_conn, &quot;exec ExampleProc3&quot;, gotResponse, &quot;Third&quot; );
+  dbrelayQuery( DBRelay, sql_conn, &quot;exec ExampleProc1&quot;, gotResponse, &quot;First&quot; );
+  dbrelayQuery( DBRelay, sql_conn, &quot;exec ExampleProc2&quot;, gotResponse, &quot;Second&quot; );
+  dbrelayQuery( DBRelay, sql_conn, &quot;exec ExampleProc3&quot;, gotResponse, &quot;Third&quot; );
 
 &lt;/script&gt;
         </pre>
