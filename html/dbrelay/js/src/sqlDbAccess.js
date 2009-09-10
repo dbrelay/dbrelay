@@ -17,7 +17,7 @@ sqlDbAccess = function(){
 			//Create the sqlObject
 			this.so =sqlObject( connection , {
 				list_databases:[
-					"USE MASTER;SELECT NAME FROM sys.sysdatabases",
+					"USE MASTER;SELECT NAME FROM sys.sysdatabases ORDER BY NAME ASC",
 					this._onVerb
 				],
 				

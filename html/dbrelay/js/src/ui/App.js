@@ -141,11 +141,6 @@ dbrui.App = function(){
 												scope:this
 										}, 
 										'-',
-										{
-												text:'DBRelay Status',
-												iconCls:'icon-monitor',
-												handler:function(){window.open('/status.html');}
-										},  
 											{
 												text:'Old UI',
 												iconCls:'icon-home', 
