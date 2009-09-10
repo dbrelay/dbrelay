@@ -715,7 +715,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 		if(this.serverSidePaging){ 
 			//query total table rows 
 			this.sqlTable.queryTotalRows({
-				pkeys: this.pkeyColumns.join(','),
+				pkeys: this.pkeyColumns.length > 0 ? this.pkeyColumns[0] : '*',
 				where: this.where
 			},     
 			
