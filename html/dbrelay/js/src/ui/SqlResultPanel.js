@@ -178,14 +178,21 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 					this.centerRegion.body.unmask();  
 				}
 				else{
-					 var data = resp.data[0];
-				
-					 if(data.fields.length === 0){
-						 this.showMsgPanel('<p style="color:green">Success: ' + data.count + ' rows affected.</p>');     
-						this.centerRegion.body.unmask();    
+					//are there any data sets to gridify?
+					var gridify = false, datasets = resp.data;
+					for(var i=0; i<datasets.length; i++){
+						if(datasets[i].fields.length > 0){
+							gridify = true;
+							break;
+						}
+					}
+
+					if(gridify){
+						this.showResultGrids(resp.data);
 					}
 					else{
-						this.showResultGrids(resp.data);
+						this.showMsgPanel('<p style="color:green">Success.</p>');     
+						this.centerRegion.body.unmask();
 					}
 				
 					//update URL field
@@ -236,7 +243,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
     for (var i=0; i<numResults; i++){   
 			var data = dataSets[i];           
 			
-			if(!data.count && data.count !== 0){continue;}
+			if(data.count === null){continue;}
 			
 			var name ='Result Set ' + (count+1);
 
