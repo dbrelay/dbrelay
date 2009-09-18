@@ -41,7 +41,7 @@ dbrui.App = function(){
 				}
 				
         if(success){
-           success.call(scope || window, response, options).defer(50);
+           success.defer(50, scope || window,[ response, options]);
         }
     };
 
@@ -82,14 +82,15 @@ dbrui.App = function(){
 			$.get( "plugins", function (data) {            
 		    	var files = [], css = [], names = {};
 
-					$(data).find('a[href!=../]').each( function(){
+					$(data).find('a').each( function(){
 			      // ex: "GetcoBookmark/"
 					  var name = $(this).attr('href'), baseUrl = 'plugins/' + name;
 						
-						files.push( baseUrl + 'plugin.js' );
-						css.push(baseUrl + 'plugin.css');
-						names[baseUrl + 'plugin.js'] = name.substring(0, name.length - 1);
-						
+						if(name != '../' && name.indexOf('/') === name.length - 1){
+							files.push( baseUrl + 'plugin.js' );
+							css.push(baseUrl + 'plugin.css');
+							names[baseUrl + 'plugin.js'] = name.substring(0, name.length - 1);
+						}
 			    });
 
 					//load'em
