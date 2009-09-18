@@ -45,7 +45,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 			 {
 				text:'Run (CTRL + Enter)',
 				iconCls:'icon-tick',            
-				tooltip:'Execute SQL [Shift + Enter]',
+				tooltip:'Execute SQL [CTRL + Enter]',
 				handler: this.execSql,
 				scope:this
 			},

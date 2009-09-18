@@ -123,6 +123,27 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 									}
 								}
 							},
+							
+							{
+								xtype:'textfield',
+								anchor:'98%',
+								inputType:'password',
+								fieldLabel:'Password', 
+								selectOnFocus:true,  
+								id:'sql_password'+ _idpfx,
+								value: defaultConn.sql_password || '', 
+								enableKeyEvents:true,
+								listeners:{
+									'keyup':{
+										fn:function(fld, e){
+											if(e.keyCode === e.ENTER){
+												 this.onTestAndSave();
+											}
+										},
+										scope:this
+									 }
+								}
+							},
 							{
 								xtype:'combo',
 								anchor:'98%',
@@ -154,26 +175,6 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 								}
 							},
 							
-							{
-								xtype:'textfield',
-								anchor:'98%',
-								inputType:'password',
-								fieldLabel:'Password', 
-								selectOnFocus:true,  
-								id:'sql_password'+ _idpfx,
-								value: defaultConn.sql_password || '', 
-								enableKeyEvents:true,
-								listeners:{
-									'keyup':{
-										fn:function(fld, e){
-											if(e.keyCode === e.ENTER){
-												 this.onTestAndSave();
-											}
-										},
-										scope:this
-									 }
-								}
-							},
 							{
 								xtype:'textfield',
 								anchor:'98%',

@@ -38,7 +38,7 @@ body {
  
 .dbr-sqlresultpanel .x-layout-split,
 .dbr-sqltableeditor .x-layout-split {
-	background:#7FB8F1 url(/images/bullet_arrow_up.png) no-repeat center center;
+	background:#7FB8F1 url('../images/bullet_arrow_up.png') no-repeat center center;
 }
 
 

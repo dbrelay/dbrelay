@@ -408,7 +408,7 @@ dbrui.App = function(){
 									this.addSqlPanel(this.restoredConnection.sql);  
 									
 									//update window title with db name
-									 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
+									 document.title =   (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + '|' + _appName;   
 									 this.refreshTablesMenu();
 					       }
 
@@ -460,7 +460,7 @@ dbrui.App = function(){
 															}      */       
 															
 														 //update window title with db name
-														 document.title = _appName + " [" + (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + ']';   
+														 document.title = (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + '|' + _appName;     
 														 this.refreshTablesMenu();
 															
 															

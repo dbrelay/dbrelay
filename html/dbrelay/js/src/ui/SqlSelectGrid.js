@@ -267,8 +267,10 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			html+= '<tr>';          
 			var row = rows[i];
 			
-			for(var c=0; c<cols.length; c++){   
-				 html += '<td>'+ (allRows ? row[cols[c]] : row.data[cols[c]]) +'</td>';
+			for(var c=0; c<cols.length; c++){  
+				 var v = allRows ? row[cols[c]] : row.data[cols[c]];
+				 
+				 html += '<td>'+ (v===null ? "" : v) +'</td>';
 			}
 			
 			html+='</tr>';
@@ -319,12 +321,14 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		      
 
 		//entire data set
+		console.dir(rows);
 		for(var i=0, len=rows.length; i<len; i++){
 			temp = [];          
 			var row = rows[i];
 			
-			for(var c=1; c<cols.length; c++){       
-				temp.push( _csv( allRows ? row[cols[c]] : row.data[cols[c]] ) ); 
+			for(var c=0; c<cols.length; c++){     
+				var v = allRows ? row[cols[c]] : row.data[cols[c]];  
+				temp.push( _csv(  (v===null ? "" : v) ) ); 
 			}
 			
 			csv += temp.join(',') + '\n'; 
@@ -343,11 +347,11 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
    /*	win.document.writeln('<html><head><style>');    
 		win.document.writeln('pre{padding:0;margin:0;font-family:Arial, Helvetica, "sans serif";font-size:11px;}');
 		win.document.writeln('</style></head><body><pre>');       */
-		win.document.writeln(csv); 
+		win.document.writeln('<pre>' + csv + '</pre>'); 
 	 /* win.document.writeln('</pre></body></html>');     */
 		win.document.close(); 
 		
-		Ext.Msg.alert('CSV Generated in Popup Window','Save popup window as .csv file');  
+	//	Ext.Msg.alert('CSV Generated in Popup Window','Save popup window as .csv file');  
 		
 	}
 

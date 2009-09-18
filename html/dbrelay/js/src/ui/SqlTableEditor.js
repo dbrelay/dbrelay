@@ -860,11 +860,11 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
    /*	win.document.writeln('<html><head><style>');    
 		win.document.writeln('pre{padding:0;margin:0;font-family:Arial, Helvetica, "sans serif";font-size:11px;}');
 		win.document.writeln('</style></head><body><pre>');       */
-		win.document.writeln(csv); 
+		win.document.writeln('<pre>' + csv + '</pre>'); 
 	 /* win.document.writeln('</pre></body></html>');     */
 		win.document.close();        
 		
-		Ext.Msg.alert('CSV Generated in Popup Window','Save popup window as .csv file');
+	//	Ext.Msg.alert('CSV Generated in Popup Window','Save popup window as .csv file');
 	}
 
 });
