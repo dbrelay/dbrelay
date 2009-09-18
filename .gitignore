@@ -9,9 +9,5 @@ src/pcre-*/
 a.out.dSYM
 html/dbrelay/js/*-min.js
 html/.deps/*-min.Po
-Makefile.in
-html/Makefile.in
-src/Makefile.in
 src/dbrelay/include/dbrelay_config.h
-util/Makefile.in
 .DS_Store
