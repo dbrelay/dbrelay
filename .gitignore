@@ -7,3 +7,5 @@ src/freetds-*/
 src/nginx-*/
 src/pcre-*/
 a.out.dSYM
+html/dbrelay/js/dbrelay-ui-sqlresultpanel-min.js
+html/dbrelay/js/dbrelay-ui-sqltableeditor-min.js

@@ -42,8 +42,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	
 	   
 	  this.title = this.title || 'TABLE: ' +this.tableName;  
-  
-
+ 
 		this.tbar =[  
 		{   
 			text:'Hide Adv Filter', 
@@ -910,4 +909,6 @@ dbrui.DeleteBox.prototype ={
         return '<div class="x-grid3-check-col'+(v ?'-on':'')+' x-grid3-cc-'+this.id+'">&#160;</div>';
     }
 };
+
+
 
