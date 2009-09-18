@@ -10,7 +10,6 @@ a.out.dSYM
 html/dbrelay/js/*-min.js
 html/.deps/*-min.Po
 Makefile.in
-configure
 html/Makefile.in
 src/Makefile.in
 src/dbrelay/include/dbrelay_config.h
