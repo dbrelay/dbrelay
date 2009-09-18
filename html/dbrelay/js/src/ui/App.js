@@ -1,4 +1,7 @@
-Ext.namespace('dbrui');  
+Ext.namespace('dbrui','dbrplugins');
+
+
+
 
 dbrui.App = function(){
    var _viewport;       //private var for viewport object
@@ -10,7 +13,54 @@ dbrui.App = function(){
   var _tablesMenuDrop =  new Ext.menu.Menu();
 		
 	var _appName = "DBRelay";
+	
+	//global lsit of plugins, keyed by object type
+	var _plugins = {
+		tableeditor:[],
+		sqlpanel:[],
+		dbrelayapp:[]
+	};
 		
+	//javascript file loader
+	var loadPlugins = function(files, success, error, scope){
+
+		var loadSuccess = function(response, options) {
+        var head = document.getElementsByTagName("head")[0];
+				var url = options.url;
+				if(url.indexOf('.js') === url.length - 3){
+        	var js = document.createElement('script');
+         	js.setAttribute("type", "text/javascript");
+         	js.text = response.responseText;
+         	if (!document.all) {
+             js.innerHTML = response.responseText;
+         	}
+         	head.appendChild(js);
+				}
+				else if(url.indexOf('.css') === url.length - 4){
+					Ext.util.CSS.createStyleSheet( response.responseText );
+				}
+				
+        if(success){
+           success.call(scope || window, response, options).defer(50);
+        }
+    };
+
+
+		for(var i=0,len=files.length; i<len; i++){
+  	  Ext.Ajax.request({
+	        url: files[i],
+	        method: 'GET',
+	        success: loadSuccess,
+	        failure: function(response, options){
+						if(error){
+							error.call( scope || window);
+						}
+					},
+	        disableCaching : false
+	    });
+		}
+	}
+	
 	return {
 		/** {sqlDbAccess} sql db object that is bound to this UI */
 		sqlDb: null,
@@ -26,13 +76,82 @@ dbrui.App = function(){
 		/**
 		Entry point function for admin app.  Called on DOM load.
 		*/
-		init: function(){ 
+		init: function(){
+			var loadedFiles = 0, me = this;
+			//dynamically load plugin files from plugins directory
+			$.get( "plugins", function (data) {            
+		    	var files = [], css = [], names = {};
+
+					$(data).find('a[href!=../]').each( function(){
+			      // ex: "GetcoBookmark/"
+					  var name = $(this).attr('href'), baseUrl = 'plugins/' + name;
+						
+						files.push( baseUrl + 'plugin.js' );
+						css.push(baseUrl + 'plugin.css');
+						names[baseUrl + 'plugin.js'] = name.substring(0, name.length - 1);
+						
+			    });
+
+					//load'em
+					var totalFiles = files.length;
+					
+					if(totalFiles > 0){
+						//CSS - don't care when it finishes loading
+						loadPlugins(css);
+						
+						//javascript - needs to be loaded before rest of app
+						loadPlugins( files , 
+							//success
+							function(response, options){
+
+								loadedFiles++;
+								//try to read
+								var name = names[options.url];
+								
+								//load plugin array
+								var plugin = new dbrplugins[name];
+								switch(plugin.pluginFor){
+									case 'tableeditor':
+									case 'sqlpanel':
+									case 'app':
+										_plugins[plugin.pluginFor].push( plugin );
+								}
+								
+
+								//everything loaded up!
+							//	console.log(options.url);
+								if(loadedFiles === totalFiles){
+									this.loadApp();
+								}
+							},
+							//error
+							function(response, options) {
+								totalFiles--;
+			          Ext.Msg.alert("Error","Unable to load plugin script: " + options.url);
+								if(loadedFiles === totalFiles){
+									this.loadApp();
+								}
+			        },
+					    me
+						);
+					}
+					else{
+						me.loadApp();
+					}
+					
+		  });
+
+		},
+		
+		
+		loadApp: function(){ 
 			var _vaApp = this;
 			
 				     
 			/* viewport consists of DB actions on left side, and table editor in the center */
 			_viewport = new Ext.Viewport({
 				layout:'border',
+				plugins:_plugins.app,
 				
 				items:[
 
@@ -377,7 +496,8 @@ dbrui.App = function(){
 				border: false,
 				title: 'Run SQL ' + (++_numSqls),
 				closable:true,
-				defaultSql : defaultSql || ''
+				defaultSql : defaultSql || '',
+				plugins:_plugins.sqlpanel
 			}));
 			_viewport.doLayout();  
 				
@@ -399,6 +519,7 @@ dbrui.App = function(){
 					closable:true, 
 					serverSidePaging:true,
 					pageSize:100,
+					plugins:_plugins.tableeditor,
 					listeners:{
 						'close':{
 							fn:function(w){
@@ -651,6 +772,7 @@ dbrui.App = function(){
 
 	
 }();         
+
 
 
 Ext.onReady(dbrui.App.init, dbrui.App, true);                           

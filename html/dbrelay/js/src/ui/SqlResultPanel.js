@@ -195,21 +195,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 						this.centerRegion.body.unmask();
 					}
 				
-					//update URL field
-					var conn = Ext.apply({},this.sqlDb.connection);
-					conn.sql =  this.fldSqlCode.getValue(); 
-					conn.query_tag = null;        
-					//don't pass password     
-					conn.sql_password = null;
-					//set transaction flag
-					if(this.fldXact.getValue()){
-						conn.flags += ',xact';
-					}
-
-					var sqlUrl = window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
-			        + Ext.urlEncode(conn) + '&' + window.location.hash;   
-
-					this.setUrlLink(sqlUrl);
+					this.setUrlLink( this.getDirectUrl() );
 				}
 			
 			},
@@ -219,6 +205,24 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 			}
 			,this);
 	},
+	
+	
+	getDirectUrl: function(){
+		//update URL field
+		var conn = Ext.apply({},this.sqlDb.connection);
+		conn.sql =  this.fldSqlCode.getValue(); 
+		conn.query_tag = null;        
+		//don't pass password     
+		conn.sql_password = null;
+		//set transaction flag
+		if(this.fldXact.getValue()){
+			conn.flags += ',xact';
+		}
+
+		return window.location.protocol + '//' + window.location.host + window.location.pathname + '?'
+        + Ext.urlEncode(conn) + '&' + window.location.hash;
+	},
+	
               
   setUrlLink : function(url){    
 		if(this.directLink){
