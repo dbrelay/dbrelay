@@ -3,23 +3,24 @@ htmldir = $(prefix)/html
 JSMIN=../util/jsmin
 JSSRC=dbrelay/js/src
 
-noinst_PROGRAMS = js/dbrelay-core-min.js js/dbrelay-ui-all-min.js js/dbrelay-ui-sqltableeditor-min.js js/dbrelay-ui-sqlresultpanel-min.js 
+noinst_PROGRAMS = dbrelay/js/dbrelay-core-min.js dbrelay/js/dbrelay-ui-all-min.js dbrelay/js/dbrelay-ui-sqltableeditor-min.js dbrelay/js/dbrelay-ui-sqlresultpanel-min.js 
 
-js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
+dbrelay/js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
 	cat $? | $(JSMIN) > $@
 
-js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
+dbrelay/js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
 	cat $? | $(JSMIN) > $@
 
-js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/SqlTableEditor.js
+dbrelay/js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/SqlTableEditor.js
 	cat $? | $(JSMIN) > $@
 
-js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
+dbrelay/js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
 	cat $? | $(JSMIN) > $@
 
 
 FILES = dbrelay/index.html \
 ./50x.html \
+docs/index.html \
 dbrelay/status.html \
 dbrelay/oldindex.html \
 dbrelay/css/dbrelay.css \
