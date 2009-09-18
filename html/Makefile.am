@@ -23,6 +23,7 @@ FILES = dbrelay/index.html \
 docs/index.html \
 dbrelay/status.html \
 dbrelay/oldindex.html \
+dbrelay/plugins/README.txt \
 dbrelay/css/dbrelay.css \
 dbrelay/doc/doc.css \
 dbrelay/doc/environment.html \
