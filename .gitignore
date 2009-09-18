@@ -6,3 +6,4 @@ autom4te.cache
 src/freetds-*/
 src/nginx-*/
 src/pcre-*/
+a.out.dSYM
