@@ -6,16 +6,16 @@ JSSRC=dbrelay/js/src
 noinst_PROGRAMS = dbrelay/js/dbrelay-core-min.js dbrelay/js/dbrelay-ui-all-min.js dbrelay/js/dbrelay-ui-sqltableeditor-min.js dbrelay/js/dbrelay-ui-sqlresultpanel-min.js 
 
 dbrelay/js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
-	cat $? | $(JSMIN) > $@
+	cat $? | $(JSMIN) >> $@
 
 dbrelay/js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
-	cat $? | $(JSMIN) > $@
+	cat $? | $(JSMIN) >> $@
 
 dbrelay/js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/SqlTableEditor.js
-	cat $? | $(JSMIN) > $@
+	cat $? | $(JSMIN) >> $@
 
 dbrelay/js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
-	cat $? | $(JSMIN) > $@
+	cat $? | $(JSMIN) >> $@
 
 
 FILES = dbrelay/index.html \
@@ -41,11 +41,11 @@ dbrelay/doc/SQL_query_interface.html \
 dbrelay/doc/viaduct_architecture.graffle \
 dbrelay/doc/viaduct_architecture.pdf \
 dbrelay/doc/viaduct_specification.html \
-dbrelay/eg/inlinetable_example.html \   
+dbrelay/eg/inlinetable_example.html \
 dbrelay/eg/dbrelay_interactive_xss.html \
-dbrelay/eg/python_example.html \ 
+dbrelay/eg/python_example.html \
 dbrelay/images/application-split-vertical.png \
-dbrelay/images/application.png \     
+dbrelay/images/application.png \
 dbrelay/images/bullet_arrow_up.png \
 dbrelay/images/binocular.png \
 dbrelay/images/chain.png \
@@ -61,8 +61,8 @@ dbrelay/images/document-list.png \
 dbrelay/images/document-pdf-text.png \
 dbrelay/images/folder-open-table.png \
 dbrelay/images/gear.png \
-dbrelay/images/home.png \   
-dbrelay/images/html.png \  
+dbrelay/images/home.png \
+dbrelay/images/html.png \
 dbrelay/images/information.png \
 dbrelay/images/monitor.png \
 dbrelay/images/pencil.png \
@@ -72,9 +72,9 @@ dbrelay/images/question.png \
 dbrelay/images/refresh.gif \
 dbrelay/images/script-attribute-s.png \
 dbrelay/images/spinner.gif \
-dbrelay/images/table.png \  
-dbrelay/images/table-export.png \ 
-dbrelay/images/table-excel.png \ 
+dbrelay/images/table.png \
+dbrelay/images/table-export.png \
+dbrelay/images/table-excel.png \
 dbrelay/images/tables.png \
 dbrelay/images/tick.png \
 dbrelay/js/ext-3.0.0/adapter/jquery/ext-jquery-adapter.js \
