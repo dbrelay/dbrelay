@@ -13,7 +13,7 @@
              index  index.html index.htm;
          }
  
-+        location /eg/ {
++        location /dbrelay/eg/ {
 +          autoindex on;
 +        }
 +        location /dbrelay/plugins/ {
