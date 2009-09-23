@@ -107,20 +107,13 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 									'keyup':{
 										fn:function(fld, e){
 											if( e.keyCode === e.ENTER){
+												
 												 this.onTestAndSave();
 											}
 										},
 										scope:this
-									},
-									//fetch db list on change
-									'change':{
-										fn:function(fld, nv){
-											if(nv !== ''){
-												this.refreshDatabaseList();
-											}
-										},
-										scope:this
 									}
+									
 								}
 							},
 							
@@ -142,6 +135,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 										},
 										scope:this
 									 }
+									
 								}
 							},
 							{
@@ -164,14 +158,14 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 								value:defaultConn.sql_database ||'',
 								enableKeyEvents:true,
 								listeners:{
-									'keyup':{
-										fn:function(fld, e){
-											if(e.keyCode === e.ENTER){
-												 this.onTestAndSave();
-											}
+									//fetch db list on change
+									'focus':{
+										fn:function(fld){
+											this.refreshDatabaseList();
+											
 										},
-										scope:this  
-									 }
+										scope:this
+									}
 								}
 							},
 							

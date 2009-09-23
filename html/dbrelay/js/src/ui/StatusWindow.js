@@ -147,7 +147,7 @@ dbrui.StatusWindow = Ext.extend(Ext.Window,{
 			 }, this);
 		}
 		
-	},
+	}
 	
 	
 });      

@@ -1,7 +1,20 @@
---- conf/nginx.conf.orig	2009-09-17 00:31:34.000000000 -0400
-+++ conf/nginx.conf	2009-09-17 00:32:38.000000000 -0400
-@@ -33,7 +33,7 @@
-     #gzip  on;
+--- conf/nginx.conf.orig	2009-09-23 12:36:40.000000000 -0400
++++ conf/nginx.conf	2009-09-23 12:36:58.000000000 -0400
+@@ -30,10 +30,19 @@
+     #keepalive_timeout  0;
+     keepalive_timeout  65;
+ 
+-    #gzip  on;
++    gzip  on;
++    gzip_http_version 1.1;
++    gzip_vary on;
++    gzip_comp_level 4;
++    gzip_proxied any;
++    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
++    # make sure gzip does not lose large gzipped js or css files
++    # see http://blog.leetsoft.com/2007/7/25/nginx-gzip-ssl
++    gzip_buffers 16 8k;
++
  
      server {
 -        listen       80;
@@ -9,7 +22,7 @@
          server_name  localhost;
  
          #charset koi8-r;
-@@ -45,6 +45,17 @@
+@@ -45,6 +54,17 @@
              index  index.html index.htm;
          }
  

@@ -77,9 +77,16 @@ dbrui.App = function(){
 		Entry point function for admin app.  Called on DOM load.
 		*/
 		init: function(){
+			
 			var loadedFiles = 0, me = this;
+			
+			//IE SUCKS
+			this.loadApp();
+			
+			
 			//dynamically load plugin files from plugins directory
-			$.get( "plugins", function (data) {            
+			
+		/*	$.get( "plugins", function (data) {            
 		    	var files = [], css = [], names = {};
 
 					$(data).find('a').each( function(){
@@ -140,7 +147,7 @@ dbrui.App = function(){
 						me.loadApp();
 					}
 					
-		  });
+		  });*/
 
 		},
 		
