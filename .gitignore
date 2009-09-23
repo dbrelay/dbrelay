@@ -8,6 +8,6 @@ src/nginx-*/
 src/pcre-*/
 a.out.dSYM
 html/dbrelay/js/*-min.js
-html/.deps/*-min.Po
+html/.deps/*
 src/dbrelay/include/dbrelay_config.h
 .DS_Store
