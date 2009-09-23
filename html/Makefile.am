@@ -6,17 +6,16 @@ JSSRC=dbrelay/js/src
 noinst_PROGRAMS = dbrelay/js/dbrelay-core-min.js dbrelay/js/dbrelay-ui-all-min.js dbrelay/js/dbrelay-ui-sqltableeditor-min.js dbrelay/js/dbrelay-ui-sqlresultpanel-min.js 
 
 dbrelay/js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
-	cat $? | $(JSMIN) >> $@
+	$(JSMIN) < $? > $@
 
 dbrelay/js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
-	cat $? | $(JSMIN) >> $@
+	$(JSMIN) < $? > $@
 
 dbrelay/js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/SqlTableEditor.js
-	cat $? | $(JSMIN) >> $@
+	$(JSMIN) < $? > $@
 
 dbrelay/js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
-	cat $? | $(JSMIN) >> $@
-
+	$(JSMIN) < $? > $@
 
 FILES = dbrelay/index.html \
 ./50x.html \
