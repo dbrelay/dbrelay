@@ -321,7 +321,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		      
 
 		//entire data set
-		console.dir(rows);
+		//console.dir(rows);
 		for(var i=0, len=rows.length; i<len; i++){
 			temp = [];          
 			var row = rows[i];
