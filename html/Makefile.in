@@ -160,7 +160,6 @@ sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 JSMIN = ../util/jsmin
@@ -172,22 +171,22 @@ dbrelay/status.html \
 dbrelay/oldindex.html \
 dbrelay/plugins/README.txt \
 dbrelay/css/dbrelay.css \
-dbrelay/doc/doc.css \
-dbrelay/doc/environment.html \
-dbrelay/doc/example.html \
-dbrelay/doc/features.html \
-dbrelay/doc/index.html \
-dbrelay/doc/interaction.html \
-dbrelay/doc/interfaces.html \
-dbrelay/doc/jsapi-sqldbaccess.html \
-dbrelay/doc/jsapi-sqlobject.html \
-dbrelay/doc/jsapi-sqltable.html \
-dbrelay/doc/nav.html \
-dbrelay/doc/overview.html \
-dbrelay/doc/SQL_query_interface.html \
-dbrelay/doc/viaduct_architecture.graffle \
-dbrelay/doc/viaduct_architecture.pdf \
-dbrelay/doc/viaduct_specification.html \
+dbrelay/docs/doc.css \
+dbrelay/docs/environment.html \
+dbrelay/docs/example.html \
+dbrelay/docs/features.html \
+dbrelay/docs/index.html \
+dbrelay/docs/interaction.html \
+dbrelay/docs/interfaces.html \
+dbrelay/docs/jsapi-sqldbaccess.html \
+dbrelay/docs/jsapi-sqlobject.html \
+dbrelay/docs/jsapi-sqltable.html \
+dbrelay/docs/nav.html \
+dbrelay/docs/overview.html \
+dbrelay/docs/SQL_query_interface.html \
+dbrelay/docs/viaduct_architecture.graffle \
+dbrelay/docs/viaduct_architecture.pdf \
+dbrelay/docs/viaduct_specification.html \
 dbrelay/eg/inlinetable_example.html \
 dbrelay/eg/dbrelay_interactive_xss.html \
 dbrelay/eg/python_example.html \
