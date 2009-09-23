@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>DBRelay JavaScript Documentation</title>
+
+	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
+
+	  
+  <style type="text/css">
+<!--
+.em {        font-variant: small-caps;
+        font-weight: bold;
+}
+.todo {        border: 1px solid #F9DB58;
+}
+-->
+  </style>
+  </head>
+	
+	
+<body>
+		<div id="page"> 
+		  <h1>Interaction Logic</h1>
+		  <p>This is a general outline of the logic to be implemented. As the gevelopment progresses, the specific workflows may nee to be adjusted to address the contracted functionality needs.</p>
+          <h2>Normal Request</h2>
+<ol>
+  <li>Client request expected to contain all nesessary information to locate and authenticate into the server to run the query as well as the query itself.
+    </p>
+    <br />
+  </li>
+  <li>After receiving the client request, the DBRelay applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.
+    </p>
+  </li>
+  <li>When the request gets a connection assigned, it should queue it's SQL query for execution on that connection. Every query should run in a fresh context, meaning, that <span class="em">no</span> temporary objects or other context information from previous queries on the same connection should be visible and impacting the new query.
+    </p>
+  </li>
+  <li>The resulting datasets should be formatted and returned to the client.
+    </p>
+  </li>
+  <li>There should be a connection &quot;garbage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.
+    </p>
+    <p>As it is implemented now, a connection &laquo;garbage collector&raquo; only runs when there is an incoming DBRelay request. In future releases, there may be an independant agent or thread running for administration/cleanup.</p>
+  </li>
+  </ol>
+<h2>Persistense considerations</h2>
+<p>Connections are persistent beyond the HTTP response if, and only if, a connection name is provided. Multiple connections may persist under the same name, distinguished by other connection parameters. To be reused, persistent connections are referred to by the whole combination of sql_server, sql_port, sql_database, sql_domain, sql_user, sql_password (crypted), connection_name. Those parameters are referred to as <em>connection hash keys</em>. Connection timeout adjusted by each query which sets it. Error style is specific for the query and is not persistent.</p>
+<p>If a request comes to a named connection which is busy with another query, the request should be queued and executed in a FIFO manner. No two connections should match the same set of hash keys. The reason for these two requirements is that named persistent connection may have state, which users may need to maintain and predictably retrieve on named connections.</p>
+<p>Connection parameters are defined below in the <a href="#http_request">HTTP request</a> section, including the details of the <code>connection_timeout</code> parameter.</p>
+<h2>Status request</h2>
+<p>A status report on open connections, loads, timings, memory, version, etc should be available on a configurable URI, <code>/status</code> by default. The <span class="todo">details of the status response</span> will be specified later in the project.
+</p>
+<h2>Application shutdown</h2>
+<p>Application behavior when receiving catchable signals:</p>
+<table class="doc-table">
+  <tr>
+    <th>Signal</th>
+    <th>Nginx behavior</th>
+    <th>DBRelay behavior</th>
+  </tr>
+  <tr>
+    <td class="doc-name">2(INT),15(TERM)</td>
+    <td>Quick shutdown</td>
+    <td>Close tcp connections, abandom queries and HTTP connections.</td>
+  </tr>
+  <tr>
+    <td class="doc-name">3(QUIT)</td>
+    <td>Graceful shutdown</td>
+    <td>Do not accept new requests, finish and return existing data for queries in queues.</td>
+  </tr>
+  <tr>
+    <td class="doc-name">1(HUP)</td>
+    <td>Configuration reload. Start the new worker processes with a new configuration. Gracefully shutdown the old worker processes.</td>
+    <td>Configuration reload. Start the new worker processes with a new configuration. Gracefully shutdown the old worker processes. Do the same for DB connection threads.</td>
+  </tr>
+  <tr>
+    <td class="doc-name">30(USR1)</td>
+    <td>Reopen the log files</td>
+    <td>Reopen the log files</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+        </div>
+		
+		
+		
+</body>
+</html>           
+
+
+
+

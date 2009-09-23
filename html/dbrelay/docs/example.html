@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>DBRelay JavaScript Documentation</title>
+
+	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
+
+	  
+  <style type="text/css">
+<!--
+.em {        font-variant: small-caps;
+        font-weight: bold;
+}
+.todo {        border: 1px solid #F9DB58;
+}
+.ab {        font-style: italic;
+        font-variant: small-caps;
+}
+.json_term {        text-decoration: underline;
+}
+.indent {        padding: 0em 1.5em;
+        display: block;
+}
+.spec {        font-family: monospaced;
+        margin-left: 10em;
+}
+ul.dense {        pagging-top: 0;
+        pagging-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+}
+ul.dense1 {        pagging-top: 0;
+        pagging-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+}
+ul.dense2 {        pagging-top: 0;
+        pagging-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+}
+-->
+  </style>
+  </head>
+	
+	
+	<body>
+		<div id="page"> 
+			<h1>JavaScript Example (requires only jQuery)</h1>
+			<p>The following is a simple DBRelay query example from client-side JavaScript, which can be used cross-site as well. It executes 2 asynchronous data retrievals at the end of the script. Queries&#x27; tags simply pop up on completion with an <code>alert()</code>
+				 function.</p><pre class="codeblock">&lt;script type="text/javascript" src="jquery-1.3.2.min.js">&lt;/script>
+&lt;script type="text/javascript" charset="utf-8">
+
+  // query function - will be included in external library
+	function dbrelayQuery( connection, sql, callback, query_tag) {
+	  //copy connection info into params
+		var params = {
+			sql: sql,
+			query_tag: query_tag || null
+		};
+
+		for(var k in connection){
+			if(k !== 'dbrelay_host'){
+				params[k] = connection[k];       
+			}
+		}
+
+		if(connection.dbrelay_host){           
+			jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', params , callback);   
+		} 
+		else{
+			$.post( '/sql', params, callback, "json" );    
+		}  
+	};
+
+  // connectivity setup
+	var connection = {
+		sql_server : '99.99.99.99', 
+		sql_database : 'mydatabase',
+		sql_user : 'myusername',
+		sql_password : 'mypassword',  
+		connection_name : 'example1',  
+		
+		//optional parameter for XSS (no trailing slash)
+		dbrelay_host: 'http://remote_dbrelay'
+	};
+
+  // callback function
+  function gotResponse( response ) {
+    alert( 'The "' + response.request.query_tag + '" query has just returned.' );
+  };
+
+	//example calls:
+	dbrelayQuery(connection, 'select * from mytable2', gotResponse, "First");
+	dbrelayQuery(connection, 'select * from mytable3', gotResponse, "Second");
+	
+
+&lt;/script></pre></p>
+		  <p>&nbsp;</p>
+<p>For more examples, please see the Javascript API section.</p>
+        </div>
+		
+		
+		
+  </body>
+</html>           
+
+
+
+

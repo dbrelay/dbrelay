@@ -1,5 +1,9 @@
 #!/bin/sh
 
+#
+# This build script now calls the autoconf build
+#
+
 #set -x
 
 if [ "$1" = "--help" ]
@@ -42,62 +46,12 @@ else
 	SQL_DBTYPE="mssql"
 fi
 
-TDSDIR=freetds-0.82
-PCREDIR=pcre-7.8
-NGXDIR=nginx-0.7.22
-
-BUILD=`pwd`
-cd src
-rm -fr $PCREDIR
-rm -fr $TDSDIR
-rm -fr $NGXDIR
-tar xvfz $PCREDIR.tgz
-tar xvfz $TDSDIR.tgz
-tar xvfz $NGXDIR.tar.gz
-cd ..
-
-# FreeTDS configuration
-cd src/$TDSDIR
-patch -N -p0 < ../../patches/freetds.patch
-./configure --prefix=$BUILD/$TDSDIR --with-tdsver=8.0; make
-
-# VIADUCT configuration
-cd $BUILD
-cd src/ngx_http_viaduct
-
 if [ "${SQL_DBTYPE}" = "mssql" ]
 then
-  ./configure --prefix=$PREFIX --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
+  ./configure --prefix=$PREFIX --with-freetds
 else
-  ./configure --prefix=$PREFIX --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
+  ./configure --prefix=$PREFIX --with-mysql=/usr/local/mysql
 fi
-cd include; make
-
-# NGINX configuration
-cd $BUILD
-cd src/$NGXDIR
-patch -N -p0 < ../../patches/wrapper.patch
-patch -N -p0 < ../../patches/conffile.patch
-HEAD=`grep '^"DEFAULT_CONF_IN"$' -n src/core/ngx_default_conf.h.in | cut -f1 -d:`
-WC=`wc -l src/core/ngx_default_conf.h.in | awk '{print $1}'`
-TAIL=`expr $WC - $HEAD`
-HEAD=`expr $HEAD - 1`
-head -$HEAD src/core/ngx_default_conf.h.in > src/core/ngx_default_conf.h
-cat $CONFPATH | sed -e 's/^/"/' | sed -e 's/$/"/' >> src/core/ngx_default_conf.h
-tail -$TAIL src/core/ngx_default_conf.h.in >> src/core/ngx_default_conf.h
-
-./configure --prefix=$PREFIX --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_http_viaduct/src
 
 make
 make install
-cd ../ngx_http_viaduct
-make 
-cp src/connector $PREFIX/sbin
-
-cd $PREFIX
-patch -N -p0 -i $BUILD/patches/nginx.conf.patch
-[ -d html ] || mkdir -p html
-[ -d html/doc ] || mkdir -p html/doc
-cp $BUILD/doc/* html/doc
-cd $BUILD
-tar --exclude='.svn' -c -f - html | (cd $PREFIX; tar xfp -)

@@ -1,3 +1,13 @@
+config.log
+config.status
+Makefile
+autom4te.cache
 src/freetds-*/
+freetds-*/
 src/nginx-*/
 src/pcre-*/
+a.out.dSYM
+html/dbrelay/js/*-min.js
+html/.deps/*-min.Po
+src/dbrelay/include/dbrelay_config.h
+.DS_Store
