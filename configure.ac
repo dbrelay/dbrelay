@@ -68,14 +68,15 @@ cd ..
 
 
 # FreeTDS configuration
-if test "x$freetds" = "xtrue"; then
+# for now, always build freeds
+#if test "x$freetds" = "xtrue"; then
    echo
    echo Now configuring FreeTDS
    echo
    cd src/$TDSDIR
    patch -N -p0 < ../../patches/freetds.patch
    ./configure --prefix=$BUILD/$TDSDIR --with-tdsver=8.0
-fi
+#fi
 
 # DB Relay configuration
 echo
@@ -87,6 +88,8 @@ cd src/dbrelay
 if test "x$freetds" = "xtrue"; then
    ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
    cd include; make
+elif test "x$odbc" = "xtrue"; then
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-odbc=$with_odbc
 else
    ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
    cd include; make
