@@ -65,7 +65,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.items = [
 			{
 				region:'north',
-				height:120,
+				height:140,
 				split:true,
 				collapsible:true,
 				layout:'form',
@@ -226,7 +226,14 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
               
   setUrlLink : function(url){    
 		if(this.directLink){
-			this.fldUrl.setValue('<a href="'+url+'" target="_blank">' + url + '</a>'); 
+			var title = '', cls='';
+			var host = window.location.protocol + '//' + window.location.host + window.location.pathname;
+			
+			if((url.length - host.length) > 2083){
+				title = 'URL is over the 2083 character limit for IE GET requests, and may not run correctly in IE as a result';
+				cls ='dbr-directlink-warning';
+			}
+			this.fldUrl.setValue('<a title="'+title+'" href="'+url+'" target="_blank" class="'+cls+'">' + url + '</a>'); 
 		}
 	},
 	

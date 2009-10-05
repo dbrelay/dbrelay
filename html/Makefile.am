@@ -58,6 +58,7 @@ dbrelay/images/document-attribute-l.png \
 dbrelay/images/document-globe.png \
 dbrelay/images/document-list.png \
 dbrelay/images/document-pdf-text.png \
+dbrelay/images/exclamation-small.png \
 dbrelay/images/folder-open-table.png \
 dbrelay/images/gear.png \
 dbrelay/images/home.png \

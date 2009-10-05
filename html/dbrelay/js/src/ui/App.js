@@ -85,8 +85,7 @@ dbrui.App = function(){
 			
 			
 			//dynamically load plugin files from plugins directory
-			
-			$.get( "plugins", function (data) {            
+			$.get( "plugins/", function (data) {            
 		    	var files = [], css = [], names = {};
 
 					$(data).find('a').each( function(){
