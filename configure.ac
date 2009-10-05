@@ -50,6 +50,8 @@ if test "$with_odbc"; then
 fi
 AM_CONDITIONAL(ODBC, test "$odbc" = "true")
 
+AC_ARG_WITH(magic,
+AS_HELP_STRING([--with-magic=MAGIC], [prepend MAGIC to beginning of each query.]))
 
 TDSDIR=freetds-0.82
 PCREDIR=pcre-7.8
@@ -89,7 +91,8 @@ if test "x$freetds" = "xtrue"; then
    ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
    cd include; make
 elif test "x$odbc" = "xtrue"; then
-   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-odbc=$with_odbc
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-odbc=$with_odbc --with-magic="$with_magic"
+   cd include; make
 else
    ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
    cd include; make
