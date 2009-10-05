@@ -14,7 +14,10 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
   layout:'border',  
 	closable:true, 
 	
+	/** true to generate direct URL links */
 	directLink: true,
+	/** autoRun can be set to true to automatically run the query when this panel is rendered.  defaulted to false. */
+	autoRun:false,
 
 	initComponent : function(){
 	 var idpfx = Ext.id(); //ensure unique ids   
@@ -152,10 +155,16 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		
 		this.northRegion = Ext.getCmp('north'+idpfx);
 		this.centerRegion = Ext.getCmp('resultsRegion'+idpfx);    
-
-               
+          
 		//save postfix, to be accessed externally later if needed
 		this.idpfx = idpfx;
+		
+		//should we auto run the query on render?
+		if(this.autoRun){
+			this.on('afterlayout', function(){
+				this.execSql();
+			}, this, {single:true});
+		}
 	}, 
 
 

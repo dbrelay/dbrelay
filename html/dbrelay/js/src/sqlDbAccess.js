@@ -205,15 +205,14 @@ sqlDbAccess = function(){
 				@param {Object} scope of callback
 			*/ 
 			testConnection : function(callback, scope){      
-				
-				this.getAllRowCounts(
-					function(dba, resp){
-					 if(callback){
+				this.executeSql('select 1 as one',[],
+				 function(){
+				 	if(callback){
 					    callback.call(scope || window, this, true);  
 					 }
-					},
+				 },
 					//error
-          function(dba, resp){ 
+         function(dba, resp){ 
 						 if(callback){
 						    callback.call(scope || window, this, false);  
 						 } 

@@ -396,6 +396,7 @@ dbrui.App = function(){
   		if(!this.connectionWindow){
 				this.connectionWindow = new dbrui.ConnectionWindow({
 					defaultConnection : this.restoredConnection || {},
+					autoConnect : this.restoredConnection.run ? true : false,
 					listeners:{
 						'connectionupdate':{
 							fn: function(w, conncfg){    
@@ -411,7 +412,9 @@ dbrui.App = function(){
 									delete conncfg.flags_pp;   
 									
                   //open a SQL panel by default
-									this.addSqlPanel(this.restoredConnection.sql);  
+									var autoRun =  this.restoredConnection.run  ? true : false;
+
+									this.addSqlPanel(this.restoredConnection.sql, autoRun);  
 									
 									//update window title with db name
 									 document.title =   (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + '|' + _appName;   
@@ -496,7 +499,7 @@ dbrui.App = function(){
 		 
 		 /** Adds a new SqlResultPanel tab to the main tabs 
 		*/
-     addSqlPanel : function(defaultSql){
+     addSqlPanel : function(defaultSql, autoRun){
 
 			var p = Ext.getCmp('maintabs').add(new dbrui.SqlResultPanel({
 				sqlDb: this.sqlDb,
@@ -504,7 +507,8 @@ dbrui.App = function(){
 				title: 'Run SQL ' + (++_numSqls),
 				closable:true,
 				defaultSql : defaultSql || '',
-				plugins:_plugins.sqlpanel
+				plugins:_plugins.sqlpanel,
+				autoRun : autoRun || false
 			}));
 			_viewport.doLayout();  
 				

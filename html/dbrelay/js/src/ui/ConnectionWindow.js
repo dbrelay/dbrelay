@@ -8,6 +8,8 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 	height:350,
 	modal:true,
 	defaults:{border:false}, 
+	/** true to auto connect */
+	autoConnect: false,
 	
  	initComponent : function(){
 	  var _idpfx = Ext.id(); //ensure unique ids 
@@ -255,6 +257,12 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 		//on show, populate the database list
 		this.on('show', this.refreshDatabaseList, this);
 		
+		if(this.autoConnect){
+			this.on('show', function(){
+				this.onTestAndSave();
+			}, this, {single:true});
+		}
+		
 		this.addEvents({    
 			/** Fired when test & save is clicked, fields are validated, AND testing is success */
 			'connectionupdate' : true
@@ -315,9 +323,10 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 	    //TODO: test connection
 			var testDb = new sqlDbAccess(values); 
 	    testDb.testConnection(function(dba, success){  
-
+				
 			   if(success){    
 						if(this.fireEvent('connectionupdate', this, values)){  
+							
 							this.hide();
 				 		}
 				 }
