@@ -81,12 +81,12 @@ dbrui.App = function(){
 			var loadedFiles = 0, me = this;
 			
 			//IE SUCKS
-			this.loadApp();
+			//this.loadApp();
 			
 			
 			//dynamically load plugin files from plugins directory
 			
-		/*	$.get( "plugins", function (data) {            
+			$.get( "plugins", function (data) {            
 		    	var files = [], css = [], names = {};
 
 					$(data).find('a').each( function(){
@@ -147,7 +147,7 @@ dbrui.App = function(){
 						me.loadApp();
 					}
 					
-		  });*/
+		  });
 
 		},
 		
