@@ -47,7 +47,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 			'-',
 			 {
 				text:'Run (CTRL + Enter)',
-				iconCls:'icon-tick',            
+				iconCls:'icon-tick',  
+				id:'run' + idpfx,          
 				tooltip:'Execute SQL [CTRL + Enter]',
 				handler: this.execSql,
 				scope:this
@@ -151,8 +152,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.fldSqlCode = this.findById('sqlcode'+ idpfx); 
 		this.msgPanel = this.findById('msg'+idpfx);  
 		this.fldUrl = this.findById('url'+idpfx);      
-		this.fldXact = this.findById('xact'+idpfx);  
-		
+		this.fldXact = this.findById('xact'+idpfx);
+					
 		this.northRegion = Ext.getCmp('north'+idpfx);
 		this.centerRegion = Ext.getCmp('resultsRegion'+idpfx);    
           
@@ -161,32 +162,52 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		
 		//should we auto run the query on render?
 		if(this.autoRun){
+
 			this.on('afterlayout', function(){
+
 				this.execSql();
 			}, this, {single:true});
 		}
 	}, 
 
 
-
+	loadMask : function(on){
+		var runBtn = Ext.getCmp('run'+this.idpfx);
+		
+		if(on){
+			this.centerRegion.body.mask('Running Query...Please wait...');
+			if(runBtn){
+		  	runBtn.setIconClass('icon-loading');
+			}
+		}
+		else{
+			if(runBtn){
+				runBtn.setIconClass('icon-tick');
+			}
+			this.centerRegion.body.unmask();
+		}
+	},
+	
+	
 	/** Runs the SQL code and displays results in the grid
 	*/
 	execSql : function(){
-		if(!this.fldSqlCode.validate()){return;}
 		
-		this.centerRegion.body.mask();
+		if(!this.fldSqlCode.validate()){return;}
+
+		this.loadMask(true);
 		
 		//set transaction flag
 	  this.sqlDb.executeSql(this.fldSqlCode.getValue(), (this.fldXact.getValue() ? ['xact'] : null),
 			//success
 			function(sqld, resp){        
-
 				//show results
 				if(resp.log.error || !resp.data){
 					this.showMsgPanel('<p style="color:red">Error:</p><pre style="color:red">'+resp.log.error+'</pre>');      
-					this.centerRegion.body.unmask();  
+					this.loadMask(false);
 				}
 				else{
+					
 					//are there any data sets to gridify?
 					var gridify = false, datasets = resp.data;
 					for(var i=0; i<datasets.length; i++){
@@ -201,7 +222,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 					}
 					else{
 						this.showMsgPanel('<p style="color:green">Success.</p>');     
-						this.centerRegion.body.unmask();
+						this.loadMask(false);
 					}
 				
 					this.setUrlLink( this.getDirectUrl() );
@@ -211,6 +232,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 			//error
 			function(sqld, resp, err){
 				Ext.Msg.alert('Error', err);
+				this.loadMask(false);
 			}
 			,this);
 	},
@@ -327,7 +349,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.doLayout();
 		tb.findById('showgrid-0' + this.idpfx).toggle(true);    
 		tb.addText('&nbsp;&nbsp;'+ count +' result set'+(count > 1 ? 's' : '')+' returned.');             
-		this.centerRegion.body.unmask();    
+		this.loadMask(false);   
 	}
 		
 	

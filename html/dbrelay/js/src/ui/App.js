@@ -394,9 +394,10 @@ dbrui.App = function(){
 			if(!show && !this.connectionWindow){return;}
 			
   		if(!this.connectionWindow){
+
 				this.connectionWindow = new dbrui.ConnectionWindow({
 					defaultConnection : this.restoredConnection || {},
-					autoConnect : this.restoredConnection.run ? true : false,
+					autoConnect : this.restoredConnection.run && this.restoredConnection.run == 1 ? true : false,
 					listeners:{
 						'connectionupdate':{
 							fn: function(w, conncfg){    
@@ -412,13 +413,14 @@ dbrui.App = function(){
 									delete conncfg.flags_pp;   
 									
                   //open a SQL panel by default
-									var autoRun =  this.restoredConnection.run  ? true : false;
-
+									var autoRun =  this.restoredConnection.run && this.restoredConnection.run == 1 ? true : false;
+								
 									this.addSqlPanel(this.restoredConnection.sql, autoRun);  
 									
 									//update window title with db name
 									 document.title =   (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + '|' + _appName;   
 									 this.refreshTablesMenu();
+								
 					       }
 
 					       //update information

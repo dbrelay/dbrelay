@@ -258,7 +258,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 		this.on('show', this.refreshDatabaseList, this);
 		
 		if(this.autoConnect){
-			this.on('show', function(){
+			this.on('render', function(){
 				this.onTestAndSave();
 			}, this, {single:true});
 		}
