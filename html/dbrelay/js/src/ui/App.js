@@ -245,14 +245,14 @@ dbrui.App = function(){
 									},
 									{
 										xtype:'button',
+										text:'Docs',
+										iconCls:'icon-help', 
+										handler:function(){window.open('docs/index.html');}    
+									},
+									{
+										xtype:'button',
 										text:'More',
-										iconCls:'icon-info',
-										menu:[   
-										{
-											text:'DBRelay Documentation',
-											iconCls:'icon-doc', 
-											handler:function(){window.open('docs/index.html');}    
-										}, 
+										menu:[
 										{
 											text:'Other Documentation',
 											iconCls:'icon-doc', 
@@ -265,13 +265,7 @@ dbrui.App = function(){
 													this.showStatusWindow(true);
 												},
 												scope:this
-										}, 
-										'-',
-											{
-												text:'Old UI',
-												iconCls:'icon-home', 
-												handler:function(){window.open('/oldindex.html');}
-											}
+										}
 											
 										]
 									}   

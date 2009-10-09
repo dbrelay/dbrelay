@@ -172,6 +172,7 @@ sqlTable = function(){
 				}
 
 				//run sqlDbAccess verb to fetch paged rows
+				
 			  this.sqlDb.run('fetch_paged_rows',{ 
 						columns: cfg.columns,
 						where: cfg.where ? 'WHERE ' + cfg.where : '',
@@ -190,7 +191,15 @@ sqlTable = function(){
 					
 					 
 					},
-					null,
+					//error callback 
+					function(results){
+						//final callback
+						if(error){
+							error.call(scope || window, this, results, cfg);
+						}   
+					
+					 
+					},
 					//sqlDbAccess callback scope 
 					this      
 				);    
@@ -421,7 +430,7 @@ sqlTable = function(){
 
 			@param {Object} scope : scope of callback function (defaults to global scope)       
 			*/
-      queryTotalRows : function(cfg, callback, scope){ 
+      queryTotalRows : function(cfg, callback, error, scope){ 
 	      cfg = cfg || {};
 				var where = cfg.where || {}, whereparam=[];
 				
@@ -440,20 +449,20 @@ sqlTable = function(){
 						columns: cfg.pkeys || '*',
 						where : whereparam
 					},     
-					//callback
+					//success callback
 					function(resp){  
-            
-						if(resp.data){       
-							var total = resp.data[0].rows[0][1];
-							      
-							if(callback){ 
-							    callback.call(scope || window, this, resp, total);  
-							 }
-	          }
-	
-						
+						var total = resp.data[0].rows[0][1];
+					      
+						if(callback){ 
+						    callback.call(scope || window, this, resp, total);  
+						 }
+
 				},
-				null,
+				function(resp){
+					if(error){ 
+					    error.call(scope || window, this, resp);  
+					 }
+				},
 				this);
 				  
 			}, 

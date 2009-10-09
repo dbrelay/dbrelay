@@ -72,13 +72,13 @@ sqlDbAccess = function(){
 				],   
 				
 				fetch_rows: [
-		       "select {{{columns}}} from {{{table}}} {{{where}}} {{{orderBy}}}",
+		       "select {{{columns}}} from {{{table}}}\n {{{where}}} \n{{{orderBy}}}",
 		       this._onVerb
 				],
 				
 				
 				get_count:[
-					"SELECT COUNT({{{columns}}}) FROM {{{table}}} {{{where}}}",
+					"SELECT COUNT({{{columns}}}) FROM {{{table}}} \n{{{where}}}",
 					this._onVerb
 				],
 
@@ -88,21 +88,21 @@ sqlDbAccess = function(){
 				],     
 				
 				delete_row: [
-					"DELETE FROM {{{table}}} WHERE {{{where}}}",
+					"DELETE FROM {{{table}}} WHERE \n{{{where}}}",
 					this._onVerb  
 				],
 				
 				fetch_paged_rows: [             
 					"select * from ("
-					+" Select ROW_NUMBER () OVER(Order By {{{orderBy}}}) as dbrelayRowNum, *"
-					+"  From (SELECT * FROM {{{table}}} {{{where}}}) dbrelayInnerp1"
+					+" Select ROW_NUMBER () OVER(Order By \n{{{orderBy}}}) \nas dbrelayRowNum, *"
+					+"  From (SELECT * FROM {{{table}}} \n{{{where}}}) \ndbrelayInnerp1"
 					+" ) dbrelayInnerp2"
 					+" WHERE dbrelayRowNum BETWEEN {{{minRow}}} and {{{maxRow}}}",
 					this._onVerb
 				],
 				
 			 	update_row :[
-					 "UPDATE {{{table}}} SET {{{setvalues}}} WHERE {{{where}}}",
+					 "UPDATE {{{table}}} SET {{{setvalues}}} WHERE \n{{{where}}}",
 					 this._onVerb
 				]
 				
