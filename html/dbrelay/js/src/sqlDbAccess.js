@@ -246,7 +246,9 @@ sqlDbAccess = function(){
 
 			},
 			
-			
+			setDbrelayHost: function(dbrhost){
+				this.connection.dbrelay_host = dbrhost;
+			},
 			/**
 				Executes arbitrary sql code
 				@param {string} sql : code to execute
@@ -271,7 +273,6 @@ sqlDbAccess = function(){
 						}
 					}
 
-					
 			  	dbrelayQuery( params, sql, function(resp){ 
 						if(resp.data){
 							_log.push('<p style="color:blue">'+resp.log.sql + '</p>');
