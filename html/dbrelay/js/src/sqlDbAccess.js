@@ -205,15 +205,14 @@ sqlDbAccess = function(){
 				@param {Object} scope of callback
 			*/ 
 			testConnection : function(callback, scope){      
-				
-				this.getAllRowCounts(
-					function(dba, resp){
-					 if(callback){
+				this.executeSql('select 1 as one',[],
+				 function(){
+				 	if(callback){
 					    callback.call(scope || window, this, true);  
 					 }
-					},
+				 },
 					//error
-          function(dba, resp){ 
+         function(dba, resp){ 
 						 if(callback){
 						    callback.call(scope || window, this, false);  
 						 } 
@@ -257,7 +256,7 @@ sqlDbAccess = function(){
 						@cbparam {Object} raw json response from server
 				@param {Object} scope of callback
 			*/
-			executeSql: function(sql, flags, success, error, scope){
+			executeSql: function(sql, flags, success, error, scope, queryTag){
 					var params = {};
 					//create copy of connection obj
 					for(var x in this.connection){
@@ -271,6 +270,7 @@ sqlDbAccess = function(){
 							params.flags += ',' + flags[i];
 						}
 					}
+
 					
 			  	dbrelayQuery( params, sql, function(resp){ 
 						if(resp.data){
@@ -287,7 +287,7 @@ sqlDbAccess = function(){
 						}
 						
 		             
-	      });
+	      },queryTag);
 			},   
 			
 			/**

@@ -81,12 +81,11 @@ dbrui.App = function(){
 			var loadedFiles = 0, me = this;
 			
 			//IE SUCKS
-			this.loadApp();
+			//this.loadApp();
 			
 			
 			//dynamically load plugin files from plugins directory
-			
-		/*	$.get( "plugins", function (data) {            
+			$.get( "plugins/", function (data) {            
 		    	var files = [], css = [], names = {};
 
 					$(data).find('a').each( function(){
@@ -147,7 +146,7 @@ dbrui.App = function(){
 						me.loadApp();
 					}
 					
-		  });*/
+		  });
 
 		},
 		
@@ -395,8 +394,10 @@ dbrui.App = function(){
 			if(!show && !this.connectionWindow){return;}
 			
   		if(!this.connectionWindow){
+
 				this.connectionWindow = new dbrui.ConnectionWindow({
 					defaultConnection : this.restoredConnection || {},
+					autoConnect : this.restoredConnection.run && this.restoredConnection.run == 1 ? true : false,
 					listeners:{
 						'connectionupdate':{
 							fn: function(w, conncfg){    
@@ -412,11 +413,14 @@ dbrui.App = function(){
 									delete conncfg.flags_pp;   
 									
                   //open a SQL panel by default
-									this.addSqlPanel(this.restoredConnection.sql);  
+									var autoRun =  this.restoredConnection.run && this.restoredConnection.run == 1 ? true : false;
+								
+									this.addSqlPanel(this.restoredConnection.sql, autoRun);  
 									
 									//update window title with db name
 									 document.title =   (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + '|' + _appName;   
 									 this.refreshTablesMenu();
+								
 					       }
 
 					       //update information
@@ -497,7 +501,7 @@ dbrui.App = function(){
 		 
 		 /** Adds a new SqlResultPanel tab to the main tabs 
 		*/
-     addSqlPanel : function(defaultSql){
+     addSqlPanel : function(defaultSql, autoRun){
 
 			var p = Ext.getCmp('maintabs').add(new dbrui.SqlResultPanel({
 				sqlDb: this.sqlDb,
@@ -505,7 +509,8 @@ dbrui.App = function(){
 				title: 'Run SQL ' + (++_numSqls),
 				closable:true,
 				defaultSql : defaultSql || '',
-				plugins:_plugins.sqlpanel
+				plugins:_plugins.sqlpanel,
+				autoRun : autoRun || false
 			}));
 			_viewport.doLayout();  
 				

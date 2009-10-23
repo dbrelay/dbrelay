@@ -41,6 +41,12 @@ body {
 	background:#7FB8F1 url('../images/bullet_arrow_up.png') no-repeat center center;
 }
 
+.dbr-directlink-warning{
+	padding-left:18px;
+	background:transparent url('../images/exclamation-small.png') no-repeat top left;
+	color:#ff0000 !important;
+	font-style:italic;
+}
 
 .dbr-dbactions .x-btn{
  margin-bottom:5px;
@@ -158,4 +164,7 @@ label{
 }
 .icon-dbrelay{
 	background-image: url('../images/dbrelay.png') !important;    
+}
+.icon-loading{
+	background-image: url('../images/loading.gif') !important;    
 }

@@ -14,7 +14,10 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
   layout:'border',  
 	closable:true, 
 	
+	/** true to generate direct URL links */
 	directLink: true,
+	/** autoRun can be set to true to automatically run the query when this panel is rendered.  defaulted to false. */
+	autoRun:false,
 
 	initComponent : function(){
 	 var idpfx = Ext.id(); //ensure unique ids   
@@ -44,7 +47,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 			'-',
 			 {
 				text:'Run (CTRL + Enter)',
-				iconCls:'icon-tick',            
+				iconCls:'icon-tick',  
+				id:'run' + idpfx,          
 				tooltip:'Execute SQL [CTRL + Enter]',
 				handler: this.execSql,
 				scope:this
@@ -65,7 +69,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.items = [
 			{
 				region:'north',
-				height:120,
+				height:140,
 				split:true,
 				collapsible:true,
 				layout:'form',
@@ -148,36 +152,62 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.fldSqlCode = this.findById('sqlcode'+ idpfx); 
 		this.msgPanel = this.findById('msg'+idpfx);  
 		this.fldUrl = this.findById('url'+idpfx);      
-		this.fldXact = this.findById('xact'+idpfx);  
-		
+		this.fldXact = this.findById('xact'+idpfx);
+					
 		this.northRegion = Ext.getCmp('north'+idpfx);
 		this.centerRegion = Ext.getCmp('resultsRegion'+idpfx);    
-
-               
+          
 		//save postfix, to be accessed externally later if needed
 		this.idpfx = idpfx;
+		
+		//should we auto run the query on render?
+		if(this.autoRun){
+
+			this.on('afterlayout', function(){
+
+				this.execSql();
+			}, this, {single:true});
+		}
 	}, 
 
 
-
+	loadMask : function(on){
+		var runBtn = Ext.getCmp('run'+this.idpfx);
+		
+		if(on){
+			this.centerRegion.body.mask('Running Query...Please wait...');
+			if(runBtn){
+		  	runBtn.setIconClass('icon-loading');
+			}
+		}
+		else{
+			if(runBtn){
+				runBtn.setIconClass('icon-tick');
+			}
+			this.centerRegion.body.unmask();
+		}
+	},
+	
+	
 	/** Runs the SQL code and displays results in the grid
 	*/
 	execSql : function(){
-		if(!this.fldSqlCode.validate()){return;}
 		
-		this.centerRegion.body.mask();
+		if(!this.fldSqlCode.validate()){return;}
+
+		this.loadMask(true);
 		
 		//set transaction flag
 	  this.sqlDb.executeSql(this.fldSqlCode.getValue(), (this.fldXact.getValue() ? ['xact'] : null),
 			//success
 			function(sqld, resp){        
-
 				//show results
 				if(resp.log.error || !resp.data){
 					this.showMsgPanel('<p style="color:red">Error:</p><pre style="color:red">'+resp.log.error+'</pre>');      
-					this.centerRegion.body.unmask();  
+					this.loadMask(false);
 				}
 				else{
+					
 					//are there any data sets to gridify?
 					var gridify = false, datasets = resp.data;
 					for(var i=0; i<datasets.length; i++){
@@ -192,7 +222,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 					}
 					else{
 						this.showMsgPanel('<p style="color:green">Success.</p>');     
-						this.centerRegion.body.unmask();
+						this.loadMask(false);
 					}
 				
 					this.setUrlLink( this.getDirectUrl() );
@@ -202,6 +232,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 			//error
 			function(sqld, resp, err){
 				Ext.Msg.alert('Error', err);
+				this.loadMask(false);
 			}
 			,this);
 	},
@@ -226,7 +257,14 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
               
   setUrlLink : function(url){    
 		if(this.directLink){
-			this.fldUrl.setValue('<a href="'+url+'" target="_blank">' + url + '</a>'); 
+			var title = '', cls='';
+			var host = window.location.protocol + '//' + window.location.host + window.location.pathname;
+			
+			if((url.length - host.length) > 2083){
+				title = 'URL is over the 2083 character limit for IE GET requests, and may not run correctly in IE as a result';
+				cls ='dbr-directlink-warning';
+			}
+			this.fldUrl.setValue('<a title="'+title+'" href="'+url+'" target="_blank" class="'+cls+'">' + url + '</a>'); 
 		}
 	},
 	
@@ -311,7 +349,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		this.doLayout();
 		tb.findById('showgrid-0' + this.idpfx).toggle(true);    
 		tb.addText('&nbsp;&nbsp;'+ count +' result set'+(count > 1 ? 's' : '')+' returned.');             
-		this.centerRegion.body.unmask();    
+		this.loadMask(false);   
 	}
 		
 	

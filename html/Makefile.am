@@ -58,11 +58,13 @@ dbrelay/images/document-attribute-l.png \
 dbrelay/images/document-globe.png \
 dbrelay/images/document-list.png \
 dbrelay/images/document-pdf-text.png \
+dbrelay/images/exclamation-small.png \
 dbrelay/images/folder-open-table.png \
 dbrelay/images/gear.png \
 dbrelay/images/home.png \
 dbrelay/images/html.png \
 dbrelay/images/information.png \
+dbrelay/images/loading.gif \
 dbrelay/images/monitor.png \
 dbrelay/images/pencil.png \
 dbrelay/images/plug.png \
@@ -76,7 +78,6 @@ dbrelay/images/table-export.png \
 dbrelay/images/table-excel.png \
 dbrelay/images/tables.png \
 dbrelay/images/tick.png \
-dbrelay/images/loading.gif \
 dbrelay/js/ext-3.0.0/adapter/jquery/ext-jquery-adapter.js \
 dbrelay/js/ext-3.0.0/ext-all.js \
 dbrelay/js/ext-3.0.0/license.txt \
