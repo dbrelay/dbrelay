@@ -53,7 +53,9 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 				handler: this.execSql,
 				scope:this
 			},
-			'->',
+			{
+				xtype:'tbfill',
+			},
 			{
 				iconCls:'icon-minus', 
 				text:'Clear',
@@ -297,13 +299,14 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 				var grid = new dbrui.SqlSelectGrid({
 					resultName:'Viewing ' + name, 
 					dataSet:data,
+					plugins: this.gridplugins,
+					sqlTitle: this.title,
 					listeners:{
 						'render':{
 							fn:function(g){    
 								this.doLayout();
 								 
-								g.refresh(g.dataSet); 
-								delete g.dataSet;     
+								g.refresh(g.dataSet);    
 							},
 							scope:this
 						}
@@ -323,7 +326,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 				grid.setResultName(name);
 			}
 		
-		
+
 		  //add grid button to result toolbar
 			tb.add({ 
 				text: name,    

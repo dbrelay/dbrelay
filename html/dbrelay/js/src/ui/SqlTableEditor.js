@@ -135,7 +135,9 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 					}
 				]
 			},          
-			'->',
+			{
+				xtype:'tbfill',
+			},
 			'<b><span id="total'+idpfx+'"></span></b> total',
 			'-',
 			{
