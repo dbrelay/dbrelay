@@ -1,5 +1,4 @@
-Ext.namespace('dbrui','dbrplugins');
-
+Ext.namespace('dbrui','dbrplugins.meta');
 
 
 
@@ -18,7 +17,8 @@ dbrui.App = function(){
 	var _plugins = {
 		tableeditor:[],
 		sqlpanel:[],
-		dbrelayapp:[]
+		dbrelayapp:[],
+		sqlgrid:[]
 	};
 		
 	//javascript file loader
@@ -79,6 +79,7 @@ dbrui.App = function(){
 		init: function(){
 			
 			var loadedFiles = 0, me = this;
+			Ext.chart.Chart.CHART_URL = 'js/ext-3.0.0/resources/charts.swf';
 			
 			//IE SUCKS
 			//this.loadApp();
@@ -116,12 +117,9 @@ dbrui.App = function(){
 								var name = names[options.url];
 								
 								//load plugin array
-								var plugin = new dbrplugins[name];
-								switch(plugin.pluginFor){
-									case 'tableeditor':
-									case 'sqlpanel':
-									case 'app':
-										_plugins[plugin.pluginFor].push( plugin );
+								var pluginFor = dbrplugins.meta[name].pluginFor;
+								if(_plugins[pluginFor]){
+									_plugins[pluginFor].push( name );
 								}
 								
 
@@ -150,6 +148,15 @@ dbrui.App = function(){
 
 		},
 		
+		getPluginsFor : function(type){
+			var names = _plugins[type], plugins = [];
+
+			for(var i=0; i< names.length; i++){
+				plugins.push( new dbrplugins[names[i]] );
+			}
+			
+			return plugins;
+		},
 		
 		loadApp: function(){ 
 			var _vaApp = this;
@@ -245,14 +252,14 @@ dbrui.App = function(){
 									},
 									{
 										xtype:'button',
+										text:'Docs',
+										iconCls:'icon-help', 
+										handler:function(){window.open('docs/index.html');}    
+									},
+									{
+										xtype:'button',
 										text:'More',
-										iconCls:'icon-info',
-										menu:[   
-										{
-											text:'DBRelay Documentation',
-											iconCls:'icon-doc', 
-											handler:function(){window.open('docs/index.html');}    
-										}, 
+										menu:[
 										{
 											text:'Other Documentation',
 											iconCls:'icon-doc', 
@@ -265,13 +272,7 @@ dbrui.App = function(){
 													this.showStatusWindow(true);
 												},
 												scope:this
-										}, 
-										'-',
-											{
-												text:'Old UI',
-												iconCls:'icon-home', 
-												handler:function(){window.open('/oldindex.html');}
-											}
+										}
 											
 										]
 									}   
@@ -327,8 +328,18 @@ dbrui.App = function(){
 			});
 			
 			
+			//check browser
+			if(!Ext.isIE8 && !Ext.isGecko3 && !Ext.isSafari4){
+				Ext.Msg.alert('WARNING','You are not using a supported browser.\nThis interface supports FF3+, IE8+, and Safari 4+.  Using any other browsers may result in problems.',
+					function(){
+							this.showConnectionWindow(true);  
+					}, this);
+			}
+			else{
+				this.showConnectionWindow(true);  
+			}
 
-			this.showConnectionWindow(true);  
+			
 			
 		/*	if(qparams && qparams.sql_server && qparams.sql_database){      
 				console.dir(qparams); 
@@ -506,10 +517,11 @@ dbrui.App = function(){
 			var p = Ext.getCmp('maintabs').add(new dbrui.SqlResultPanel({
 				sqlDb: this.sqlDb,
 				border: false,
-				title: 'Run SQL ' + (++_numSqls),
+				title: 'SQL Query ' + (++_numSqls),
 				closable:true,
 				defaultSql : defaultSql || '',
-				plugins:_plugins.sqlpanel,
+				plugins:this.getPluginsFor('sqlpanel'),
+				gridplugins:this.getPluginsFor('sqlgrid'),
 				autoRun : autoRun || false
 			}));
 			_viewport.doLayout();  
@@ -532,7 +544,7 @@ dbrui.App = function(){
 					closable:true, 
 					serverSidePaging:true,
 					pageSize:100,
-					plugins:_plugins.tableeditor,
+					plugins:this.getPluginsFor('tableeditor'),
 					listeners:{
 						'close':{
 							fn:function(w){

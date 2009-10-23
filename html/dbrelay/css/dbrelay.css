@@ -168,3 +168,15 @@ label{
 .icon-loading{
 	background-image: url('../images/loading.gif') !important;    
 }
+.icon-chart{
+	background-image: url('../images/chart_curve.png') !important;    
+}
+.icon-linechart{
+	background-image: url('../images/chart_line.png') !important;    
+}
+.icon-barchart{
+	background-image: url('../images/chart_bar.png') !important;    
+}
+.icon-piechart{
+	background-image: url('../images/chart_pie.png') !important;    
+}

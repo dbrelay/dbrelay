@@ -135,7 +135,9 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 					}
 				]
 			},          
-			'->',
+			{
+				xtype:'tbfill',
+			},
 			'<b><span id="total'+idpfx+'"></span></b> total',
 			'-',
 			{
@@ -521,7 +523,9 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				//calback
 				function(sqlt, resp, ocfg, ncfg){
         	this.hideMask();   
-					if(!resp.data){return;}
+					if(!resp.data){
+						return;
+					}
 					
 					this.tableData = resp.data[0].rows;
 
@@ -533,6 +537,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			//error
 			function(sqld, err){
 				Ext.Msg.alert("Error", "An error occured while trying to fetch the data.  " + err.log.error);
+				this.hideMask();
 			}
 			,this);
 			
@@ -588,6 +593,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				//error
 				function(sqlt, resp){
 					Ext.Msg.alert("Error","An error occurred while trying to fetch the primary keys");
+					this.hideMask();
 				},
 				this);  
 			
@@ -595,6 +601,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			//error
 			function(sqlt, resp){
 				Ext.Msg.alert("Error","An error occurred while trying to fetch the table columns");
+				this.hideMask();
 			},
 			this);    
 		
@@ -719,12 +726,13 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			},     
 			
 			function(sqlt, resp, total){
-				if(resp.data){  
 					this.setTotalCount(total);
 					this.updatePageView();
-				}
-				
-			}, this);
+			},
+			function(sqlt, resp){
+				this.hideMask();
+			},
+			 this);
 			
 		}
 		else{     
