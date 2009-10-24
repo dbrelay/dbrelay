@@ -1,3 +1,5 @@
+Ext.namespace('dbrui');
+
 dbrui.Util = function(){
 	return {
 
