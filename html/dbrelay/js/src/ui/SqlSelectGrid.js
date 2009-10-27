@@ -211,10 +211,18 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 				layout:'fit',
 				tbar:[
 					{
-						text:'Help',
+						text:'<div style="font-weight:bold;color:red;font-size:14px">Help</div>',
 						iconCls:'icon-help',
 						handler:function(){
-							Ext.Msg.alert('Charts Help','Charts is currently in BETA mode.\n\n Line Chart & Bar Chart: x=first column of query, y= rest of columns\n\nPie Chart: x=first column of query, y=2nd column');
+							Ext.Msg.alert('Charts Help','Charts are currently in BETA mode.  Currently only one result set can be charted at a time.<br/>'
+								+ '<table width="100%" border="1"><tr><td>&nbsp;</td><td><b>Line/Bar Chart</b></td><td><b>Pie Chart</b></td></tr>'
+								+ '<tr><td><b>x</b></td><td>first column</td><td>categories are first column</td></tr>'
+								+ '<tr><td><b>y</b></td><td>each numeric column after the 1st column</td><td>2nd column</td></tr>'
+								+ '</table><br/><br/>'
+								+ 'OPEN ISSUES:<br/>'
+								+ '- Charts currently bind to the first query that is run.  To chart different results, open a new SQL query tab.<br/>'
+								+ '- Time Series chart currently does not refresh its data.  To chart a different time series, open a new SQL query tab.<br/>'
+							);
 						}
 					}
 				],
@@ -224,7 +232,8 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 					deferredRender:false,
 					items:[
 						{
-							title:'Line Chart',
+							title:'Line',
+							iconCls:'icon-linechart',
 							id:'line' + this.idpfx,
 							layout:'fit',
 							items:{
@@ -240,7 +249,8 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 						},
 						//column
 						{
-							title:'Bar Chart',
+							title:'Bar',
+							iconCls:'icon-barchart',
 							id:'column' + this.idpfx,
 							layout:'fit',
 							items:{
@@ -255,7 +265,8 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 						},
 						//pie
 						{
-							title:'Pie Chart',
+							title:'Pie',
+							iconCls:'icon-piechart',
 	            store: this.store,
 	            xtype: 'piechart',
 	            dataField: keys[1],

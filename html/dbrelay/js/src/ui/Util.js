@@ -37,23 +37,7 @@ dbrui.Util = function(){
 	    });
 		},
 		
-		getExtDateFormat : function(sqlType){
-			switch(sqlType){
-				case 'date':
-				case 'datetimeoffset':
-				case 'datetime2':
-				case 'smalldatetime':
-				case 'datetime':
-				case 'time':
-					return 'M j Y h:i:s:uA';
-
-				case 'numeric':
-				case 'int':
-				case 'bigint':
-					return 'Ymd';
-			}
-			return null;
-		},
+		
 		
 		randomColor : function(){
 			return '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
