@@ -434,7 +434,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			}
 		}                      
 	                                         
-		var sqlTable = this.sqlTable, sqlDb = sqlTable.sqlDb, sqlStatements = "";
+		var sqlTable = this.sqlTable, sqlDb = sqlTable.getQueryHelper(), sqlStatements = "";
 		
 	 //delete
 		if(!this.disableDelete && deleteRows.length > 0){  
