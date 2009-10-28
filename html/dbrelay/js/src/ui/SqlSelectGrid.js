@@ -20,7 +20,19 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 		this.tbar = [
 			'<span id="name'+idpfx+'" style="font-weight:bold;color:green">Viewing '+(this.resultName || '') +'</span>',
-			'->',
+			{
+				xtype:'tbfill',
+			},
+			{
+				text:'Charts',
+				iconCls:'icon-chart',
+				id:'chart_item'+idpfx,
+				handler:function(){
+					this.openChartWindow('line');
+				},
+				scope:this
+		},
+		'-',
 			{
 				text:'Export',
 				iconCls:'icon-tableexport',
@@ -138,10 +150,150 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		
 		dbrui.SqlSelectGrid.superclass.initComponent.call(this);  
 		
-
+		this.colors = ['#4572A7','#AA4643','#89A54E','#71588F','#4198AF','#DB843D','#93A9CF','#D19392','#B9CD96','#A99BBD'];
+		
 		this.idpfx = idpfx;
 	},
 	
+	
+	nextColorIndex : 0,
+	getColor : function(){
+		var idx = this.nextColorIndex++;
+		
+		if(idx === this.colors.length){
+			var color = dbrui.Util.randomColor();
+			this.colors.push(color);
+		}
+		return this.colors[idx];
+		
+	},
+	
+	openChartWindow: function(active){
+		var keys = this.store.fields.keys;
+
+		if(keys.length < 2){
+			Ext.Msg.alert('Problem','You need at least 2 numeric columns to create a chart');
+			return;
+		}
+		
+		if(!this.chartWindow){
+			var lineSeries = [], columnSeries=[];
+			
+			for(var k=1; k<keys.length; k++){
+				var color = this.getColor();
+				
+				lineSeries.push({
+	        type:'line',
+	        displayName: keys[k],
+	        yField: keys[k],
+	        style: {
+	            color: color
+	        }
+	      });
+	
+				columnSeries.push({
+	        type:'column',
+	        displayName: keys[k],
+	        yField: keys[k],
+	        style: {
+	            color: color
+	        }
+	      });
+			}
+
+		 	this.chartWindow = new Ext.Window({
+				title: this.sqlTitle + ' Charts (BETA)',
+				closable:true,
+				closeAction:'hide',
+				maximizable:true,
+				width:600,
+				height:500,
+				layout:'fit',
+				tbar:[
+					{
+						text:'Help',
+						iconCls:'icon-help',
+						handler:function(){
+							Ext.Msg.alert('Charts Help','Charts is currently in BETA mode.\n\n Line Chart & Bar Chart: x=first column of query, y= rest of columns\n\nPie Chart: x=first column of query, y=2nd column');
+						}
+					}
+				],
+				items:{
+					xtype:'tabpanel',
+					layoutOnTabChange:true,
+					deferredRender:false,
+					items:[
+						{
+							title:'Line Chart',
+							id:'line' + this.idpfx,
+							layout:'fit',
+							items:{
+								xtype: 'linechart',
+								store: this.store,
+								xField: keys[0],
+								series: lineSeries
+						  },
+							xAxis: new Ext.chart.CategoryAxis({
+	            	title: keys[0]
+	            })
+						
+						},
+						//column
+						{
+							title:'Bar Chart',
+							id:'column' + this.idpfx,
+							layout:'fit',
+							items:{
+								xtype: 'columnchart',
+								store: this.store,
+								xField: keys[0],
+								series: columnSeries
+						  },
+							xAxis: new Ext.chart.CategoryAxis({
+	            	title: keys[0]
+	            })
+						},
+						//pie
+						{
+							title:'Pie Chart',
+	            store: this.store,
+	            xtype: 'piechart',
+	            dataField: keys[1],
+	            categoryField: keys[0],
+							//extra styles get applied to the chart defaults
+	            extraStyle:{
+                legend:{
+                   display: 'bottom'
+                }
+	            }
+	
+	        	}
+						
+					]
+				},
+				listeners:{
+					'render':{
+						fn: function(win){
+							win.tabs = win.getComponent(0);
+							this.fireEvent('createchartwindow', this,this.chartWindow);
+						},
+						scope:this
+					}
+				}
+			});
+			
+			
+		}
+		
+		this.chartWindow.show();
+		this.chartWindow.tabs.setActiveTab(active + this.idpfx);
+		
+	},
+	
+	
+	getDbrData : function(){
+		return this.dataSet;
+	},
 	/**
 		refreshes the grid with new data, columns, & store. Should only be called after grid is rendered.
 		@param {Object} data from server
@@ -164,8 +316,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 			//EXT store fields
 			storeFields[i] = {
-				name: name,
-				type: 'string'
+				name: name
 			};
 		}
 
@@ -200,6 +351,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		
 		  
 		this.updatePageView();    
+		this.dataSet = data;
  
 	},
 	     

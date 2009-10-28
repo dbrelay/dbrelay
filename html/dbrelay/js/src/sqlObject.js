@@ -21,8 +21,10 @@ function dbrelayQuery( connection, sql, callback, query_tag) {
 		}
 	}
 
-	if(connection.dbrelay_host){           
+	if(connection.dbrelay_host){        
 		jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', params , callback);   
+		//jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', params , function(){console.log('eeee');});  
+		//$.post( connection.dbrelay_host + '/sql?js_callback=?', params, function(){console.log('eeee');}, 'json' ); 
 	} 
 	else{
 		$.post( '/sql', params, callback, "json" );    
@@ -233,3 +235,7 @@ sqlObject = function() { // Module pattern, called immediately
   };
 
 }();
+
+
+
+
