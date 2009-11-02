@@ -187,7 +187,9 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 	        displayName: keys[k],
 	        yField: keys[k],
 	        style: {
-	            color: color
+	            color: color,
+							lineSize:1,
+							size:5
 	        }
 	      });
 	
@@ -240,12 +242,23 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 								xtype: 'linechart',
 								store: this.store,
 								xField: keys[0],
+								xAxis: new Ext.chart.CategoryAxis({
+		            	displayName: keys[0]
+		            }),
+								yAxis: new Ext.chart.NumericAxis({
+									labelRenderer: Ext.util.Format.numberRenderer('0,000')
+								}),
+								extraStyle: {
+									legend: {
+										display: 'top',
+										padding: 0,
+                 		font:{
+                   		size: 10
+										}
+									}
+								},
 								series: lineSeries
-						  },
-							xAxis: new Ext.chart.CategoryAxis({
-	            	title: keys[0]
-	            })
-						
+						  }
 						},
 						//column
 						{
@@ -257,11 +270,24 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 								xtype: 'columnchart',
 								store: this.store,
 								xField: keys[0],
+								extraStyle: {
+									legend: {
+										display: 'top',
+										padding: 0,
+                 		font:{
+                   		size: 10
+										}
+									}
+								},
+								xAxis: new Ext.chart.CategoryAxis({
+		            	displayName: keys[0]
+		            }),
+								yAxis: new Ext.chart.NumericAxis({
+									labelRenderer: Ext.util.Format.numberRenderer('0,000')
+								}),
 								series: columnSeries
-						  },
-							xAxis: new Ext.chart.CategoryAxis({
-	            	title: keys[0]
-	            })
+						  }
+							
 						},
 						//pie
 						{
@@ -269,14 +295,18 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 							iconCls:'icon-piechart',
 	            store: this.store,
 	            xtype: 'piechart',
+							id:'pie' + this.idpfx,
 	            dataField: keys[1],
 	            categoryField: keys[0],
-							//extra styles get applied to the chart defaults
-	            extraStyle:{
-                legend:{
-                   display: 'bottom'
-                }
-	            }
+							extraStyle: {
+								legend: {
+									display: 'top',
+									padding: 0,
+               		font:{
+                 		size: 10
+									}
+								}
+							}
 	
 	        	}
 						
