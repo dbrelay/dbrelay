@@ -35,7 +35,8 @@ POST_UNINSTALL = :
 noinst_PROGRAMS = dbrelay/js/dbrelay-core-min.js$(EXEEXT) \
 	dbrelay/js/dbrelay-ui-all-min.js$(EXEEXT) \
 	dbrelay/js/dbrelay-ui-sqltableeditor-min.js$(EXEEXT) \
-	dbrelay/js/dbrelay-ui-sqlresultpanel-min.js$(EXEEXT)
+	dbrelay/js/dbrelay-ui-sqlresultpanel-min.js$(EXEEXT) \
+	dbrelay/js/dbrelay-ui-charts-min.js$(EXEEXT)
 subdir = html
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -66,6 +67,11 @@ dbrelay_js_dbrelay_ui_sqltableeditor_min_js_SOURCES =  \
 dbrelay_js_dbrelay_ui_sqltableeditor_min_js_OBJECTS =  \
 	dbrelay-ui-sqltableeditor-min.$(OBJEXT)
 dbrelay_js_dbrelay_ui_sqltableeditor_min_js_LDADD = $(LDADD)
+dbrelay_js_dbrelay_ui_charts_min_js_SOURCES =  \
+	dbrelay/js/dbrelay-ui-charts-min.c
+dbrelay_js_dbrelay_ui_charts_min_js_OBJECTS =  \
+	dbrelay-ui-charts-min.$(OBJEXT)
+dbrelay_js_dbrelay_ui_charts_min_js_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -77,11 +83,13 @@ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = dbrelay/js/dbrelay-core-min.c \
 	dbrelay/js/dbrelay-ui-all-min.c \
 	dbrelay/js/dbrelay-ui-sqlresultpanel-min.c \
-	dbrelay/js/dbrelay-ui-sqltableeditor-min.c
+	dbrelay/js/dbrelay-ui-sqltableeditor-min.c \
+	dbrelay/js/dbrelay-ui-charts-min.c
 DIST_SOURCES = dbrelay/js/dbrelay-core-min.c \
 	dbrelay/js/dbrelay-ui-all-min.c \
 	dbrelay/js/dbrelay-ui-sqlresultpanel-min.c \
-	dbrelay/js/dbrelay-ui-sqltableeditor-min.c
+	dbrelay/js/dbrelay-ui-sqltableeditor-min.c \
+	dbrelay/js/dbrelay-ui-charts-min.c
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -518,6 +526,7 @@ dbrelay/js/dbrelay-core-min.js \
 dbrelay/js/dbrelay-ui-all-min.js \
 dbrelay/js/dbrelay-ui-sqltableeditor-min.js \
 dbrelay/js/dbrelay-ui-sqlresultpanel-min.js \
+dbrelay/js/dbrelay-ui-charts-min.js \
 dbrelay/tablesorter/asc.png \
 dbrelay/tablesorter/bg.png \
 dbrelay/tablesorter/desc.png \
@@ -575,6 +584,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-ui-all-min.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-ui-sqlresultpanel-min.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-ui-sqltableeditor-min.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbrelay-ui-charts-min.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -645,6 +655,20 @@ dbrelay-ui-sqltableeditor-min.obj: dbrelay/js/dbrelay-ui-sqltableeditor-min.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dbrelay/js/dbrelay-ui-sqltableeditor-min.c' object='dbrelay-ui-sqltableeditor-min.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-sqltableeditor-min.obj `if test -f 'dbrelay/js/dbrelay-ui-sqltableeditor-min.c'; then $(CYGPATH_W) 'dbrelay/js/dbrelay-ui-sqltableeditor-min.c'; else $(CYGPATH_W) '$(srcdir)/dbrelay/js/dbrelay-ui-sqltableeditor-min.c'; fi`
+
+dbrelay-ui-charts-min.o: dbrelay/js/dbrelay-ui-charts-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-charts-min.o -MD -MP -MF $(DEPDIR)/dbrelay-ui-charts-min.Tpo -c -o dbrelay-ui-charts-min.o `test -f 'dbrelay/js/dbrelay-ui-charts-min.c' || echo '$(srcdir)/'`dbrelay/js/dbrelay-ui-charts-min.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/dbrelay-ui-charts-min.Tpo $(DEPDIR)/dbrelay-ui-charts-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dbrelay/js/dbrelay-ui-charts-min.c' object='dbrelay-ui-charts-min.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-charts-min.o `test -f 'dbrelay/js/dbrelay-ui-charts-min.c' || echo '$(srcdir)/'`dbrelay/js/dbrelay-ui-charts-min.c
+
+dbrelay-ui-charts-min.obj: dbrelay/js/dbrelay-ui-charts-min.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dbrelay-ui-charts-min.obj -MD -MP -MF $(DEPDIR)/dbrelay-ui-charts-min.Tpo -c -o dbrelay-ui-charts-min.obj `if test -f 'dbrelay/js/dbrelay-ui-charts-min.c'; then $(CYGPATH_W) 'dbrelay/js/dbrelay-ui-charts-min.c'; else $(CYGPATH_W) '$(srcdir)/dbrelay/js/dbrelay-ui-charts-min.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/dbrelay-ui-charts-min.Tpo $(DEPDIR)/dbrelay-ui-charts-min.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dbrelay/js/dbrelay-ui-charts-min.c' object='dbrelay-ui-charts-min.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dbrelay-ui-charts-min.obj `if test -f 'dbrelay/js/dbrelay-ui-charts-min.c'; then $(CYGPATH_W) 'dbrelay/js/dbrelay-ui-charts-min.c'; else $(CYGPATH_W) '$(srcdir)/dbrelay/js/dbrelay-ui-charts-min.c'; fi
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -846,13 +870,16 @@ uninstall-am:
 dbrelay/js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
 	cat $+ | $(JSMIN) > $@
 
-dbrelay/js/dbrelay-ui-all-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
+dbrelay/js/dbrelay-ui-all-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/Chart.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
 	cat $+ | $(JSMIN) > $@
 
 dbrelay/js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/SqlTableEditor.js
 	cat $+ | $(JSMIN) > $@
 
-dbrelay/js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
+dbrelay/js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/Chart.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
+	cat $+ | $(JSMIN) > $@
+
+dbrelay/js/dbrelay-ui-charts-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/Chart.js
 	cat $+ | $(JSMIN) > $@
 
 install-data-local:
