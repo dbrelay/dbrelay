@@ -184,7 +184,6 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 								+ '<tr><td><b>y</b></td><td>each numeric column after the 1st column</td><td>2nd column</td></tr>'
 								+ '</table><br/><br/>'
 								+ 'OPEN ISSUES:<br/>'
-								+ '- Charts currently bind to the first query that is run.  To chart different results, open a new SQL query tab.<br/>'
 								+ '- Time Series chart currently does not refresh its data.  To chart a different time series, open a new SQL query tab.<br/>'
 							);
 						}
