@@ -10,16 +10,16 @@
 
 		query : function(connection, sql, callback, error, scope, query_tag){
 			//copy connection info into params
-			var params = {
-				sql: sql,
-				query_tag: query_tag || null
-			};
+			var params = {};
 
 			for(var k in connection){
 				if(k !== 'dbrelay_host'){
 					params[k] = connection[k];       
 				}
 			}
+			//override sql
+			params.sql = sql;
+			params.query_tag = query_tag || null;
 
 			var dbrHost = connection.dbrelay_host || DbRelay.DBRELAY_HOST;
 			
