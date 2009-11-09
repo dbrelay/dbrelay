@@ -106,7 +106,7 @@ dbrui.Chart = Ext.extend(Ext.Panel,{
     
     //create a new store
 		return new Ext.data.JsonStore({
-		    autoDestroy: false,
+		    autoDestroy: true,
 		    data: {
 				   rows: rows
 				},
@@ -135,15 +135,23 @@ dbrui.Chart = Ext.extend(Ext.Panel,{
 		}catch(e){
 			this.remove( this.getComponent(0), false );
 		}
+		if(this.chart){
+			delete(this.chart);
+		}
+		
 		this.chart = this._getNewChart();
 		this.add( this.chart );
 		this.doLayout();
 		this.mask(false);
+		this.fireEvent('chartdraw', this);
 
 	}
 });
 
-
+dbrui.Chart.SqlDateRenderer = function(v){
+	var jsDate = Date.parseDate( v, 'M j Y h:i:s:uA') || Date.parseDate( v, 'M  j Y h:i:s:uA');
+	return jsDate ? jsDate.format('M d, Y') : v;
+}
 
 /**
 Line Chart
@@ -189,16 +197,27 @@ dbrui.LineChart = Ext.extend(dbrui.Chart, {
 	
 	_getNewChart : function(){
 		var keys = this.keys;
+		
+		var xLabelFn = this.xAxisLabelFn;
+		
+		var yAxisCfg = Ext.apply({
+			labelRenderer: this.yAxisLabelFn || Ext.util.Format.numberRenderer('0,000')
+		}, this.yAxisCfg);
 
 		return new Ext.chart.LineChart({
 			store: this.store,
 			xField: keys[0],
 			xAxis: new Ext.chart.CategoryAxis({
-       	displayName: keys[0]
+       	displayName: keys[0],
+				hideOverlappingLabels : false,
+				labelRenderer: function(v){
+					if(xLabelFn){
+						return xLabelFn.call(this, v);
+					}
+					return v;
+				}
        }),
-			yAxis: new Ext.chart.NumericAxis({
-				labelRenderer: Ext.util.Format.numberRenderer('0,000')
-			}),
+			yAxis: new Ext.chart.NumericAxis(yAxisCfg),
 			extraStyle: this.extraStyle,
 			series: this._createSeries()
 		});
@@ -251,16 +270,26 @@ dbrui.BarChart = Ext.extend(dbrui.Chart, {
 	
 	_getNewChart : function(){
 		var store = this.store, keys = this.keys;
-
+		
+		var xLabelFn = this.xAxisLabelFn;
+		var yAxisCfg = Ext.apply({
+			labelRenderer: this.yAxisLabelFn || Ext.util.Format.numberRenderer('0,000')
+		}, this.yAxisCfg);
+		
 		return new Ext.chart.ColumnChart({
 			store: store,
 			xField: keys[0],
 			xAxis: new Ext.chart.CategoryAxis({
-       	displayName: keys[0]
+       	displayName: keys[0],
+				hideOverlappingLabels : false,
+				labelRenderer: function(v){
+					if(xLabelFn){
+						return xLabelFn.call(this, v);
+					}
+					return v;
+				}
        }),
-			yAxis: new Ext.chart.NumericAxis({
-				labelRenderer: Ext.util.Format.numberRenderer('0,000')
-			}),
+			yAxis: new Ext.chart.NumericAxis(yAxisCfg),
 			extraStyle: this.extraStyle,
 			series: this._createSeries()
 		});
