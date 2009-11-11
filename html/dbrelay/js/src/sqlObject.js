@@ -3,11 +3,38 @@
 	var param_re = /{{{([""'']?\w+)}}}/g;
 	var divid_re = /({{{[\'\"]?)|(}}})/g;
 	
-	/* global var to hold DBRelay host (default to "" for same domain) */
+	/** 
+	DbRelay core Javascript API.  
+	@class DbRelay
+	@singleton
+	*/
 	DbRelay = {
 		adapters : {},
+		/** global var to hold default DBRelay host (default to "" for same domain).  This can be overridden by individual queries   */
 		DBRELAY_HOST : null,
 
+		/**
+		 Send a SQL query through DbRelay, calling the passed callbacks with the response.
+		@param {Object} connection Dbrelay connection object.  Example parameters:
+		<ul class="mdetail-params">
+		     <li><b>sql_server</b> : String<div class="sub-desc">Hostname on which the SQL server is running. </div></li>
+				<li><b>sql_database</b> : String<div class="sub-desc">Optional name of the primary database for the connection. User's default database is used, if not specified.</div></li>
+				<li><b>sql_user</b> : String<div class="sub-desc">Username string recognised by the SQL server.   </div></li>
+				<li><b>sql_password</b> : String<div class="sub-desc">password for the sql_user. </div></li>
+				<li><b>connection_name</b> : String<div class="sub-desc">Optional (HIGHLY RECOMMENDED) name to persist this connection under.</div></li>
+				<li><b>dbrelay_host</b> : String<div class="sub-desc">Optional parameter for xss scripting.  Leave out for same-domain scripts</div></li>
+		     <li><b>sql_port</b> : String/Number<div class="sub-desc">Optional port number, on which the SQL server is listening. 1433 is the default.</div></li>
+		 </ul>
+		
+@param {String} sql SQL query
+@param {Function} success callback function on a successful query.  One arguments is passed:<ul class="mdetail-params">
+     <li><b>response</b> : Object<div class="sub-desc">DbRelay JSON response object</div></li>
+ </ul>
+
+@param {Function} error error callback function
+@param {Object} scope Optional scope for the success & error callbacks
+@param {String} query_tag Optional query_tag that will be returned in the results.  Useful for determining which query results are from.
+		*/
 		query : function(connection, sql, callback, error, scope, query_tag){
 			//copy connection info into params
 			var params = {};
@@ -51,9 +78,12 @@
 		},
 	
 		/**
-		Cross-domain compatible dbrelay status call
-		@param callback {function} callback function
-		@param dbrhost {string} optional dbrelay host (xss) in format "http(s)://hostname"
+		Query for connection status.  Cross-domain compatible dbrelay status call.
+		@param callback {function} REQUIRED callback function that will be called with the following parameters:<ul class="mdetail-params">
+		     <li><b>response</b> : Object<div class="sub-desc">DbRelay JSON response object</div></li>
+		 </ul>
+		@param {Object} scope Optional scope for the callback
+		@param {string} dbrhost optional dbrelay host (xss) in format "http(s)://hostname"
 */
 		queryStatus : function(callback, scope, dbrhost) {
 			var params = {
@@ -75,8 +105,12 @@
 	
 		/**
 		Cross-domain compatible dbrelay kill connection
-		@param callback {function} callback function
-		@param dbrhost {string} optional dbrelay host (xss) in format "http(s)://hostname"
+		@param {String} sockpath socket path value of the connection to kill.  Use {@link #queryStatus DbRelay.queryStatus} to find the sockpath.
+		@param {function} callback callback function that will be called with the following parameters:<ul class="mdetail-params">
+		     <li><b>response</b> : Object<div class="sub-desc">DbRelay JSON response object</div></li>
+		 </ul>
+		@param {Object} scope Optional scope for the callback
+		@param {string} dbrhost optional dbrelay host (xss) in format "http(s)://hostname"
 		*/
 		kill : function(sockpath, callback, scope, dbrhost) {
 			var params = {
@@ -97,11 +131,26 @@
 			}  
 		},
 	
-	
+		/**
+		Utility String function that replaces all single quotes (') in a string with two single quotes ('')
+		@param {string} text the source string
+		@return {string} the return string
+		*/
 		quoteSingles : function( text ) { return text.replace(/'/g,"''"); },
 
+		/**
+		Utility String function that replaces all double quotes (") in a string with two double quotes ("")
+		@param {string} text the source string
+		@return {string} the return string
+		*/
 	  quoteDoubles : function( text ) { return text.replace(/"/g,'""'); },
 
+		/**
+				A simple HTML template parser
+				@param {String} string template string, with {{{param_name}}} 
+				@param {Object} params An object of values for the template, keyed by param name
+				@return {String} A parsed string where all instances of {{{param_name}}} in the template are replaced by associated values in the params parameter
+		*/
 		cook : function( string, params ) {
 	    return string.replace( param_re, function( match, word ) {
 	      var quoteFunc = undefined;
@@ -115,6 +164,7 @@
 	    });
 	  },
 	
+	//private
 		get_params : function( query ){
 	    var matches = query.match(param_re);
 	    for (var m in matches){ 
@@ -127,7 +177,10 @@
 	
 	};
 
-	/** SQLServer Adapter */
+	/** 
+	@class DbRelay.adapters.BaseAdapter
+	Abstract base class for different database types.  This class should not be used directly.
+	*/
 	DbRelay.adapters.BaseAdapter = function(name, queries){
 		this.name = name;
 		this.queries = queries;
@@ -135,6 +188,7 @@
 		return this;
 	};
 	DbRelay.adapters.BaseAdapter.prototype = {
+		//private
 		get : function(name, params){
 			if(!this.queries[name]){
 			  //alert('"'+name+'" is not supported for Adapter ' + this.name); 
@@ -145,7 +199,12 @@
 		}
 	};
 	
-	//Singleton
+	/** 
+	@class DbRelay.adapters.SqlServer
+	@extends DbRelay.adapters.BaseAdapter
+	@singleton
+	Query Adapter class for Sql Server. Contains SQL Server specific query syntax required for the DBRelay UI
+	*/
 	DbRelay.adapters.SqlServer = new DbRelay.adapters.BaseAdapter('SqlServer', {
 			list_databases:"USE MASTER;SELECT NAME FROM sys.sysdatabases ORDER BY NAME ASC",
 			/* Db actions */
@@ -185,7 +244,7 @@
 	});
 	
 	
-	/**
+	/** @ignore
 	DbRelay.BatchManager
 	*/
 	DbRelay.BatchManager = function(){
