@@ -28,7 +28,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 				iconCls:'icon-chart',
 				id:'chart_item'+idpfx,
 				handler:function(){
-					this.openChartWindow('line');
+					this.openChartWindow(this.store);
 				},
 				scope:this
 		},
@@ -149,27 +149,13 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.cm = this.cm || new Ext.grid.ColumnModel([]);
 		
 		dbrui.SqlSelectGrid.superclass.initComponent.call(this);  
-		
-		this.colors = ['#4572A7','#AA4643','#89A54E','#71588F','#4198AF','#DB843D','#93A9CF','#D19392','#B9CD96','#A99BBD'];
-		
+
 		this.idpfx = idpfx;
 	},
 	
-	
-	nextColorIndex : 0,
-	getColor : function(){
-		var idx = this.nextColorIndex++;
-		
-		if(idx === this.colors.length){
-			var color = dbrui.Util.randomColor();
-			this.colors.push(color);
-		}
-		return this.colors[idx];
-		
-	},
-	
-	openChartWindow: function(active){
-		var keys = this.store.fields.keys;
+
+	openChartWindow: function(store){
+		var keys = store.fields.keys;
 
 		if(keys.length < 2){
 			Ext.Msg.alert('Problem','You need at least 2 numeric columns to create a chart');
@@ -177,29 +163,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		}
 		
 		if(!this.chartWindow){
-			var lineSeries = [], columnSeries=[];
-			
-			for(var k=1; k<keys.length; k++){
-				var color = this.getColor();
-				
-				lineSeries.push({
-	        type:'line',
-	        displayName: keys[k],
-	        yField: keys[k],
-	        style: {
-	            color: color
-	        }
-	      });
-	
-				columnSeries.push({
-	        type:'column',
-	        displayName: keys[k],
-	        yField: keys[k],
-	        style: {
-	            color: color
-	        }
-	      });
-			}
+
 
 		 	this.chartWindow = new Ext.Window({
 				title: this.sqlTitle + ' Charts (BETA)',
@@ -228,59 +192,42 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 				],
 				items:{
 					xtype:'tabpanel',
+					activeTab:0,
 					layoutOnTabChange:true,
 					deferredRender:false,
+					forceLayout:true,
+					
 					items:[
 						{
 							title:'Line',
-							iconCls:'icon-linechart',
 							id:'line' + this.idpfx,
-							layout:'fit',
-							items:{
-								xtype: 'linechart',
-								store: this.store,
-								xField: keys[0],
-								series: lineSeries
-						  },
-							xAxis: new Ext.chart.CategoryAxis({
-	            	title: keys[0]
-	            })
-						
+							iconCls:'icon-linechart',
+							xtype:'dbrui_linechart'
 						},
-						//column
 						{
 							title:'Bar',
+							id:'bar' + this.idpfx,
 							iconCls:'icon-barchart',
-							id:'column' + this.idpfx,
-							layout:'fit',
-							items:{
-								xtype: 'columnchart',
-								store: this.store,
-								xField: keys[0],
-								series: columnSeries
-						  },
-							xAxis: new Ext.chart.CategoryAxis({
-	            	title: keys[0]
-	            })
+							xtype:'dbrui_barchart'
 						},
-						//pie
 						{
 							title:'Pie',
+							id:'pie' + this.idpfx,
 							iconCls:'icon-piechart',
-	            store: this.store,
-	            xtype: 'piechart',
-	            dataField: keys[1],
-	            categoryField: keys[0],
-							//extra styles get applied to the chart defaults
-	            extraStyle:{
-                legend:{
-                   display: 'bottom'
-                }
-	            }
-	
-	        	}
-						
-					]
+							xtype:'dbrui_piechart'
+						}
+					],
+					
+					listeners:{
+						'tabchange':{
+							fn: function(tp, t){
+								if(t.refreshChart){
+									t.refreshChart(this.store);
+								}
+							},
+							scope:this
+						}
+					}
 				},
 				listeners:{
 					'render':{
@@ -297,7 +244,9 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		}
 		
 		this.chartWindow.show();
-		this.chartWindow.tabs.setActiveTab(active + this.idpfx);
+		this.chartWindow.getComponent(0).activate(0);
+	//	this.chartWindow.getComponent(0).getComponent(0).refresh(store);
+		
 		
 	},
 	
@@ -347,7 +296,10 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		
 		 //reconfigure the grid with the new query results
 	  this.reconfigure(store, cm);      
-
+		if(this.chartWindow && !this.chartWindow.hidden){
+			this.chartWindow.hide();
+			this.openChartWindow(store);
+		}
 		
 		this.tableData = rows;
 		this.totalRows = data.count || '0';  
@@ -521,5 +473,10 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 });
 
+
+/*Ext.extend( Ext.chart.Chart, {
+	
+
+});*/
 
 

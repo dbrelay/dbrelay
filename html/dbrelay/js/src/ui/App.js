@@ -79,12 +79,9 @@ dbrui.App = function(){
 		init: function(){
 			
 			var loadedFiles = 0, me = this;
-			Ext.chart.Chart.CHART_URL = 'js/ext-3.0.0/resources/charts.swf';
+			Ext.chart.Chart.CHART_URL = window.DBRELAYUI_EXTCHART_URL || 'js/ext-3.0.0/resources/charts.swf?nocache=' + Math.floor(Math.random()*10000);
 			
-			//IE SUCKS
-			//this.loadApp();
-			
-			
+
 			//dynamically load plugin files from plugins directory
 			$.get( "plugins/", function (data) {            
 		    	var files = [], css = [], names = {};
@@ -302,11 +299,8 @@ dbrui.App = function(){
 			});
 			
 			
-			//If direct URL was used, auto-set the params and open the SQL tab accordingly 
-			var url = window.location.href;	       
-			var qparams = Ext.urlDecode(url.substring( url.indexOf('?')+1));
-     
-			this.restoredConnection = qparams;             
+			//If direct URL was used, auto-set the params and open the SQL tab accordingly       
+			this.restoredConnection = window.DBRELAYUI_PARAMS ? window.DBRELAYUI_PARAMS : Ext.urlDecode(window.location.href.substring( window.location.href.indexOf('?')+1));             
 			
 			//remove loading mask
 			var loading = Ext.get('dbr-loading');
@@ -339,23 +333,6 @@ dbrui.App = function(){
 				this.showConnectionWindow(true);  
 			}
 
-			
-			
-		/*	if(qparams && qparams.sql_server && qparams.sql_database){      
-				console.dir(qparams); 
-				 //create sqlDb object
-				 // this.sqlDb = sqlDbAccess(qparams);      
-                          
-					
-          //open a SQL panel by default
-				 // this.addSqlPanel(qparams.sql);    
-				 // this.refreshTablesMenu();  
-			}
-			else{
-      	//display connection window 
-		 			//TODO: optionally read connection data from external file, and bypass this window...    
-					this.showConnectionWindow(true);
-			 }  */
 			
 		},  
 		

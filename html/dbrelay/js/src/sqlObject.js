@@ -1,3 +1,4 @@
+
 (function(){
 	var param_re = /{{{([""'']?\w+)}}}/g;
 	var divid_re = /({{{[\'\"]?)|(}}})/g;
@@ -5,6 +6,7 @@
 	/* global var to hold DBRelay host (default to "" for same domain) */
 	DbRelay = {
 		adapters : {},
+		DBRELAY_HOST : null,
 
 		query : function(connection, sql, callback, error, scope, query_tag){
 			//copy connection info into params
@@ -19,8 +21,10 @@
 				}
 			}
 
-			if(connection.dbrelay_host){        
-				jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', params , function(response){
+			var dbrHost = connection.dbrelay_host || DbRelay.DBRELAY_HOST;
+			
+			if(dbrHost){        
+				jQuery.getJSON( dbrHost + '/sql?js_callback=?', params , function(response){
 					if(response && response.data){
 						callback.call( scope || window, response);
 					}
@@ -55,7 +59,8 @@
 			var params = {
 				status: 1
 			};
-
+			
+			dbrhost = dbrhost || DbRelay.DBRELAY_HOST;
 			if(dbrhost){           
 				jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , function(response){
 					callback.call( scope || window, response);
@@ -78,7 +83,8 @@
 				cmd: 'kill',
 				param1 : sockpath
 			};
-
+			
+			var dbrhost = dbrhost || DbRelay.DBRELAY_HOST;
 			if(dbrhost){           
 				jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , function(response){
 					callback.call( scope || window, response);
