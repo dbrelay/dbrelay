@@ -301,7 +301,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		}
 		
 		this.tableData = rows;
-		this.totalRows = data.count || '0';  
+		this.totalRows = (data.count || rows.length) || '0';  
 
 		Ext.get('total'+this.idpfx).update(this.totalRows);  
     
