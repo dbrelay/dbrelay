@@ -179,9 +179,6 @@ JSMIN = ../util/jsmin
 JSSRC = dbrelay/js/src
 FILES = dbrelay/index.html \
 ./50x.html \
-docs/index.html \
-dbrelay/status.html \
-dbrelay/oldindex.html \
 dbrelay/plugins/README.txt \
 dbrelay/css/dbrelay.css \
 dbrelay/docs/doc.css \

@@ -22,9 +22,6 @@ dbrelay/js/dbrelay-ui-charts-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/Chart.js
 
 FILES = dbrelay/index.html \
 ./50x.html \
-docs/index.html \
-dbrelay/status.html \
-dbrelay/oldindex.html \
 dbrelay/plugins/README.txt \
 dbrelay/css/dbrelay.css \
 dbrelay/docs/doc.css \
