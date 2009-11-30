@@ -1,8 +1,14 @@
 config.log
 config.status
 Makefile
-aclocal.m4
 autom4te.cache
 src/freetds-*/
+freetds-*/
 src/nginx-*/
 src/pcre-*/
+a.out.dSYM
+html/dbrelay/js/*-min.js
+html/.deps/*
+src/dbrelay/include/dbrelay_config.h
+.DS_Store
+html/dbrelay/js/ext-3.0.0/ext-all-debug.js

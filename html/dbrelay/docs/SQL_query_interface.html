@@ -1,0 +1,399 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+  <head>
+  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  	<title>JavaScript SQL Query interface to DBRelay server</title>
+  	<style type="text/css" media="print">
+  	  body {
+  	    font-size: 95%;
+  	  }
+      #content_wrap {
+        width: 95%;
+        margin: auto;
+        margin-bottom: 20px;
+      }
+      #toc { display: none; }
+      a {
+        color: #000000;
+        text-decoration: none;
+      }
+      #revisions_show, #revisions_hide {
+        display: none;
+      }
+  	</style>
+  	<style type="text/css" media="screen">
+      #revisions_show, #revisions_hide {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      #content_wrap {
+        width: 70%;
+        margin: auto;
+      }
+      #toc {
+        float: right;
+        background-color: white;
+        padding: 1em;
+        margin: 0em 0em 1em 1em;
+        border: 1px solid #bbbbbb;
+        max-width: 15em;
+      }
+      #toc_show, #toc_hide {
+        float: right;
+        cursor: pointer;
+      }
+      #toc a {
+        color: #000000;
+      }
+      #toc ol {
+        padding-left: 1.2em;
+      }
+      a {
+        color: #000000;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+  	</style>
+  	<style type="text/css">
+  	  body {
+  	    font-family: serif;
+      }
+      .copyright {
+        text-align: center !important;
+        font-size: 80%;
+        color: #555;
+      }
+      div.float_break {
+        clear: left;
+      }
+      .chapter > ul {
+        min-width: 30em;
+        margin: 0em auto 0em 5%;
+      }
+      .chapter > ul > li {
+        margin-top: 1.5em;
+      }
+      .chapter p {
+        text-align: justify;
+      }
+      li > ul > li {
+        margin-top: 0.3em;
+      }
+      .date {
+        width: 6em;
+        text-align: right;
+        background-color: #eee;
+      }
+      .person {
+        width: 10em;
+        text-align: center;
+        background-color: #eee;
+      }
+      .comments {
+        text-align: justify;
+      }
+      h1, h2, h3, h4 {
+        margin-top: 1.5em;
+        color: #444;
+      }
+      h1 {
+        text-align: center;
+      }
+      h2 {
+        text-align: right;
+        padding-right: 10%;
+        border-bottom: 1px solid #222;
+      }
+      h3 {
+        text-align: left;
+        padding-left: 5%;
+      }
+      h4 {
+        padding-left: 10%;
+        font-weight: normal;
+        font-style: italic;
+        margin-top: 2em;
+      }
+      todo {
+        display: inline;
+        border: 2px solid #2900A6;
+        padding: 0em 0.15em;
+        margin: -1px 0.15em;
+      }
+      .em {
+        font-variant: small-caps;
+        font-weight: bold;
+      }
+      div.error_note {
+        float: right;
+        padding: 0.3em;
+        border: 1px solid #AAAAAA;
+        margin-left: 1em;
+        margin-bottom: 0.5em;
+        font-size: 70%;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      td {
+        border: 1px solid #AAAAAA;
+        padding: 0.2em 0.5em;
+        vertical-align: top;
+      }
+      p > .term {
+        text-align: left;
+        background-color: #eee;
+        min-width: 8em;
+      }
+      .term {
+        display: block;
+        float: left;
+        margin: 0em 0.5em 0.2em 0em;
+        padding: 0.2em 0.5em;
+        clear: left;
+      }
+      .spec {
+        font-family: monospace;
+        margin-left: 10em;
+      }
+      .spec > .term {
+        margin-left: -10em;
+        text-align: right;
+        width: 9em;
+        padding: 0em 0.5em 0em 0em !important;
+        background: none;
+      }
+      code {
+        color: #116;
+        font-size: 80%;
+        font-family: monospace;
+      }
+      .ab {
+        font-style: italic;
+        font-variant: small-caps;
+      }
+      .json_term {
+        text-decoration: underline;
+      }
+      .indent {
+        padding: 0em 1.5em;
+        display: block;
+      }
+      pre {
+        font-size: 80%;
+        overflow: auto;
+        padding-left: 5%;
+      }
+      p.end_mark {
+        text-align: center;
+        font-size: 200%;
+        color: #555555;
+        padding-top: 1em;
+      }
+      ul.dense, ul.dense li {
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+      .done {
+        border: 1px solid #42BE30;
+      }
+      .todo {
+        border: 1px solid #F9DB58;
+      }
+      .chapter dt {
+        margin-top: 1em;
+      }
+      .chapter dd {
+        text-align: justify;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content_wrap">
+      <div id="toc">
+        <div id="toc_show" onclick="
+          document.getElementById('toc_show').style.display = 'none';
+          document.getElementById('toc_hide').style.display = '';
+          document.getElementById('toc_list').style.display = '';
+        ">&oplus;</div>
+        <div id="toc_hide" onclick="
+          document.getElementById('toc_show').style.display = '';
+          document.getElementById('toc_hide').style.display = 'none';
+          document.getElementById('toc_list').style.display = 'none';
+        " style="display: none;">&otimes;</div>
+        <ol id="toc_list" style="display: none;">
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#basic">Basic use</a>
+            <ol>
+              <li><a href="#creation">Creating the object</a></li>
+              <li><a href="#running">Querying the database</a></li>
+              <li><a href="#callbacks">Callbacks</a></li>
+            </ol>
+          </li>
+          <li><a href="#advanced">Advanced use</a>
+            <ol>
+              <li><a href="#batching">Batching queries</a></li>
+              <li><a href="#default_callbacks">Default callbacks</a></li>
+              <li><a href="#adding_queries">Adding queries</a></li>
+              <li><a href="#reflection">Relection</a></li>
+              <li><a href="#custom_verbs">Custom verbs</li>
+            </ol>
+          </li>
+          <li><a href="#examples">Example</a></li>
+        </ol>
+      </div>
+      <div id="title" class="chapter">
+        <h1>JavaScript SQL Query interface to DBRelay server</h1>
+        <p class="copyright">&copy; 2009 GETCO LLC. All Rights Reserved.</p>
+      </div>
+      <div id="overview" class="chapter">
+        <h2>Overview</h2>
+        <p>While the DBRelay server provides a server side of a request-response protocol for working with SQL databases, the <code>sqlQuery</code> JavaScript function provides the client side. It is a factory for creating custom objects, handling asynchronious read and write tasks.</p>
+        <p>In a basic form, user provides to the factory the names of methods the resulting object will have as well as SQL statements, which will go into the methods. SQL statements may be parametrized.</p>
+        <p>In advanced forms, methods with corresponding SQL queries may be added or replaced in the object post-factum, or arbitrary code may be added or replaced as for every JavaScript object. Yet another form allows queries to be batched over a span of code and executed at once. Transactions should be coded directly in SQL in this version, if nesessary.</p>
+        <p>It depends on jQuery core library for AJAX communication. However, only a single call needs to be replaced to use another library, if  needed.</p>
+        <p style="color: tomato;">Query parameters are not sanitized before sending to database. SQL injection and other security risks are not mitigated.</p>
+        <p style="color: tomato;">This is not a final release of the code. Please, make a copy of it, as the API is very likely to change in the future in an incompatible way. For one, the API will be adjusted to take advantage of the SQL query parameters feature offered by DBRelay server. Another possibility is to eliminate the need for quotes around {{{&nbsp;}}} parameters in query templates.</p>
+      </div>
+      <div id="basic" class="chapter">
+        <h2>Basic use</h2>
+        <div id="creation" class="chapter">
+          <h3>Creating the object</h3>
+          <p>The JavaScript library needs to be loaded from a DBRelay server first:</p>
+          <pre>&lt;script src=&quot;/js/sqlObject.js&quot; type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;</pre>
+          <p>The sqlObject factory call to create the <code>log</code> object looks like this:</p>
+          <pre>var log_store = sqlObject( connection, log_queries);</pre>
+          <p>As the first parameter, the <code>sqlObject</code> factory takes an object used for DBRelay connectivity. The content of the connection object described in the &laquo;HTTP request&raquo; chapter of DBRelay specifications. It should not, however, have the &laquo;<code>sql</code>&raquo; or &laquo;<code>paramX</code>&raquo; parameters set. Here is an example of the first parameter construction:</p>
+          <pre>var connection = {
+  &#x27;sql_server&#x27;      : &#x27;192.168.1.1&#x27;,
+  &#x27;sql_database&#x27;    : &#x27;SOMEDB&#x27;,
+  &#x27;sql_user&#x27;        : &#x27;joe&#x27;,
+  &#x27;connection_name&#x27; : &#x27;sqlquery_example&#x27;
+};</pre>
+          <p>The second parameter to <code>sqlObject</code> is an object keyed with the names of methods-to-be. The values in the object are SQL statement strings with named plaeholders for parameters. Placeholdes have parameter names in triple curly braces in the &laquo;<code>{{{name}}}</code>&raquo; form. All nesessary quotes should be present in the query string <em>around</em> parameters. If a parameter starts with a single or qouble quote after the <code>{{{</code> sequence, the parameter value will have single or double quotes doubled, respectively. Below is an example object with queries:</p>
+          <pre>var log_queries = {
+
+  create: &quot;create table log ( &quot; +
+            &quot;tds smalldatetime default getdate(), &quot; +
+            &quot;severity tinyint, &quot; +
+            &quot;system varchar(256), &quot; +
+            &quot;message varchar(1024) &quot; +
+          &quot;)&quot;,
+
+  drop:   &quot;drop table log&quot;,
+
+  recent: &quot;select top {{{limit}}} * from log order by tds desc&quot;,
+
+  system: &quot;select top 10 * from log&quot; +
+          &quot;where system=&#x27;{{{name}}}&#x27; and severity &gt; {{{severity}}}&quot;,
+
+  <span id="verb_enter">enter</span>:  &quot;insert into log (severity, system, message) &quot; +
+          &quot;values ({{{severity}}}, &#x27;{{{system}}}&#x27;, &#x27;{{{&#x27;message}}}&#x27;)&quot;
+
+};</pre>
+          <p>The resulting <code>log_store</code> object will have the DB communication methods named in the second parameter and additional utility methods (see the &laquo;<a href="#adding_queries">Adding queries</a>&raquo; section below). In the context of <code>sqlQuery</code> we will refer to these DB communication methods as <b><em>verbs</em></b>. Verbs&#x27; names should not collide with the object&#x27;s utility methods and properties, which currently are: <code>add_query</code>, <code>empty_batch</code>, <code>run_batch</code>, and <code>verbs</code>.</p>
+        </div>
+        <div id="running" class="chapter">
+          <h3>Querying the database</h3>
+          <p>Running the queries agains the database is as simple as callimg the methonds on the object, providing paramaters. For the above <code>log_store</code> object, example queries are:</p>
+          <pre>log_store.create( gui_logger );
+
+log_store.enter({
+  severity: &quot;251&quot;,
+  system: &quot;loc7cmp5&quot;,
+  message: &quot;Only 5% of the disk&#x27;s space left&quot;
+}, update_list, &quot;add&quot; );
+
+log_store.recent({ limit: &quot;20&quot; }, update_list, &quot;refresh&quot;);
+log_store.system({ name: &quot;loc7cmp5&quot;, severity: &quot;250&quot; }, update_list, &quot;filter&quot;);
+log_store.drop( gui_logger );</pre>
+          <p>In the above example, the <code>message</code> string will go to the sever as &laquo;<code>Only 5% of the disk&#x27;&#x27;s space left</code>&raquo; - note the duplicated single quote. This is because of the single quote in the SQL query parttern before the <code>message</code> parameter name.</p>
+          <p>Note, that the object does implicit JavaScript parameter conversions to strings. Because of that, it is better to make sure that parameters are strings already to have predictable results.</p>
+          <p>Verbs take up to three parameters. First is an optional object with query parameters, second is either a callback function or batch name and the third one is an optional tag to be returned with the result.</p>
+        </div>
+        <div id="callbacks" class="chapter">
+          <h3>Callbacks</h3>
+          <p>Verbs accept callback functions as their second paramenter. Callback function will be called at the end of AJAX calls to the DBRelay server regardless of the query success or failure. As a parameter, callback functions will receive the DBRelay server's response as a JavaScript object. If the verb was called with an optional tag parameter, it will will be passed back intact in the DBRelay response as the <code>query_tag</code> field. That will allow for a single callback to process multiple purpose queries. For example, if the passed tag is a CSS selector, then the callback function may automatically update matching HTML elements with the query results.</p>
+        </div>
+      </div>
+      <div id="advanced" class="chapter">
+        <h2>Advanced use</h2>
+        <div id="batching" class="chapter">
+          <h3>Batching queries</h3>
+          <p>One way to ensure a specific order of query execution is to rely on chained callbacks. So, if queries &laquo;A&raquo; and &laquo;B&raquo; need to be executed in that order, then the callback to &laquo;A&raquo; execution may call execution of &laquo;B&raquo;.</p>
+          <p>Another way to do it is to specify a string instead of a function where you normally provide a callback. If string specified, then it is treated as a batch name. If no such batch exists, it is created.  Each next call to a verb with the same batch name concatenates the SQL to be executed into that batch buffer for later execution. Statements in baches are &laquo;<code>;</code>&raquo;-separated. Use the <code>run_batch</code> method to actiually execute the batch. The <code>run_batch</code> method takes the batch name and callback function as parameters.</p>
+          <p>For example, if a table needs to be created first, and then updated later in the code, the secuence may be:</p>
+          <pre>log_store.create( &quot;replace&quot; );
+. . . . .
+log_store.enter({
+  severity: &quot;251&quot;,
+  system: &quot;loc7cmp5&quot;,
+  message: &quot;Only 5% of the disk&#x27;s space left&quot;
+}, &quot;replace&quot; );
+log_store.run_batch( &quot;replace&quot;, update_list );
+</pre>
+          <p>Batch name is returned ad the <code>query_tag</code> field of the DBRelay response for use in the callback function. Tags are meaningless in combination with batches.</p>
+          <p>To get rid of a batch and, if needed, start a new batch under the same name, use:</p>
+          <pre>log_store.empty_batch( batch_name );</pre>
+          <p>Method <code>empty_batch</code> will continue silently without doing anything if there is no batch with a specified name. The <code>run_batch</code> method will throw an exception if it is provided a non-existent batch name.</p>
+        </div>
+        <div id="default_callbacks" class="chapter">
+          <h3>Default callbacks</h3>
+          <p>You may configure the same callback to run by default every time you call a certain verb. To do that, specify a two-element array instead of the query string in the second (queries) parameter to <code>sqlQuery</code>. The first element of the array should be the same query string. The second element should be the function which will become the callback. For example, if after every <code>log_store.recent</code> call you want to update a table on the page with the results returned from the DBRelay server, you should use a similar the query definition (assuming that the <code>make_table</code> function creates a table):</p>
+          <pre>var log_queries = {
+  .....
+  recent: [ &quot;select top {{{limit}}} * from log order by tds desc&quot;, make_table ],
+  .....
+};</pre>
+        <p>Callbacks may be chained, so that callback of <code>log_store.enter</code> may call <code>log_store.recent</code>, which after the return will automatically call it&#x27;s own callback - <code>make_table</code> function, which will update the page with most recent received data.</p>
+        <p>Note, that default callbacks are <em>not</em> called when using batch querying. Also, if a verb call has an explicitly specified callback, then default callback will <em>not</em> be invoked.</p>
+        </div>
+        <div id="adding_queries" class="chapter">
+          <h3>Adding queries</h3>
+          <p>Just as specifying the query templates during the object creation, users may call <code>add_query</code> method on an existing sqlObject. Functionally it is the same, as sqlObject just calls <code>add_query</code> behind the scenes on initial parameters anyway. The <code>log_store</code> object from above may be enhanced postfactum with the following:</p>
+          <pre>log_store.add_query(
+  &quot;prune&quot;,
+  &quot;delete from log where tds &lt; &#x27;{{{cutoff}}}&#x27;&quot;,
+  log_store.recent
+);</pre>
+          <p>Three parameters are the name for the new method, the query string, and the <em>optional</em> default callback. The effect is exactly the same as if the <code>prune</code> was included into the original object with parameters to <code>sqlQuery</code> above. The parameters will be properly extracted and checked to inner quoting. The method above may be called as any other verb:</p>
+          <pre>log_store.prune({ cutoff: "12/31/2008"});</pre>
+          <p>Same rules as above for the default callbacks apply.</p>
+        </div>
+        <div id="reflection" class="chapter">
+          <h3>Reflection</h3>
+          <p>For the situations, when you need to interrogate the <code>sqlObject</code> result&#x27;s verbs, there is the <code>verbs</code> utility method. It returns a JavaScript object, where keys are verbs&#x27; names and values are verbs&#x27; functions.</p>
+          <p>The following is the example output for the <code>log_store</code> object:</p>
+          <pre>for ( verb in log_store.verbs() ) {
+  console.log( verb );
+};
+
+// The console should show a sequence similar to:
+// "create", "drop", "recent", "system", "enter", "prune"</pre>
+          <p>As values in the return object of <code>verbs</code> method are referencing the actual methods implementing the verbs, the following identity comparison should always hold true (replace the object and verb names with your own):</p>
+          <pre>log_store.verbs()["system"] === log_store.system</pre>
+          <p>Verb functions have optional properties: <code>callback</code> and <code>parameters</code>. The <code>callback</code> property keeps the default callback function discussed <a href="#default_callbacks">above</a>. Considering the <code>recent</code> verb definition in the <a href="#default_callbacks">Default callbacks</a> section, the following identity comparison should hold true:</p>
+          <pre>log_store.recent.callback === make_table</pre>
+          <p>The <code>parameters</code> property keeps an array of parameters expected by the verb. For the <code>enter</code> verb defined <a href="#verb_enter">at the beginning</a>, the <code>log_store.enter.parameters</code> property holds an array similar to <code>["severity", "system", "message"]</code>.</p>
+        </div>
+        <div id="custom_verbs" class="chapter">
+          <h3>Custom verbs</h3>
+          <p>As <code>sqlObject</code> factory produces a regular JavaScript object it can be easily enhanced with custom verbs. You may use it when need to add parametrised batches or perform non-database related actions using the unified interfaces described above. Assign the function you need to a new property of the result of <code>sqObject</code> call and, optionally, assign an array of parameters to that new property. For example, if you need to have a template for logging a service call on a system using the <code>log_store</code> object, then the following may help</p>
+          <pre>log_store.system_down = function( params ){
+  log_store.enter({ severity: 250, system: params[ "system" ],  message: "System down" } );
+};
+log_store.system_down.parameters = [ "system" ];
+</pre>
+        <p>As custom verbds are not restricted in what they can do, the callback notion does not apply to them. For the example above, even if <code>log_store.system_down.callback</code> is defined, it will not be executed anyway. Individual verbs, when used inside custom actions, will still be bound by notmal callback rules. For the above example, method <code>log_store.recent</code> will be executed, if defined as a callback to the <code>log_store.enter</code> function.</p>
+        </div>
+      </div>
+    </div>
+    <p class="end_mark">&diams;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&diams;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&diams;</p>
+  </body>
+</html>

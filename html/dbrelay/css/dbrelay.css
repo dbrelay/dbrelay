@@ -1,0 +1,182 @@
+
+body {
+	font-family:Arial, Helvetica, serif;
+	font-size:12px;
+}
+
+/* loading */
+
+#dbr-loading{
+	position:absolute;
+	left:45%;
+	top:40%;
+	border:1px solid #6593cf;
+	padding:2px;
+	background:#c3daf9;
+	width:150px;
+	text-align:center;
+	z-index:20001;
+}
+#dbr-loading .loading-indicator{
+	border:1px solid #a3bad9;
+	background:white repeat-x;
+	color:#003366;
+	font:bold 13px tahoma,arial,helvetica;
+	padding:10px;
+	margin:0;
+}
+
+
+.x-grid3-row-table.dbr-deletetablerow td {  
+	background-color:#ff0000 !important;
+}
+
+.dbr-dbactions{ 
+	padding:5px;
+	background-color:#dedede;
+}      
+ 
+.dbr-sqlresultpanel .x-layout-split,
+.dbr-sqltableeditor .x-layout-split {
+	background:#7FB8F1 url('../images/bullet_arrow_up.png') no-repeat center center;
+}
+
+.dbr-directlink-warning{
+	padding-left:18px;
+	background:transparent url('../images/exclamation-small.png') no-repeat top left;
+	color:#ff0000 !important;
+	font-style:italic;
+}
+
+.dbr-dbactions .x-btn{
+ margin-bottom:5px;
+}              
+ 
+.dbr-msg{
+	border:1px solid black;
+	background-color:#fff;    
+	width:250;
+	height:100;
+}     
+.dbr-msg h3{
+	font-weight:bold;
+}
+
+label{
+	font-size:11px;
+	color:#000099;
+}  
+
+.dbr-largetable{
+	color:#009900;
+}
+
+/* Icons */
+.icon-plus{
+	background-image: url('../images/plus-circle.png') !important;
+}  
+.icon-minus{
+	background-image: url('../images/cross-circle.png') !important;
+}  
+.icon-sql{
+	background-image: url('../images/script-attribute-s.png') !important;
+}
+.icon-disk{
+	background-image: url('../images/disk.png') !important;
+}      
+.icon-opentable{
+	background-image: url('../images/folder-open-table.png') !important;
+}   
+.icon-gear{
+	background-image: url('../images/gear.png') !important;
+}
+.icon-table{
+	background-image: url('../images/table.png') !important;
+}
+.icon-tick{
+	background-image: url('../images/tick.png') !important;
+}
+.icon-refresh{
+	background-image: url('../images/refresh.gif') !important;
+}
+.icon-back{
+	background-image: url('../images/control-180.png') !important;
+}
+.icon-next{
+	background-image: url('../images/control.png') !important;
+}
+.icon-first{
+	background-image: url('../images/control-skip-180.png') !important;
+}
+.icon-last{
+	background-image: url('../images/control-skip.png') !important;
+}
+.icon-monitor{
+	background-image: url('../images/monitor.png') !important;
+}
+.icon-help{
+	background-image: url('../images/question.png') !important;
+}      
+.icon-home{
+	background-image: url('../images/home.png') !important;
+}
+.icon-pdf{
+	background-image: url('../images/document-pdf-text.png') !important;
+}  
+.icon-info{
+	background-image: url('../images/information.png') !important;
+}  
+.icon-tables{
+	background-image: url('../images/tables.png') !important;
+}  
+.icon-tableexport{
+	background-image: url('../images/table-export.png') !important;
+}     
+.icon-excel{
+	background-image: url('../images/table-excel.png') !important;
+}
+.icon-log{
+	background-image: url('../images/document-attribute-l.png') !important;
+}
+.icon-link{
+	background-image: url('../images/chain.png') !important;
+}
+.icon-find{
+	background-image: url('../images/binocular.png') !important;
+} 
+.icon-doc{
+	background-image: url('../images/document-list.png') !important;
+}
+.icon-eg{
+	background-image: url('../images/document-globe.png') !important;
+}     
+.icon-app-split{
+	background-image: url('../images/application-split-vertical.png') !important;    
+}   
+.icon-app{
+	background-image: url('../images/application.png') !important;    
+}  
+.icon-html{
+	background-image: url('../images/html.png') !important;    
+}      
+.icon-disconnect{
+	background-image: url('../images/plug.png') !important;    
+}
+.icon-dbrelay{
+	background-image: url('../images/dbrelay.png') !important;    
+}
+.icon-loading{
+	background-image: url('../images/loading.gif') !important;    
+}
+.icon-chart{
+	background-image: url('../images/chart_curve.png') !important;    
+}
+.icon-linechart{
+	background-image: url('../images/chart_line.png') !important;    
+}
+.icon-barchart{
+	background-image: url('../images/chart_bar.png') !important;    
+}
+.icon-piechart{
+	background-image: url('../images/chart_pie.png') !important;    
+}

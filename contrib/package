@@ -4,14 +4,15 @@ set -e
 
 GIT_TAG=${1}
 PKG_PATH=${2}
+PREFIX="dbrelay"
 
 if [ "${GIT_TAG}" = "" -o "${PKG_PATH}" = "" ]; then
   echo "Syntax: ${0} <tag> <path>"
-  echo "        The result will be written out to <path>/viaduct_<tag>.tgz"
+  echo "        The result will be written out to <path>/${PREFIX}_<tag>.tgz"
   exit 1
 fi
 
-BUILD_FILE="viaduct_${GIT_TAG}"
+BUILD_FILE="${PREFIX}_${GIT_TAG}"
 BUILD_DIR="${PKG_PATH}/${BUILD_FILE}"
 
 mkdir ${BUILD_DIR} || {
