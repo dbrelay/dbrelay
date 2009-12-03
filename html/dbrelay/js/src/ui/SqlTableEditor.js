@@ -337,7 +337,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				id:'grid'+idpfx,
 				clicksToEdit: 1,  
 				viewConfig:{
-					forceFit:true,
+					//forceFit:true,
 					autoFill:true
 				}, 
 				plugins : [this.deleteBox], 
