@@ -133,18 +133,15 @@ dbrui.StatusWindow = Ext.extend(Ext.Window,{
 	
 	killSelectedConnections: function(){          
 		//array of selected records
-		var rows = this.grid.getSelectionModel().getSelections();            
+		var t=this, rows = this.grid.getSelectionModel().getSelections();            
 		
 		for(var i=0, len=rows.length; i< len; i++){  
 			var rec = rows[i];  
 
 			dbrelayKillConnection( rec.get('sock_path'), function(json){ 
 				var status = json.cmd.status;
-					this.refresh();
-					Ext.Msg.alert("Result", json.cmd.status);
-					
-
-			 }, this);
+					t.refresh();
+			 });
 		}
 		
 	}

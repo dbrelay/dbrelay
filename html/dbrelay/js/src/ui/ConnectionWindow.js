@@ -14,7 +14,7 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
  	initComponent : function(){
 	  var _idpfx = Ext.id(); //ensure unique ids 
 		var defaultConn = this.defaultConnection || {};
-	
+		
 		this.items = [
 			{
 				xtype:'panel',
@@ -235,6 +235,11 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 				iconCls:'icon-minus',
 				handler:function(){this.hide()},
 				scope:this
+			},
+			{
+				text:'Documentation',
+				iconCls:'icon-help', 
+				handler:function(){window.open('docs/index.html');}    
 			}
 
 		];

@@ -20,7 +20,19 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 		this.tbar = [
 			'<span id="name'+idpfx+'" style="font-weight:bold;color:green">Viewing '+(this.resultName || '') +'</span>',
-			'->',
+			{
+				xtype:'tbfill',
+			},
+			{
+				text:'Charts',
+				iconCls:'icon-chart',
+				id:'chart_item'+idpfx,
+				handler:function(){
+					this.openChartWindow(this.store);
+				},
+				scope:this
+		},
+		'-',
 			{
 				text:'Export',
 				iconCls:'icon-tableexport',
@@ -137,11 +149,111 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.cm = this.cm || new Ext.grid.ColumnModel([]);
 		
 		dbrui.SqlSelectGrid.superclass.initComponent.call(this);  
-		
 
 		this.idpfx = idpfx;
 	},
 	
+
+	openChartWindow: function(store){
+		var keys = store.fields.keys;
+
+		if(keys.length < 2){
+			Ext.Msg.alert('Problem','You need at least 2 numeric columns to create a chart');
+			return;
+		}
+		
+		if(!this.chartWindow){
+
+
+		 	this.chartWindow = new Ext.Window({
+				title: this.sqlTitle + ' Charts (BETA)',
+				closable:true,
+				closeAction:'hide',
+				maximizable:true,
+				width:600,
+				height:500,
+				layout:'fit',
+				tbar:[
+					{
+						text:'<div style="font-weight:bold;color:red;font-size:14px">Help</div>',
+						iconCls:'icon-help',
+						handler:function(){
+							Ext.Msg.alert('Charts Help','Charts are currently in BETA mode.  Currently only one result set can be charted at a time.<br/>'
+								+ '<table width="100%" border="1"><tr><td>&nbsp;</td><td><b>Line/Bar Chart</b></td><td><b>Pie Chart</b></td></tr>'
+								+ '<tr><td><b>x</b></td><td>first column</td><td>categories are first column</td></tr>'
+								+ '<tr><td><b>y</b></td><td>each numeric column after the 1st column</td><td>2nd column</td></tr>'
+								+ '</table><br/><br/>'
+								+ 'OPEN ISSUES:<br/>'
+								+ '- Charts currently bind to the first query that is run.  To chart different results, open a new SQL query tab.<br/>'
+								+ '- Time Series chart currently does not refresh its data.  To chart a different time series, open a new SQL query tab.<br/>'
+							);
+						}
+					}
+				],
+				items:{
+					xtype:'tabpanel',
+					activeTab:0,
+					layoutOnTabChange:true,
+					deferredRender:false,
+					forceLayout:true,
+					
+					items:[
+						{
+							title:'Line',
+							id:'line' + this.idpfx,
+							iconCls:'icon-linechart',
+							xtype:'dbrui_linechart'
+						},
+						{
+							title:'Bar',
+							id:'bar' + this.idpfx,
+							iconCls:'icon-barchart',
+							xtype:'dbrui_barchart'
+						},
+						{
+							title:'Pie',
+							id:'pie' + this.idpfx,
+							iconCls:'icon-piechart',
+							xtype:'dbrui_piechart'
+						}
+					],
+					
+					listeners:{
+						'tabchange':{
+							fn: function(tp, t){
+								if(t.refreshChart){
+									t.refreshChart(this.store);
+								}
+							},
+							scope:this
+						}
+					}
+				},
+				listeners:{
+					'render':{
+						fn: function(win){
+							win.tabs = win.getComponent(0);
+							this.fireEvent('createchartwindow', this,this.chartWindow);
+						},
+						scope:this
+					}
+				}
+			});
+			
+			
+		}
+		
+		this.chartWindow.show();
+		this.chartWindow.getComponent(0).activate(0);
+	//	this.chartWindow.getComponent(0).getComponent(0).refresh(store);
+		
+		
+	},
+	
+	
+	getDbrData : function(){
+		return this.dataSet;
+	},
 	/**
 		refreshes the grid with new data, columns, & store. Should only be called after grid is rendered.
 		@param {Object} data from server
@@ -164,8 +276,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 			//EXT store fields
 			storeFields[i] = {
-				name: name,
-				type: 'string'
+				name: name
 			};
 		}
 
@@ -185,7 +296,10 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		
 		 //reconfigure the grid with the new query results
 	  this.reconfigure(store, cm);      
-
+		if(this.chartWindow && !this.chartWindow.hidden){
+			this.chartWindow.hide();
+			this.openChartWindow(store);
+		}
 		
 		this.tableData = rows;
 		this.totalRows = data.count || '0';  
@@ -200,6 +314,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		
 		  
 		this.updatePageView();    
+		this.dataSet = data;
  
 	},
 	     
@@ -358,5 +473,10 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 });
 
+
+/*Ext.extend( Ext.chart.Chart, {
+	
+
+});*/
 
 

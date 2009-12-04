@@ -3,18 +3,21 @@ htmldir = $(prefix)/html
 JSMIN=../util/jsmin
 JSSRC=dbrelay/js/src
 
-noinst_PROGRAMS = dbrelay/js/dbrelay-core-min.js dbrelay/js/dbrelay-ui-all-min.js dbrelay/js/dbrelay-ui-sqltableeditor-min.js dbrelay/js/dbrelay-ui-sqlresultpanel-min.js 
+noinst_PROGRAMS = dbrelay/js/dbrelay-core-min.js dbrelay/js/dbrelay-ui-all-min.js dbrelay/js/dbrelay-ui-sqltableeditor-min.js dbrelay/js/dbrelay-ui-sqlresultpanel-min.js dbrelay/js/dbrelay-ui-charts-min.js 
 
 dbrelay/js/dbrelay-core-min.js: $(JSSRC)/sqlObject.js $(JSSRC)/sqlDbAccess.js $(JSSRC)/sqlTable.js
 	cat $+ | $(JSMIN) > $@
 
-dbrelay/js/dbrelay-ui-all-min.js: $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
+dbrelay/js/dbrelay-ui-all-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/ConnectionWindow.js $(JSSRC)/ui/StatusWindow.js $(JSSRC)/ui/CreateTableWindow.js $(JSSRC)/ui/SqlTableEditor.js $(JSSRC)/ui/Chart.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js $(JSSRC)/ui/App.js
 	cat $+ | $(JSMIN) > $@
 
-dbrelay/js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/SqlTableEditor.js
+dbrelay/js/dbrelay-ui-sqltableeditor-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/SqlTableEditor.js
 	cat $+ | $(JSMIN) > $@
 
-dbrelay/js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
+dbrelay/js/dbrelay-ui-sqlresultpanel-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/Chart.js $(JSSRC)/ui/SqlSelectGrid.js $(JSSRC)/ui/SqlResultPanel.js
+	cat $+ | $(JSMIN) > $@
+
+dbrelay/js/dbrelay-ui-charts-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/Chart.js
 	cat $+ | $(JSMIN) > $@
 
 FILES = dbrelay/index.html \
@@ -48,6 +51,10 @@ dbrelay/images/application.png \
 dbrelay/images/bullet_arrow_up.png \
 dbrelay/images/binocular.png \
 dbrelay/images/chain.png \
+dbrelay/images/chart_curve.png \
+dbrelay/images/chart_bar.png \
+dbrelay/images/chart_line.png \
+dbrelay/images/chart_pie.png \
 dbrelay/images/control-180.png \
 dbrelay/images/control-skip-180.png \
 dbrelay/images/control-skip.png \
@@ -362,6 +369,7 @@ dbrelay/js/dbrelay-core-min.js \
 dbrelay/js/dbrelay-ui-all-min.js \
 dbrelay/js/dbrelay-ui-sqltableeditor-min.js \
 dbrelay/js/dbrelay-ui-sqlresultpanel-min.js \
+dbrelay/js/dbrelay-ui-charts-min.js \
 dbrelay/tablesorter/asc.png \
 dbrelay/tablesorter/bg.png \
 dbrelay/tablesorter/desc.png \
