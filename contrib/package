@@ -32,7 +32,10 @@ git log -n 1 ${GIT_TAG} --pretty=format:"{ 'committer': '%an', 'tag': '${GIT_TAG
 
 pushd ${PKG_PATH} > /dev/null
 
-tar -czf ${BUILD_TGZ} --owner=0 --group=0 --numeric-owner ./${BUILD_FILE}
+# Snow Leopard no longer supports --owner and --group options in tar. Amazing.
+# tar -czf ${BUILD_TGZ} --owner=0 --group=0 --numeric-owner ./${BUILD_FILE}
+
+tar -czf ${BUILD_TGZ} --numeric-owner ./${BUILD_FILE}
 rm -rf ./${BUILD_FILE}
 
 popd > /dev/null
