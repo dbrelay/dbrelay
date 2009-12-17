@@ -350,7 +350,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		
 	 	tb.el.removeClass('x-toolbar');
 		this.doLayout();
-		tb.findById('showgrid-0' + this.idpfx).toggle(true);    
+		tb.findById('showgrid-' + (count-1) + this.idpfx).toggle(true);    
 		tb.addText('&nbsp;&nbsp;'+ count +' result set'+(count > 1 ? 's' : '')+' returned.');             
 		this.loadMask(false);   
 	}

@@ -4,7 +4,7 @@ Grid for the SQL Result Panel
 Ext.namespace('dbrui');
 dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 	viewConfig:{
-		forceFit:true,
+	//	forceFit:true,
 		autoFill:true,
 		emptyText:'Empty result set',
 		deferEmptyText:false
@@ -193,7 +193,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 					xtype:'tabpanel',
 					activeTab:0,
 					layoutOnTabChange:true,
-					deferredRender:false,
+					deferredRender:true,
 					forceLayout:true,
 					
 					items:[
