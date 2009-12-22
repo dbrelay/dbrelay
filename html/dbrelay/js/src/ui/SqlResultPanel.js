@@ -287,8 +287,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
     for (var i=0; i<numResults; i++){   
 			var data = dataSets[i];           
 			
-			if(data.count === null){continue;}
-			
+			if(!(data.rows && data.rows.length > 0)){continue;}
+
 			var name ='Result Set ' + (count+1);
 
 			//grid
@@ -350,7 +350,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 		
 	 	tb.el.removeClass('x-toolbar');
 		this.doLayout();
-		tb.findById('showgrid-0' + this.idpfx).toggle(true);    
+		tb.findById('showgrid-' + (count-1) + this.idpfx).toggle(true);    
 		tb.addText('&nbsp;&nbsp;'+ count +' result set'+(count > 1 ? 's' : '')+' returned.');             
 		this.loadMask(false);   
 	}

@@ -1,9 +1,49 @@
 
-/**  sqlTable constructor - creates a new sqlTable
-	@param {String} table : name of table in db  
-	 @param {sqlDbAccess} sqlDb : sqlDb object, or sqlObject connection config.
+/**  
+@class DbRelay.TableHelper
+
+An API to perform SQL queries on a single table. Usage:
+
+<pre>
+/* Create a new {@link DbRelay.QueryHelper} instance for our database connection information *\/ 
+var qh = new DbRelay.QueryHelper({   
+
+	//Hostname on which the SQL server is running. 
+	sql_server : '99.99.99.99.99', 
+
+	//Optional port number, on which the SQL server is listening. 1433 is the default.
+	sql_port : '',  
+	//Optional name of the primary database for the connection. User's default database is used, if not specified.
+	sql_database : 'mydatabase', 
+
+	//Username string recognised by the SQL server.   
+	sql_user : 'myuser',                
+
+	//password for the sql_user.   
+	sql_password : 'mypass',              
+
+	//Optional name to persist this connection under.   
+	connection_name : 'example2',  
+
+	/*Optional number of seconds from the response to the last query before the connection will be considered idle 
+	and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours). *\/   
+	connection_timeout : 60,
+	
+	
+	/*Optional parameter for xss scripting.  Leave out for same-domain scripts  *\/   
+	dbrelay_host : 'http://dbrelay_host'
+});	
+
+//Create an sqlTable for the table 'people', using the above QueryHelper   
+var myTable = new DbRelay.TableHelper('people', qh);
+</pre>
 */
 
+/**
+@constructor
+@param {string} table table name
+@param {Object/DbRelay.QueryHelper} queryHelper Either the connection parameters for the db OR an instance of a DbRelay.QueryHelper
+*/
 DbRelay.TableHelper = function(table, queryHelper){
 	this.queryHelper = queryHelper.connection ? queryHelper : new DbRelay.QueryHelper(queryHelper);
 	this.table = table;
@@ -13,13 +53,19 @@ DbRelay.TableHelper = function(table, queryHelper){
 
 DbRelay.TableHelper.prototype = {
 	/**
-		Queries columns in this table
-		@param {function} optional callback function that Will be called with the following args:
-				@arg {sqlTable} this
-				@arg {Object} raw json response from server      
-				@arg {Array} sanitized columns data array (name, required, dataType)      
-				
-		@param {Ojbect} scope of callback (defaults to global)
+		Queries for a list of columns in this table
+		
+		@param {function} success function that will be called if the query succeeds. Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+					 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			     <li><b>columns</b> : Object<div class="sub-desc">sanitized columns data array (name, required, dataType)</div></li>
+			 </ul>
+		 @param {function} error function that will be called if the query fails. 	Called with the following parameters:<ul class="mdetail-params">
+				     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+				     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+				 </ul>
+		 @param {Object} scope Optional scope for the callbacks.  Defaults to window/global
+		
 	*/
 	queryColumns : function(callback, error, scope){
 		this.queryHelper.adminQuery({cmd:'columns', param1: this.table}, function(resp){  
@@ -59,30 +105,36 @@ DbRelay.TableHelper.prototype = {
 	},    
 	
 	/**
-		Fetches all columns for all rows.  Wrapper for fetchRows 
-		@param {function} callback : optional callback function. Function will be called with the following params:  
-				@cbparam : {sqlTable} this sqlTable
-				@cbparam : {Object} raw JSON response from server
+		Fetches all columns for all rows, no conditions or filters.
+		
+		@param {function} callback function that will be called if the query finishes. Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+					 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			 </ul>
 				
-		@param {Object} scope : scope of callback function (defaults to global scope)
+		@param {Object} scope scope of callback function (defaults to global scope)
 		 	
 	*/
 	fetchAll: function(callback, scope){
 		 this.fetchRows(null,callback, scope);
 	},
 	
+
 	/**
-		Fetches columns from all rows from the table based on where conditions and server-side ordering
-		@param {Object} cfg : 
-				@cfg {String} columns : columns to return, defaults to * . Ex:  col1,col2 
-				@cfg {String} where: WHERE clause  
-				@cfg {String} orderBy: server-side ORDER BY column
-		
-		@param {function} callback : optional callback function. Function will be called with the following params:  
-				@cbparam : {sqlTable} this sqlTable
-				@cbparam : {Object} raw JSON response from server
+		Fetches all columns for all rows, no conditions or filters.
+		@param {Object} cfg parameters: 
+		<ul class="mdetail-params">
+		     <li><b>columns</b> : String<div class="sub-desc">columns to return, defaults to * . Ex:  col1,col2 </div></li>
+				<li><b>where</b> : String<div class="sub-desc">WHERE clause</div></li>
+				<li><b>orderBy</b> : String<div class="sub-desc">server-side ORDER BY column</div></li>
+		 </ul>
+
+		@param {function} callback function that will be called if the query finishes. Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+					 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			 </ul>
 				
-		@param {Object} scope : scope of callback function (defaults to global scope)
+		@param {Object} scope scope of callback function (defaults to global scope)
 		 	
 	*/
 	fetchRows: function(cfg, callback, scope){
@@ -109,19 +161,27 @@ DbRelay.TableHelper.prototype = {
 	
 	/**
 		Fetches paged rows from the table
-		@param {Object} cfg : config object with the following (* required):
-			@cfg {String} columns : columns to return, defaults to * . Ex:  col1,col2 
-			@cfg {int} recordStart : starting 0-based index if paging (defaults to 0)
-			@cfg {int} pagingSize: paging size (defaults to 20)
-			@cfg {String} where: WHERE clause  
-			@cfg {String} orderBy: server-side ORDER BY column (defaults to the first column) 
+		@param {Object} cfg config object with the following (* required):
+		<ul class="mdetail-params">
+		     <li><b>columns</b> : String<div class="sub-desc">columns to return, defaults to * . Ex:  col1,col2 </div></li>
+		     <li><b>recordStart</b> : String<div class="sub-desc">starting 0-based index if paging (defaults to 0)</div></li>
+		     <li><b>pagingSize</b> : String<div class="sub-desc">paging size (defaults to 20) </div></li>
+				<li><b>where</b> : String<div class="sub-desc">WHERE clause</div></li>
+				<li><b>orderBy</b> : String<div class="sub-desc">server-side ORDER BY column (defaults to the first column) </div></li>
+		 </ul>
+
+		@param {function} success function that will be called if the query succeeds. Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+					 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+					 <li><b>cfg</b> : Object<div class="sub-desc">original config params</div></li>
+			 </ul>
 		
-		@param {function} callback : optional callback function.  Function will be called with the following params:
-				@cbparam : {sqlTable} this sqlTable
-				@cbparam : {Object} raw JSON response from server
-				@cbparam : {Object} original cfg param   
-				
-		@param {Object} scope : scope of callback function   
+		@param {function} error function that will be called if the query fails. Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+					 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+					 <li><b>cfg</b> : Object<div class="sub-desc">original config params</div></li>
+			 </ul>
+		@param {Object} scope optional scope of callback functions   
 
 	*/
 	fetchPagingRows: function(cfg, callback, error, scope){   
@@ -199,12 +259,11 @@ DbRelay.TableHelper.prototype = {
 	},
 	 
 	/** adds new rows to table
-		@param {Object} values : column_key/values to add   
-		
-		@param {function} callback : optional callback function. Function will be called with the following params:  
-				@cbparam : {sqlTable} this sqlTable
-				@cbparam : {Object} raw JSON response from server
-
+		@param {Object} rows column_key/values to add   
+		@param {function} callback function that will be called if the query finishes. Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+					 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			 </ul>
 		@param {Object} scope : scope of callback function (defaults to global scope)
 		
 	*/
@@ -222,8 +281,7 @@ DbRelay.TableHelper.prototype = {
 		}, this);
 	},   
 	
-	/** Created solely for commit transaction.
-	*/
+	//private
 	setAddRowsBatch : function(rows) {    
 		if(rows.length === 0){return false;}
 		var batch = 'add' + new Date().getTime();  
@@ -249,8 +307,7 @@ DbRelay.TableHelper.prototype = {
 	
 	/**   SQL'ify a string value
 	
-	@param {string} s : string to make safe
-	
+	@param {string} s string to make safe
 	@return {string} string with all single quotes replaced with '' AND also wrapped in single quotes (ex. 'Chicago''s'
 	*/
 	safeSqlString : function(s){
@@ -258,14 +315,15 @@ DbRelay.TableHelper.prototype = {
 	},      
 	  
 	/** Deletes row(s) from the table
-	@param {Array of Objects} rows : array of rows to drop, each row represented by an object with key/value pairs for the WHERE clause   (i.e. [{id='2'},{key2='3'}].
+	@param {Array of Objects} rows array of rows to drop, each row represented by an object with key/value pairs for the WHERE clause   (i.e. [{id='2'},{key2='3'}].
 					 Each clause will be AND'd together.   
-					
-		@param {function} callback : optional callback function. Function will be called with the following params:  
-				@cbparam : {sqlTable} this sqlTable
-				@cbparam : {Object} raw JSON response from server
 
-		@param {Object} scope : scope of callback function (defaults to global scope)  
+	@param {function} callback function that will be called if the query finishes. Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+				 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
+
+	@param {Object} scope scope of callback function (defaults to global scope)
 	*/
 	deleteRows : function(rows, callback, scope){
     var batch = this.setDeleteRowsBatch(rows);    
@@ -281,8 +339,7 @@ DbRelay.TableHelper.prototype = {
 		}, this);     
 	},   
 	
-	/** Created solely for commit transaction.
-	*/
+	//private
 	setDeleteRowsBatch : function(rows){
 		if(rows.length === 0){return false;}
 		
@@ -305,16 +362,18 @@ DbRelay.TableHelper.prototype = {
 		return batch;   
 	},
 	
-	/** Batch update table rows.  This function assumes each row to be updated have the same where column(s), and that all WHERE clauses are AND'd together.
+	/** 
+	Batch update table rows.  This function assumes each row to be updated have the same where column(s), and that all WHERE clauses are AND'd together.
 	
-	@param {Array} set : array of objects of columnName:setValue pairs  ex. [{name='Fred'},{name='Ted'}] or array of strings, where string is sql where clause['name LIKE \'%co%\''].  Array can contain mixed objects & strings.
-	@param {Array} wheres : array of objects to use in the where clause. Should be same length as set param  ex: [{id='2'},{key2='3'}] 
+	@param {Array} set array of objects of columnName:setValue pairs  ex. [{name='Fred'},{name='Ted'}] or array of strings, where string is sql where clause['name LIKE \'%co%\''].  Array can contain mixed objects & strings.
+	@param {Array} wheres array of objects to use in the where clause. Should be same length as set param  ex: [{id='2'},{key2='3'}] 
 	
-	@param {function} callback : optional callback function. Function will be called with the following params:  
-			@cbparam : {sqlTable} this sqlTable
-			@cbparam : {Object} raw JSON response from server
+	@param {function} callback function that will be called if the query finishes. Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+				 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
 			
-	@param {Object} scope : scope of callback function (defaults to global scope)
+	@param {Object} scope scope of callback function (defaults to global scope)
 	*/
  	updateRows : function(set, wheres, callback, scope){
 		var batch = this.setUpdateRowsBatch(set, wheres);    
@@ -330,8 +389,7 @@ DbRelay.TableHelper.prototype = {
 		
   },  
   
-	/** Created solely for commit transaction.
-	*/  
+	//private - Created solely for commit transaction.
 	setUpdateRowsBatch : function(set, wheres){       
 		if(set.length === 0){return false;}  
 
@@ -376,10 +434,17 @@ DbRelay.TableHelper.prototype = {
  /** 
 	Queries for this table's primary keys
 	
-	@param {function} callback : optional callback function. Function will be called with the following params:  
-			@cbparam : {sqlTable} this sqlTable
-			@cbparam : {Object} raw JSON response from server
-			@cbparam : {Array} array of primary keys
+	@param {function} success callback function that will be called if the query succeeds. Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+				 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+				 <li><b>keys</b> : Array<div class="sub-desc">Array of primary key column names</div></li>
+		 </ul>
+
+	@param {function} error optional callback function if the query fails. Function will be called with the following params: 
+	<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+				 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
 			
 	@param {Object} scope : scope of callback function (defaults to global scope)
  */ 
@@ -412,15 +477,28 @@ DbRelay.TableHelper.prototype = {
 	/** 
 	Queries for the total number of records in the table that meet an optional condition
 	@param cfg : configuration for this query.  Options are:
-			@cfg {string} pkeys : optional.  For large tables, it is recommended that the table's primary key(s) be passed in as a comma delimited string
-			@cfg {String/Object} where : optional. String of column/value pairs or Object of column/value pairs to use in the where clause i.e. {color='red',size='large'}             
-			
-	@param {function} callback : optional callback function. Function will be called with the following params:  
-			@cbparam : {sqlTable} this sqlTable
-			@cbparam : {Object} raw JSON response from server
-			@cbparam : {int} Total count of rows
+			@cfg {string} pkeys : 
+			@cfg {String/Object} where : 
+			          
+	@param {Object} cfg Configuration options for this query.  Options are:
+	<ul class="mdetail-params">
+		     <li><b>pkeys</b> : {String}<div class="sub-desc">optional.  For large tables, it is recommended that the table's primary key(s) be passed in as a comma delimited string</div></li>
+				 <li><b>where</b> : Object<div class="sub-desc">optional. String of column/value pairs or Object of column/value pairs to use in the where clause i.e. {color='red',size='large'}</div></li>
+		 </ul>
+							
+	@param {function} success callback function that will be called if the query succeeds. Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+				 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+				 <li><b>keys</b> : Integer<div class="sub-desc">Total count of rows</div></li>
+		 </ul>
+				
+	@param {function} error optional callback function if the query fails. Function will be called with the following params: 
+	<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.TableHelper}<div class="sub-desc">the DbRelay.TableHelper object</div></li>
+				 <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
 
-	@param {Object} scope : scope of callback function (defaults to global scope)       
+	@param {Object} scope scope of callback function (defaults to global scope)       
 	*/
   queryTotalRows : function(cfg, callback, error, scope){ 
     cfg = cfg || {};
@@ -459,15 +537,18 @@ DbRelay.TableHelper.prototype = {
 		  
 	}, 
 	
+	/** Get the {@link DbRelay.QueryHelper} for this TableHelper.
+	@return {DbRelay.QueryHelper} The query helper object that belongs to this TableHelper.
+	*/
 	getQueryHelper : function(){
 		return this.queryHelper;
 	},
 
 	                          
-	/** util - copies all properties of one object to another, with optional overwrite
-	@param {Object} dest : destination object that contains properties to be modified
-	@param {Object} src : source object that contains properties to be copied       
-	@param {bool} overwrite : true to overwrite dest properties if they already exist. 
+	/** util - copies all properties of one object to another, one level deep with optional overwrite
+	@param {Object} dest destination object that contains properties to be modified
+	@param {Object} src source object that contains properties to be copied       
+	@param {bool} overwrite true to overwrite dest properties if they already exist. 
 	*/
 	applyProperties : function(dest, src, overwrite){
 		dest = dest || {};
@@ -481,7 +562,9 @@ DbRelay.TableHelper.prototype = {
 };
 
 
-
+/** @ignore
+ - legacy
+*/
 sqlTable = function(table, queryHelper){
 	return new DbRelay.TableHelper(table, queryHelper);
 }

@@ -4,7 +4,7 @@ Grid for the SQL Result Panel
 Ext.namespace('dbrui');
 dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 	viewConfig:{
-		forceFit:true,
+	//	forceFit:true,
 		autoFill:true,
 		emptyText:'Empty result set',
 		deferEmptyText:false
@@ -184,7 +184,6 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 								+ '<tr><td><b>y</b></td><td>each numeric column after the 1st column</td><td>2nd column</td></tr>'
 								+ '</table><br/><br/>'
 								+ 'OPEN ISSUES:<br/>'
-								+ '- Charts currently bind to the first query that is run.  To chart different results, open a new SQL query tab.<br/>'
 								+ '- Time Series chart currently does not refresh its data.  To chart a different time series, open a new SQL query tab.<br/>'
 							);
 						}
@@ -194,7 +193,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 					xtype:'tabpanel',
 					activeTab:0,
 					layoutOnTabChange:true,
-					deferredRender:false,
+					deferredRender:true,
 					forceLayout:true,
 					
 					items:[
@@ -302,7 +301,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		}
 		
 		this.tableData = rows;
-		this.totalRows = data.count || '0';  
+		this.totalRows = (data.count || rows.length) || '0';  
 
 		Ext.get('total'+this.idpfx).update(this.totalRows);  
     
