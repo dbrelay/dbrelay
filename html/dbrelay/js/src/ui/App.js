@@ -1,5 +1,4 @@
-Ext.namespace('dbrui','dbrplugins');
-
+Ext.namespace('dbrui','dbrplugins.meta');
 
 
 
@@ -18,7 +17,8 @@ dbrui.App = function(){
 	var _plugins = {
 		tableeditor:[],
 		sqlpanel:[],
-		dbrelayapp:[]
+		dbrelayapp:[],
+		sqlgrid:[]
 	};
 		
 	//javascript file loader
@@ -79,14 +79,11 @@ dbrui.App = function(){
 		init: function(){
 			
 			var loadedFiles = 0, me = this;
+			Ext.chart.Chart.CHART_URL = window.DBRELAYUI_EXTCHART_URL || 'js/ext-3.0.0/resources/charts.swf?nocache=' + Math.floor(Math.random()*10000);
 			
-			//IE SUCKS
-			this.loadApp();
-			
-			
+
 			//dynamically load plugin files from plugins directory
-			
-		/*	$.get( "plugins", function (data) {            
+			$.get( "plugins/", function (data) {            
 		    	var files = [], css = [], names = {};
 
 					$(data).find('a').each( function(){
@@ -117,12 +114,9 @@ dbrui.App = function(){
 								var name = names[options.url];
 								
 								//load plugin array
-								var plugin = new dbrplugins[name];
-								switch(plugin.pluginFor){
-									case 'tableeditor':
-									case 'sqlpanel':
-									case 'app':
-										_plugins[plugin.pluginFor].push( plugin );
+								var pluginFor = dbrplugins.meta[name].pluginFor;
+								if(_plugins[pluginFor]){
+									_plugins[pluginFor].push( name );
 								}
 								
 
@@ -147,10 +141,19 @@ dbrui.App = function(){
 						me.loadApp();
 					}
 					
-		  });*/
+		  });
 
 		},
 		
+		getPluginsFor : function(type){
+			var names = _plugins[type], plugins = [];
+
+			for(var i=0; i< names.length; i++){
+				plugins.push( new dbrplugins[names[i]] );
+			}
+			
+			return plugins;
+		},
 		
 		loadApp: function(){ 
 			var _vaApp = this;
@@ -246,14 +249,14 @@ dbrui.App = function(){
 									},
 									{
 										xtype:'button',
+										text:'Docs',
+										iconCls:'icon-help', 
+										handler:function(){window.open('docs/index.html');}    
+									},
+									{
+										xtype:'button',
 										text:'More',
-										iconCls:'icon-info',
-										menu:[   
-										{
-											text:'DBRelay Documentation',
-											iconCls:'icon-doc', 
-											handler:function(){window.open('docs/index.html');}    
-										}, 
+										menu:[
 										{
 											text:'Other Documentation',
 											iconCls:'icon-doc', 
@@ -266,13 +269,7 @@ dbrui.App = function(){
 													this.showStatusWindow(true);
 												},
 												scope:this
-										}, 
-										'-',
-											{
-												text:'Old UI',
-												iconCls:'icon-home', 
-												handler:function(){window.open('/oldindex.html');}
-											}
+										}
 											
 										]
 									}   
@@ -302,11 +299,8 @@ dbrui.App = function(){
 			});
 			
 			
-			//If direct URL was used, auto-set the params and open the SQL tab accordingly 
-			var url = window.location.href;	       
-			var qparams = Ext.urlDecode(url.substring( url.indexOf('?')+1));
-     
-			this.restoredConnection = qparams;             
+			//If direct URL was used, auto-set the params and open the SQL tab accordingly       
+			this.restoredConnection = window.DBRELAYUI_PARAMS ? window.DBRELAYUI_PARAMS : Ext.urlDecode(window.location.href.substring( window.location.href.indexOf('?')+1));             
 			
 			//remove loading mask
 			var loading = Ext.get('dbr-loading');
@@ -328,24 +322,17 @@ dbrui.App = function(){
 			});
 			
 			
-
-			this.showConnectionWindow(true);  
-			
-		/*	if(qparams && qparams.sql_server && qparams.sql_database){      
-				console.dir(qparams); 
-				 //create sqlDb object
-				 // this.sqlDb = sqlDbAccess(qparams);      
-                          
-					
-          //open a SQL panel by default
-				 // this.addSqlPanel(qparams.sql);    
-				 // this.refreshTablesMenu();  
+			//check browser
+			if(!Ext.isIE8 && !Ext.isGecko3 && !Ext.isSafari4){
+				Ext.Msg.alert('WARNING','You are not using a supported browser.\nThis interface supports FF3+, IE8+, and Safari 4+.  Using any other browsers may result in problems.',
+					function(){
+							this.showConnectionWindow(true);  
+					}, this);
 			}
 			else{
-      	//display connection window 
-		 			//TODO: optionally read connection data from external file, and bypass this window...    
-					this.showConnectionWindow(true);
-			 }  */
+				this.showConnectionWindow(true);  
+			}
+
 			
 		},  
 		
@@ -395,8 +382,10 @@ dbrui.App = function(){
 			if(!show && !this.connectionWindow){return;}
 			
   		if(!this.connectionWindow){
+
 				this.connectionWindow = new dbrui.ConnectionWindow({
 					defaultConnection : this.restoredConnection || {},
+					autoConnect : this.restoredConnection.run && this.restoredConnection.run == 1 ? true : false,
 					listeners:{
 						'connectionupdate':{
 							fn: function(w, conncfg){    
@@ -412,11 +401,14 @@ dbrui.App = function(){
 									delete conncfg.flags_pp;   
 									
                   //open a SQL panel by default
-									this.addSqlPanel(this.restoredConnection.sql);  
+									var autoRun =  this.restoredConnection.run && this.restoredConnection.run == 1 ? true : false;
+								
+									this.addSqlPanel(this.restoredConnection.sql, autoRun);  
 									
 									//update window title with db name
 									 document.title =   (conncfg.sql_database || 'default database') + '@' +conncfg.sql_server + '|' + _appName;   
 									 this.refreshTablesMenu();
+								
 					       }
 
 					       //update information
@@ -497,15 +489,17 @@ dbrui.App = function(){
 		 
 		 /** Adds a new SqlResultPanel tab to the main tabs 
 		*/
-     addSqlPanel : function(defaultSql){
+     addSqlPanel : function(defaultSql, autoRun){
 
 			var p = Ext.getCmp('maintabs').add(new dbrui.SqlResultPanel({
 				sqlDb: this.sqlDb,
 				border: false,
-				title: 'Run SQL ' + (++_numSqls),
+				title: 'SQL Query ' + (++_numSqls),
 				closable:true,
 				defaultSql : defaultSql || '',
-				plugins:_plugins.sqlpanel
+				plugins:this.getPluginsFor('sqlpanel'),
+				gridplugins:this.getPluginsFor('sqlgrid'),
+				autoRun : autoRun || false
 			}));
 			_viewport.doLayout();  
 				
@@ -527,7 +521,7 @@ dbrui.App = function(){
 					closable:true, 
 					serverSidePaging:true,
 					pageSize:100,
-					plugins:_plugins.tableeditor,
+					plugins:this.getPluginsFor('tableeditor'),
 					listeners:{
 						'close':{
 							fn:function(w){

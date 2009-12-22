@@ -11,3 +11,4 @@ html/dbrelay/js/*-min.js
 html/.deps/*
 src/dbrelay/include/dbrelay_config.h
 .DS_Store
+html/dbrelay/js/ext-3.0.0/ext-all-debug.js

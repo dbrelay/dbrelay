@@ -1,91 +1,298 @@
-// $(document).ajaxError(function(){
-//     if (window.console && window.console.error) {
-//         console.error(arguments);
-//     }
-// });            
 
-/* global var to hold DBRelay host (default to "" for same domain) */
+(function(){
+	var param_re = /{{{([""'']?\w+)}}}/g;
+	var divid_re = /({{{[\'\"]?)|(}}})/g;
+	/**
+	@class DbRelay
+	The DbRelay core JavaScript API provides a simple interface to send SQL queries to DbRelay.  Cross-domain support is also included.<br/><br/>
+	
+	Requires:
+	<ul><li>JQuery 1.3.2</li></ul>
+	
+	Example Usage:
+<pre>
+&lt;script src="/dbrelay/js/jquery/jquery-1.3.2.min.js" type="text/javascript">&lt;/script>
+
+&lt;!-- DbRelay Javascript Core API -->
+&lt;script src="/dbrelay/js/dbrelay-core-min.js" type="text/javascript">&lt;/script>
+
+&lt;script>
+
+var connection = {
+	sql_server:'99.99.99.1',
+	sql_database:'EMPLOYEES',
+	sql_user:'joe',
+	sql_password:'joepass',
+	//optional param for cross-domain access
+	dbrelay_host:'http://dbrelayserver.com:1433'
+};
+
+function success(response){
+	alert('Success! ' + response.data);
+}
+function error(response){
+	alert('Error: ' + response.log.error);
+}
 
 
+//Query something using {@link #query}
+DbRelay.query(connection, ['echosql'], success, failure);
 
-function dbrelayQuery( connection, sql, callback, query_tag) {
-  //copy connection info into params
-	var params = {
-		sql: sql,
-		query_tag: query_tag || null
+&lt;/script>
+</pre>
+	
+	
+	@singleton
+	*/
+	DbRelay = {
+		adapters : {},
+		/** global var to hold default DBRelay host (default to "" for same domain).  This can be overridden by individual queries   */
+		DBRELAY_HOST : null,
+
+		/**
+		 Send a SQL query through DbRelay, calling the passed callbacks with the response.
+		@param {Object} connection Dbrelay connection object.  Example parameters:
+		<ul class="mdetail-params">
+		     <li><b>sql_server</b> : String<div class="sub-desc">Hostname on which the SQL server is running. </div></li>
+				<li><b>sql_database</b> : String<div class="sub-desc">Optional name of the primary database for the connection. User's default database is used, if not specified.</div></li>
+				<li><b>sql_user</b> : String<div class="sub-desc">Username string recognised by the SQL server.   </div></li>
+				<li><b>sql_password</b> : String<div class="sub-desc">password for the sql_user. </div></li>
+				<li><b>connection_name</b> : String<div class="sub-desc">Optional (HIGHLY RECOMMENDED) name to persist this connection under.</div></li>
+				<li><b>dbrelay_host</b> : String<div class="sub-desc">Optional parameter for xss scripting.  Leave out for same-domain scripts</div></li>
+		     <li><b>sql_port</b> : String/Number<div class="sub-desc">Optional port number, on which the SQL server is listening. 1433 is the default.</div></li>
+		 </ul>
+		
+@param {String} sql SQL query
+@param {Function} success callback function on a successful query.  One arguments is passed:<ul class="mdetail-params">
+     <li><b>response</b> : Object<div class="sub-desc">DbRelay JSON response object</div></li>
+ </ul>
+
+@param {Function} error error callback function
+@param {Object} scope Optional scope for the success & error callbacks
+@param {String} query_tag Optional query_tag that will be returned in the results.  Useful for determining which query results are from.
+		*/
+		query : function(connection, sql, callback, error, scope, query_tag){
+			//copy connection info into params
+			var params = {};
+
+			for(var k in connection){
+				if(k !== 'dbrelay_host'){
+					params[k] = connection[k];       
+				}
+			}
+			//override sql
+			params.sql = sql;
+			params.query_tag = query_tag || null;
+			if(!params.connection_name){
+				params.connection_name = 'dbrquery_'+new Date().getTime();
+			}
+
+			var dbrHost = connection.dbrelay_host || DbRelay.DBRELAY_HOST;
+			
+			if(dbrHost){        
+				jQuery.getJSON( dbrHost + '/sql?js_callback=?', params , function(response){
+					if(response && response.data){
+						callback.call( scope || window, response);
+					}
+					else{
+						if(error){
+							error.call( scope || window, response);
+						}
+					}
+					
+				});   
+			} 
+			else{
+				$.post( '/sql', params, function(response){
+					if(response && response.data){
+						callback.call( scope || window, response);
+					}
+					else{
+						if(error){
+							error.call( scope || window, response);
+						}
+					}
+				}, "json" );    
+			}
+		},
+	
+		/**
+		Query for connection status.  Cross-domain compatible dbrelay status call.
+		@param callback {function} REQUIRED callback function that will be called with the following parameters:<ul class="mdetail-params">
+		     <li><b>response</b> : Object<div class="sub-desc">DbRelay JSON response object</div></li>
+		 </ul>
+		@param {Object} scope Optional scope for the callback
+		@param {string} dbrhost optional dbrelay host (xss) in format "http(s)://hostname"
+*/
+		queryStatus : function(callback, scope, dbrhost) {
+			var params = {
+				status: 1
+			};
+			
+			dbrhost = dbrhost || DbRelay.DBRELAY_HOST;
+			if(dbrhost){           
+				jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , function(response){
+					callback.call( scope || window, response);
+				});   
+			} 
+			else{
+				$.post( '/sql', params, function(response){
+					callback.call( scope || window, response);
+				}, "json" );    
+			}  
+		},
+	
+		/**
+		Cross-domain compatible dbrelay kill connection
+		@param {String} sockpath socket path value of the connection to kill.  Use {@link #queryStatus DbRelay.queryStatus} to find the sockpath.
+		@param {function} callback callback function that will be called with the following parameters:<ul class="mdetail-params">
+		     <li><b>response</b> : Object<div class="sub-desc">DbRelay JSON response object</div></li>
+		 </ul>
+		@param {Object} scope Optional scope for the callback
+		@param {string} dbrhost optional dbrelay host (xss) in format "http(s)://hostname"
+		*/
+		kill : function(sockpath, callback, scope, dbrhost) {
+			var params = {
+				cmd: 'kill',
+				param1 : sockpath
+			};
+			
+			var dbrhost = dbrhost || DbRelay.DBRELAY_HOST;
+			if(dbrhost){           
+				jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , function(response){
+					callback.call( scope || window, response);
+				});   
+			} 
+			else{
+				$.post( '/sql', params, function(response){
+					callback.call( scope || window, response);
+				}, "json" );    
+			}  
+		},
+	
+		/**
+		Utility String function that replaces all single quotes (') in a string with two single quotes ('')
+		@param {string} text the source string
+		@return {string} the return string
+		*/
+		quoteSingles : function( text ) { return text.replace(/'/g,"''"); },
+
+		/**
+		Utility String function that replaces all double quotes (") in a string with two double quotes ("")
+		@param {string} text the source string
+		@return {string} the return string
+		*/
+	  quoteDoubles : function( text ) { return text.replace(/"/g,'""'); },
+
+		/**
+				A simple HTML template parser
+				@param {String} string template string, with {{{param_name}}} 
+				@param {Object} params An object of values for the template, keyed by param name
+				@return {String} A parsed string where all instances of {{{param_name}}} in the template are replaced by associated values in the params parameter
+		*/
+		cook : function( string, params ) {
+	    return string.replace( param_re, function( match, word ) {
+	      var quoteFunc = undefined;
+	      if ( word.charAt(0) == "'" ) { word = word.slice(1); quoteFunc = Dbrelay.Util.quoteSingles; };
+	      if ( word.charAt(0) == '"' ) { word = word.slice(1); quoteFunc = Dbrelay.Util.quoteDoubles; };
+	      if ( params[word] ) {
+	        return ( quoteFunc ? quoteFunc( params[word] ) : params[word] );
+	      } else {
+	        return '';
+	      };
+	    });
+	  },
+	
+	//private
+		get_params : function( query ){
+	    var matches = query.match(param_re);
+	    for (var m in matches){ 
+				if(typeof(matches[m]) !== 'string'){ continue};
+
+	      matches[m] = matches[m].replace(divid_re, '');
+	    };
+	    return matches;
+	  }
+	
+	};
+
+	/** 
+	@class DbRelay.adapters.BaseAdapter
+	Abstract base class for different database types.  This class should not be used directly.
+	*/
+	DbRelay.adapters.BaseAdapter = function(name, queries){
+		this.name = name;
+		this.queries = queries;
+		
+		return this;
+	};
+	DbRelay.adapters.BaseAdapter.prototype = {
+		//private
+		get : function(name, params){
+			if(!this.queries[name]){
+			  //alert('"'+name+'" is not supported for Adapter ' + this.name); 
+				return null;
+			}
+			return DbRelay.cook( this.queries[name], params || {} );
+			
+		}
 	};
 	
-	for(var k in connection){
-		if(k !== 'dbrelay_host'){
-			params[k] = connection[k];       
-		}
-	}
-
-	if(connection.dbrelay_host){           
-		jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', params , callback);   
-	} 
-	else{
-		$.post( '/sql', params, callback, "json" );    
-	}  
-
-}; 
- 
-/**
-Cross-domain compatible dbrelay status call
-@param callback {function} callback function
-@param dbrhost {string} optional dbrelay host (xss) in format "http(s)://hostname"
-*/
-function dbrelayStatus(callback, dbrhost) {
-	var params = {
-		status: 1
+	/** 
+	@class DbRelay.adapters.SqlServer
+	@extends DbRelay.adapters.BaseAdapter
+	@singleton
+	Query Adapter class for Sql Server. Contains SQL Server specific query syntax required for the DBRelay UI
+	*/
+	DbRelay.adapters.SqlServer = new DbRelay.adapters.BaseAdapter('SqlServer', {
+			list_databases:"USE MASTER;SELECT NAME FROM sys.sysdatabases ORDER BY NAME ASC",
+			/* Db actions */
+			create_table :"create table {{{table}}} {{{columns}}}",
+			drop_table :"drop table {{{table}}}",
+			commit_transaction : "BEGIN TRANSACTION "
+					+"BEGIN TRY "
+					+" {{{statements}}} "
+					+"    COMMIT TRANSACTION "
+					+"END TRY "
+					+"BEGIN CATCH "
+					+"   ROLLBACK TRANSACTION "
+					+"END CATCH",  
+			get_rowcounts:"SELECT t.name, sum(p.rows) as [rows] "
+					+"FROM   sys.tables t "
+					+"JOIN   sys.indexes i "
+					+"ON     t.object_id = i.object_id "
+					+"JOIN   sys.partitions p "
+					+"ON     i.object_id = p.object_id "
+					+"AND    i.index_id = p.index_id "
+					+"WHERE  i.index_id in (0,1) "
+					+"group by t.name "
+					+"ORDER BY SUM(P.ROWS) DESC",
+			get_columncounts:"SELECT TABLE_NAME, COUNT(COLUMN_NAME) as 'columns' FROM INFORMATION_SCHEMA.COLUMNS GROUP BY TABLE_NAME ",
+			/* generic Table specific actions */
+		  fetch_all_rows: "select * from {{{table}}}",
+			fetch_rows: "select {{{columns}}} from {{{table}}}\n {{{where}}} \n{{{orderBy}}}",
+			get_count:	"SELECT COUNT({{{columns}}}) FROM {{{table}}} \n{{{where}}}",
+			row_add:"INSERT INTO {{{table}}} {{{columns}}} VALUES {{{values}}}",  
+			delete_row: "DELETE FROM {{{table}}} WHERE \n{{{where}}}",
+			fetch_paged_rows: "select * from ("
+				+" Select ROW_NUMBER () OVER(Order By \n{{{orderBy}}}) \nas dbrelayRowNum, *"
+				+"  From (SELECT * FROM {{{table}}} \n{{{where}}}) \ndbrelayInnerp1"
+				+" ) dbrelayInnerp2"
+				+" WHERE dbrelayRowNum BETWEEN {{{minRow}}} and {{{maxRow}}}",
+		 	update_row :"UPDATE {{{table}}} SET {{{setvalues}}} WHERE \n{{{where}}}"
+	});
+	
+	
+	/** @ignore
+	DbRelay.BatchManager
+	*/
+	DbRelay.BatchManager = function(){
+		//keyed by batch name
+		this.queries = {};
 	};
-
-	if(dbrhost){           
-		jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , callback);   
-	} 
-	else{
-		$.post( '/sql', params, callback, "json" );    
-	}  
-};
-     
-
-
-/**
-Cross-domain compatible dbrelay kill connection
-@param callback {function} callback function
-@param dbrhost {string} optional dbrelay host (xss) in format "http(s)://hostname"
-*/
-function dbrelayKillConnection(sockpath, callback, dbrhost) {
-	var params = {
-		cmd: 'kill',
-		param1 : sockpath
-	};
-
-	if(dbrhost){           
-		jQuery.getJSON( dbrhost + '/sql?js_callback=?', params , callback);   
-	} 
-	else{
-		$.post( '/sql', params, callback, "json" );    
-	}  
-};
-sqlObject = function() { // Module pattern, called immediately
-
-  function throwError( name, message, body, hard ) {
-    if (window.console && window.console.error) {
-      console.error({ "name": name, "message": message, "body":  body });
-    };
-    alert(message)
-    if (hard) {
-      throw { "name": name, "message": message, "body":  body };
-    };
-  };
-
-  var param_re = /{{{([""'']?\w+)}}}/g;
-  var divid_re = /({{{[\'\"]?)|(}}})/g;
-  
-  var batches = {
-    queries: {},
-    push: function( name, query ){
+	
+	DbRelay.BatchManager.prototype = {
+		push: function( name, query ){
       if ( this.queries[ name ] ) {
         this.queries[ name ] += ";\n" + query;
       } else {
@@ -94,142 +301,43 @@ sqlObject = function() { // Module pattern, called immediately
     },
     
     empty: function( name ) {
-      if( this.queries[ name ] ) {
+      try{
         delete( this.queries[ name ] );
-      };
+      }
+			catch(e){}
     },
     
+		//non-existent batch returns null
     get: function( name ){
-      if ( this.queries[ name ] ){
-        return this.queries[ name ];
-      } else {
-        throwError( "Non-existent batch", "Non-existent batch " + name, null, true );
-      };
+			return this.queries[ name ] || null;
     }
-  };
-  
-  function quoteSingles( text ) { return text.replace(/'/g,"''"); };
-  function quoteDoubles( text ) { return text.replace(/"/g,'""'); };
-  
-  function cook( string, params ) {
-    return string.replace( param_re, function( match, word ) {
-      var quoteFunc = undefined;
-      if ( word.charAt(0) == "'" ) { word = word.slice(1); quoteFunc = quoteSingles; };
-      if ( word.charAt(0) == '"' ) { word = word.slice(1); quoteFunc = quoteDoubles; };
-      if ( params[word] ) {
-        return ( quoteFunc ? quoteFunc( params[word] ) : params[word] );
-      } else {
-        return '';
-      };
-    });
-  };
-  
-  function get_params( query ){
-	 
-    var matches = query.match(param_re);
-    for (m in matches){ 
-			//cbajohr
-			if(typeof(matches[m]) !== 'string') continue;
-			
-      matches[m] = matches[m].replace(divid_re, '');
-    };
-    return matches;
-  };
-  
-  return function ( connection, sql_queries ) {  
 
-    function exec( query, callback, tag ) {
-      dbrelayQuery( connection, query, function(response){
-        if (response.log.error) {
-          throwError( "sqlError", response.log.error, {
-            request: response.request,
-            log:     response.log
-          });
-        };
-        if (callback) {
-          callback( response );
-        }
-      }, tag);
-    };
+		
+	};
+	
 
-    var sqlObjectConstructor = function() {
-      for ( action in sql_queries ) {
-        var action_body = sql_queries[action];
-        if ( typeof(action_body) == "string" ) {
-          this.add_query(action, action_body);
-        } else if (
-          Object.prototype.toString.apply( action_body ) == "[object Array]" &&
-          action_body.length == 2 &&
-          typeof(action_body[0]) == 'string' &&
-          typeof(action_body[1]) == 'function'
-        ) {
-          this.add_query(action, action_body[0], action_body[1]);
-        } else {
-          var err = new Error();
-          err.name = "ArgumentError";
-          err.message = "Wrong paramaters. Expected either a string or an array of a string and a callback.";
-          throw err;
-        };
-      };
-    };
 
-    sqlObjectConstructor.prototype = {
-      empty_batch: function( name ) { batches.empty( name ); },
+})();
 
-      verbs: function(){
-        var verbs = {};
-        for ( action in this ) {
-          if (this.hasOwnProperty(action)) {
-            verbs[action] = this[action];
-          };
-        };
-        return verbs;
-      },
 
-      add_query: function( action_name, action_body, default_callback ){
-        var that = this;
-        this[ action_name ] = function( act_name, act_query ) {
+/* Legacy */
 
-          return function (params, callback_or_batch, tag) {
-            if ( params && typeof( params ) == "object" ) {
-              query = cook( act_query, params );
-            } else {
-              query = act_query;
-              callback_or_batch = params;
-              params = null;
-            };
-            if (callback_or_batch) {
-              if (typeof( callback_or_batch ) == "function" ) {
-                exec( query, callback_or_batch, tag );
-              } else {
-                batches.push( callback_or_batch, query );
-              };
-            } else {
-              exec( query, that[ act_name ].callback, tag );
-            };
-          };
+dbrelayQuery = function( connection, sql, callback, query_tag) {
+  DbRelay.query(connection, sql, callback, null, window, query_tag);
+}; 
 
-        }( action_name, action_body );
+dbrelayStatus = function(callback, dbrhost) {
+	DbRelay.queryStatus(callback, window, dbrhost); 
+};
+    
+dbrelayKillConnection = function(sockpath, callback, dbrhost) {
+	DbRelay.kill(sockpath, callback, window, dbrhost);
+};
 
-        this[ action_name ].parameters = get_params( action_body );
+sqlObject = function(connection, sql_queries) {
+	connection.sql_type = connection.sql_type || 'sqlserver';
+	return new DbRelay.QueryHelper(connection);
+};
 
-        if ( typeof(default_callback) == 'function' ) {
-          this[ action_name ].callback = default_callback;
-        };
-      },
 
-      run_batch: function( batch_name, callback ){
-        exec( batches.get( batch_name ), callback, this);
-        batches.empty( batch_name );      
-      },
-                           
-			/** returns string of statements in a batch */
-			get_batch: function(batch_name){
-				return batches.get( batch_name );
-			}
-    };
 
-    return (new sqlObjectConstructor());
-  };
-
-}();
