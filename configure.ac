@@ -55,7 +55,7 @@ AS_HELP_STRING([--with-magic=MAGIC], [prepend MAGIC to beginning of each query.]
 
 TDSDIR=freetds-0.82
 PCREDIR=pcre-7.8
-NGXDIR=nginx-0.7.22
+NGXDIR=nginx-0.7.64
 
 BUILD=`pwd`
 cd src
