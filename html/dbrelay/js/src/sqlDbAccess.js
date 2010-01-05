@@ -1,5 +1,37 @@
+/**
+@class DbRelay.QueryHelper
+Previously known as sqlDbAccess, this class provides an API for querying a single database.
+Usage:
+<pre>
+var qh = new DbRelay.QueryHelper({   
+	sql_server : '99.99.99.99.99', 
+	sql_port : '',  
+	sql_database : 'mydatabase', 
+	sql_user : 'myuser',                 
+	sql_password : 'mypass',              
+	connection_name : 'example2'
+});
+</pre>
+*/
 
+/**
+@constructor
+@param {Object} connection Connection parameters:<br/>
+<ul class="mdetail-params">
+     <li><b>sql_server</b> : String<div class="sub-desc">Hostname on which the SQL server is running. </div></li>
+		<li><b>sql_database</b> : String<div class="sub-desc">Optional name of the primary database for the connection. User's default database is used, if not specified.</div></li>
+		<li><b>sql_user</b> : String<div class="sub-desc">Username string recognised by the SQL server.   </div></li>
+		<li><b>sql_password</b> : String<div class="sub-desc">password for the sql_user. </div></li>
+		<li><b>connection_name</b> : String<div class="sub-desc">Optional (HIGHLY RECOMMENDED) name to persist this connection under.</div></li>
+		<li><b>dbrelay_host</b> : String<div class="sub-desc">Optional parameter for xss scripting.  Leave out for same-domain scripts</div></li>
+     <li><b>sql_port</b> : String/Number<div class="sub-desc">Optional port number, on which the SQL server is listening. 1433 is the default.</div></li>
+ </ul>
+*/
 DbRelay.QueryHelper = function(connection){
+	/**
+   * Read-only array of all queries that have been run by this QueryHelper
+   * @type {Array}
+   */
 	this.log = [];
 	
 	var cn = connection.connection_name;
@@ -8,29 +40,34 @@ DbRelay.QueryHelper = function(connection){
 
 	//set the adapter
 	var adapterName = connection.sql_type || "SqlServer";
+	
+	/**
+   * SQL type adapter that is bound to this QueryHelper.  Read-only, defaults to SqlServer
+   * @type {DbRelay.adapter.BaseAdapter}
+   */	
 	this.adapter = DbRelay.adapters[adapterName];
 
-//	this.sql_type = adapterName;
-	
+
 	this.batches = new DbRelay.BatchManager();
 	delete connection.sql_type;
 	
+	/**
+   * Stored connection config object
+   * @type {Object}
+   */
 	this.connection = connection;
 	return this;
 };
 
 DbRelay.QueryHelper.prototype = {
 	/**
-	 function wrapper for raw verb calls    
+	 Run a named query defined in the DbRelay.adapter.
 	
-	 @param {string} verb: sqlObject verb to call
-	 @param {Object} cfg : name/value pairs for template vars
-	 @param {function} callback: optional sqlObject callback function, will override default callback
-	  	 @cbparam {sqlDbAccess} this
-			 @cbparam {Object} raw json response from server  
-			 @cbparam {bool} true if call succeeded w/o errors.
-	 @param {Object} scope: scope of callback (defaults to global)
-
+	 @param {string} queryName {@link DbRelay.adapter.BaseAdapter} query name
+	 @param {Object} cfg name/value pairs for query template vars
+	 @param {function} success function that will be called if the query succeeds. For function parameters, see {@link #executeSql}
+	 @param {function} error function that will be called if the query fails. For function parameters, see {@link #executeSql}
+	 @param {Object} scope Optional scope for the callbacks.  Defaults to window/global
 	*/
 	run : function(verb, cfg, success, error, scope){
 		var cookedQuery = this.adapter.get(verb, cfg || {});
@@ -42,10 +79,17 @@ DbRelay.QueryHelper.prototype = {
 		this.executeSql(cookedQuery, [], success, error, this);
 	},
 	
+	/** 
+	Return the SQL log
+	@return {Array} array of SQL queries that were run
+	*/
 	getLog : function(){   return this.log;}, 
-	
+/**
+Clears/resets the query log
+*/	
 	clearLog : function(){this.log = [];},
 	
+//private	
 	throwError : function( name, message, body, hard ) {
     if (console && console.dir) {
       console.dir({ "name": name, "message": message, "body":  body });
@@ -55,32 +99,50 @@ DbRelay.QueryHelper.prototype = {
     };
   },
 
-	/* Batches */
-
+	/**
+	Run a query batch by name
+	@param {String} batch_name name of the batch to run
+	 @param {function} success function that will be called if the query succeeds. For function parameters, see {@link #executeSql}
+	 @param {function} error function that will be called if the query fails. For function parameters, see {@link #executeSql}
+	 @param {Object} scope Optional scope for the callbacks.  Defaults to window/global
+	 */
   run_batch: function( batch_name, success, error, scope ){
 		this.executeSql( this.batches.get( batch_name ), [], success, error, this);
     this.batches.empty( batch_name );      
   },
                   
-	/** returns string of statements in a batch */
+	/** returns string of statements in a batch 
+	@param {string} batch_name name of the batch to retrieve
+	@return {Object} batch
+	*/
 	getBatch : function(batch){
 		return this.batches.get( batch );
 	},     
 	
+	/**
+	Clears a query batch
+	@param {String} batch_name Name of the batch to clear/empty
+	*/
 	emptyBatch : function(batch){
 		 this.batches.empty( batch );
 	},
 	
+	/**
+	Add an adapter query to a batch
+	@param {string} query_name {@link DbRelay.adapter.BaseAdapter} query name
+	 @param {Object} params values to 'cook' with the query
+	@param {string} batch_name Name of the batch to add to
+	*/
 	addToBatch : function(verb, params, batch){
 		this.batches.push(batch, this.adapter.get(verb, params || {}) );
 	},
 	
 	/**
 		Tests the db connection by running a rows count on all tables
-		@param {function} callback :  callback function.
-				@cbparam {sqlDbAccess} this
-				@cbparam {bool} true if succeeded, false if failed    
-				
+		@param {function} callback callback function.  Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+			     <li><b>success</b> : Boolean<div class="sub-desc">true/false if succeeded/failed</div></li>
+			 </ul>
 		@param {Object} scope of callback
 	*/ 
 	testConnection : function(callback, scope){      
@@ -99,12 +161,12 @@ DbRelay.QueryHelper.prototype = {
 	},
 	
 	/**
-	Sets a value for a flag.  Current flags are:
-	  pp  - pretty print json
+	Sets a value for a flag.  Current flags are:<br/>
+	  pp  - pretty print json</br>
 	  echosql - echo SQL 
 	
 	@param flag {string} flag name
-	@param on {bool} true to turn it on, false to turn it off
+	@param on {boolean} true to turn it on, false to turn it off
 	*/
 	setFlag : function( flag, on ){
 		var flags = this.connection.flags + ',', isInFlags = flags.indexOf(flag + ',') !== -1;
@@ -125,20 +187,40 @@ DbRelay.QueryHelper.prototype = {
 
 	},
 	
+	/**
+	For cross site scripting, sets the dbrelay host name
+	@param {string} dbrhost dbrelay hostname in format "http(s)://hostname"
+	*/
+
 	setDbrelayHost: function(dbrhost){
 		this.connection.dbrelay_host = dbrhost;
 	},
 	
 	
 	/**
-	Wrapper for commitTransaction, except with a batch name 
+	Commits a query batch as a single transaction
+	@param {string} batch_name Name of the query batch to commit
+	@param {Function} callback callback function. See {@link #commitTransaction} for function parameters.
+	@param {Object} scope Optional scope for the callback.  Defaults to window/global
 	*/
 	commitBatchTransaction : function(batch, callback, scope){
 		this.commitTransaction( this.getBatch(batch), callback, scope );
 	},  
 	
 	
-	/** Retrieve list of databases */
+	/** Retrieve list of databases - NOTE: Only works for SqlServer adapter 
+	
+	 @param {function} success function that will be called if the query succeeds. Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+		     <li><b>dbs</b> : Array<div class="sub-desc">Array of database names</div></li>
+		 </ul>
+	 @param {function} error function that will be called if the query fails. 	Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+			     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			     <li><b>msg</b> : String<div class="sub-desc">Error message</div></li>
+			 </ul>
+	 @param {Object} scope Optional scope for the callbacks.  Defaults to window/global
+		*/
 	getDatabases :function(success, error, scope){
 		this.run('list_databases', {}, 
 		//success
@@ -176,12 +258,14 @@ DbRelay.QueryHelper.prototype = {
 	
 	  
 	/**  Commit a batch transaction, rolling back on any errors
-	@param {string} statements : statements to run
+	@param {string} statements statements to run
 	
-	@param {function} callback : optional callback function.
-			@cbparam {sqlDbAccess} this
-			@cbparam {Object} raw json response from server
-	@param {Object} scope of callback
+	@param {function} callback Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+		     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
+		
+	@param {Object} scope Optional scope of callback.  Defaults to window/global.
 	*/
 	commitTransaction : function(statements, callback, scope){  
 
@@ -194,16 +278,20 @@ DbRelay.QueryHelper.prototype = {
 		
 	},    
  
-	/** Query for all tables and number of rows
+	/** Query for all tables and number of rows - NOTE: ONLY WORKS FOR SQL SERVER ADAPTER
    
-	@param {function} callback : optional success callback function.
-			@cbparam {sqlDbAccess} this
-			@cbparam {Object} raw json response from server 
-			@cbparam {Object} object of key/value pairs (table => number of rows)   
-	@param {function} errorfn : optional error callback function
-		@cbparam {sqlDbAccess} this
-		@cbparam {Object} raw json response from server      
-	@param {Object} scope of callback
+	@param {function} success Success function called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+		     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		     <li><b>counts</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">object of key/value pairs (table => number of rows) </div></li>
+		 </ul>
+		
+	@param {function} error optional error callback function.  	Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+			     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			 </ul>
+   
+	@param {Object} scope Optional scope of callback.  Defaults to window/global.
 	*/        
 	 getAllRowCounts : function(callback, errorfn, scope){  
 		this.run('get_rowcounts',{}, function(qh, resp){  
@@ -222,15 +310,19 @@ DbRelay.QueryHelper.prototype = {
 	
  },    
                                                      
-/** Query for all tables and number of cells (rows * columns)   
-@param {function} callback : optional success callback function.
-		@cbparam {sqlDbAccess} this
-		@cbparam {Object} raw json response from server 
-		@cbparam {Object} object of key/value pairs (table => number of cells)   
-@param {function} errorfn : optional error callback function
-	@cbparam {sqlDbAccess} this
-	@cbparam {Object} raw json response from server      
-@param {Object} scope of callback
+/** Query for all tables and number of cells (rows * columns) - NOTE: ONLY WORKS FOR SQL SERVER ADAPTER
+
+@param {function} success Success function called with the following parameters:<ul class="mdetail-params">
+	     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+	     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+	     <li><b>counts</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">object of key/value pairs (table => number of cells) </div></li>
+	 </ul>
+	
+@param {function} error optional error callback function.  	Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+		     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
+@param {Object} scope Optional scope of callback.  Defaults to window/global.
 */
  getAllCellCounts : function(callback, errorfn, scope){   
 	//first get row counts     
@@ -263,7 +355,19 @@ DbRelay.QueryHelper.prototype = {
  },
 /**
 Executes an admin query (i.e. list tables)
-@param params {Object} object of additional parameters from the connection info
+@param {Object} params object of additional parameters from the connection info
+
+@param {function} success Success function called with the following parameters:<ul class="mdetail-params">
+	     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+	     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+	 </ul>
+	
+@param {function} error optional error callback function.  	Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+		     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
+		
+@param {Object} scope Optional scope of callback.  Defaults to window/global.
 */ 
 	adminQuery : function(params, success, error, scope){   
 		//copy connection info into params
@@ -293,14 +397,15 @@ Executes an admin query (i.e. list tables)
 	},
  
 	/**
-		Queries for a list of tables in this database.
+		Queries for a list of tables in this database.  Wrapper for 'tables' admin command.
 		
-		@param {function} callback : optional callback function.
-				@cbparam {sqlDbAccess} this
-				@cbparam {Object} raw json response from server 
-				@cbparam {Array} array of table names
+		@param {function} callback Callback function called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+			     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			     <li><b>tableNames</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">Array of table names in this database</div></li>
+			 </ul>
 				
-		@param {Object} scope of callback
+		@param {Object} scope Optional scope of callback.  Defaults to window/global.
 	*/ 
 	getTables : function(callback, scope){
 		 this.adminQuery({cmd:'tables'}, function(resp){  
@@ -321,14 +426,15 @@ Executes an admin query (i.e. list tables)
 	/**
 		Creates a new table on this database
 		
-		@param {String} table : name of table to create
-		@param {string} columns : raw column string definition
-		@param {function} callback : optional callback function.
-				@cbparam {sqlDbAccess} this
-				@cbparam {Object} raw json response from server 
-				@cbparam {Array} array of table names
+		@param {String} table name of table to create
+		@param {string} columns raw column string definition (i.e. "name varchar(30), address varchar(30)" )
+		@param {function} callback Optional callback function called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+			     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			 </ul>
 				
-		@param {Object} scope of callback
+		@param {Object} scope Optional scope of callback.  Defaults to window/global.
+
 	*/ 
 	createTable: function(table, columns, callback, scope){
 		 this.run('create_table',{
@@ -345,13 +451,13 @@ Executes an admin query (i.e. list tables)
 /**
 	Drops a table from the database
 	
-	@param {String} table : name of table to drop
-	@param {function} callback : optional callback function.
-			@cbparam {sqlDbAccess} this
-			@cbparam {Object} raw json response from server 
-			@cbparam {Array} array of table names
+	@param {String} table name of table to drop
+	@param {function} callback optional callback function. Called with the following parameters:<ul class="mdetail-params">
+		     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+		     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+		 </ul>
 			
-	@param {Object} scope of callback
+	@param {Object} scope Optional scope of callback.  Defaults to window/global.
 */ 
 	dropTable: function(table, callback, scope){
 		 this.run('drop_table',{table:table},callback, null,scope);
@@ -360,12 +466,20 @@ Executes an admin query (i.e. list tables)
 
 	/**
 		Executes arbitrary sql code
-		@param {string} sql : code to execute
-		@param {array} flags : additional one-time flags to append to existing flags (optional)
-		@param {function} callback : optional callback function.
-				@cbparam {sqlDbAccess} this
-				@cbparam {Object} raw json response from server
-		@param {Object} scope of callback
+		@param {string} sql code to execute
+		@param {Array} flags OPTIONAL. Additional one-time flags to append to existing flags
+		@param {function} success Success callback function called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+			     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			 </ul>
+			
+	@param {function} error optional error callback function.  	Called with the following parameters:<ul class="mdetail-params">
+			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
+			     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>
+			     <li><b>msg</b> : Object<div class="sub-desc">DbRelay error message</div></li>
+			 </ul>
+
+		@param {Object} scope Optional scope of callback.  Defaults to window/global.
 	*/
 	executeSql: function(sql, flags, success, error, scope, queryTag){
 			var params = {};

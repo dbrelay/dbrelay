@@ -7,16 +7,77 @@ dbrui.Chart = Ext.extend(Ext.Panel,{
 	initComponent: function(){
 
 		this.items = {
-			html:'sdf'
+			html:''
 		};
-		
+
 		dbrui.Chart.superclass.initComponent.call(this); 
 		this.colors = ['#4572A7','#AA4643','#89A54E','#71588F','#4198AF','#DB843D','#93A9CF','#D19392','#B9CD96','#A99BBD'];
-		/*if(this.data ){
-			this.on('afterlayout', function(p){
-				this.refreshChart( this.data );
-			}, this,{single:true});
-		}*/
+		
+
+		//store
+		if(this.store){
+			this.on('render', function(p){
+				p.refreshChart( p.store );
+			});
+		}
+		//dbrelay response.data
+		else if(this.data){
+			this.on('render', function(p){
+				p.refreshChart( p.data );
+			});
+		}
+		//query
+		else if(this.dbrelay){
+			this.dbrelay.connection_name = this.dbrelay.connection_name || ('dbruiChart' + new Date().getTime());
+			this.on('render', function(){
+				this.query(this.dbrelay.sql);
+			} , this);
+		}
+	},
+	
+	getChart : function(){
+		return this.chart || null;
+	},
+	
+	mask : function(show){
+		if(!this.body){return;}
+
+		if(!this._mask){
+			this._mask = new Ext.LoadMask(this.body, {msg:'Loading'});
+		}
+		if(show){
+			this._mask.show();
+		}
+		else{
+			this._mask.hide();
+		}
+	},
+	
+	query: function(sql, connection){
+		var conn = connection || this.dbrelay;
+		if(!conn){return;}
+		
+		this.mask(true);
+		//run query
+		DbRelay.query(conn, sql,
+			//success
+			function(response){
+				//process last data set
+				var data = response.data[response.data.length-1];
+			
+				this.refreshChart(data);
+			},
+			//error
+			function(response){
+				this.mask(false);
+				Ext.Msg.alert('Error running query', response.log.error || "An unknown error occured when running the query");
+			},
+			//scope
+		this);
+		
+		//store it
+		this.sql = sql;
+		this.dbrelay = conn;
 	},
 	
 	
@@ -33,7 +94,7 @@ dbrui.Chart = Ext.extend(Ext.Panel,{
 	
 	//dbrData - dbrelay json response.data
 	data2Store : function(dbrData){
-		var cols = data.fields, rows = data.rows;
+		var cols = dbrData.fields, rows = dbrData.rows;
 
 		var storeFields = [];
 
@@ -45,7 +106,7 @@ dbrui.Chart = Ext.extend(Ext.Panel,{
     
     //create a new store
 		return new Ext.data.JsonStore({
-		    autoDestroy: false,
+		    autoDestroy: true,
 		    data: {
 				   rows: rows
 				},
@@ -58,9 +119,10 @@ dbrui.Chart = Ext.extend(Ext.Panel,{
 	_getNewChart : Ext.emptyFn,
 
 	refreshChart : function(data){
-		if(!data || data === this.data){return false;} //return if data is null or same store
+		if(!data || data === this.store){return false;} //return if data is null or same store
 		
 	  this.store = data.recordType ? data : this.data2Store( data );
+
 		this.keys = this.store.fields.keys;
 		
 		this.nextColorIndex = 0;
@@ -73,22 +135,45 @@ dbrui.Chart = Ext.extend(Ext.Panel,{
 		}catch(e){
 			this.remove( this.getComponent(0), false );
 		}
+		if(this.chart){
+			delete(this.chart);
+		}
+		
 		this.chart = this._getNewChart();
 		this.add( this.chart );
 		this.doLayout();
+		this.mask(false);
+		this.fireEvent('chartdraw', this);
 
 	}
 });
 
-
+dbrui.Chart.SqlDateRenderer = function(v){
+	var jsDate = Date.parseDate( v, 'M j Y h:i:s:uA') || Date.parseDate( v, 'M  j Y h:i:s:uA');
+	return jsDate ? jsDate.format('M d, Y') : v;
+}
 
 /**
 Line Chart
 */
-dbrui.LineChart = Ext.extend(dbrui.Chart, {
-	
+dbrui.LineChart = Ext.extend(dbrui.Chart, {	
 	initComponent: function(){
+		
 		dbrui.LineChart.superclass.initComponent.call(this); 
+		
+		this.extraStyle = this.extraStyle || {
+			legend: {
+				display: 'top',
+				padding: 0,
+	    		font:{
+	      		size: 10
+				}
+			},
+			xAxis: {
+				labelRotation: 0
+			}
+		};
+		
 	},
 	
 	_createSeries : function(){
@@ -113,27 +198,27 @@ dbrui.LineChart = Ext.extend(dbrui.Chart, {
 	_getNewChart : function(){
 		var keys = this.keys;
 		
+		var xLabelFn = this.xAxisLabelFn;
+		
+		var yAxisCfg = Ext.apply({
+			labelRenderer: this.yAxisLabelFn || Ext.util.Format.numberRenderer('0,000')
+		}, this.yAxisCfg);
+
 		return new Ext.chart.LineChart({
 			store: this.store,
 			xField: keys[0],
 			xAxis: new Ext.chart.CategoryAxis({
-       	displayName: keys[0]
-       }),
-			yAxis: new Ext.chart.NumericAxis({
-				labelRenderer: Ext.util.Format.numberRenderer('0,000')
-			}),
-			extraStyle: {
-				legend: {
-					display: 'top',
-					padding: 0,
-        		font:{
-          		size: 10
+       	displayName: keys[0],
+				hideOverlappingLabels : false,
+				labelRenderer: function(v){
+					if(xLabelFn){
+						return xLabelFn.call(this, v);
 					}
-				},
-				xAxis: {
-				labelRotation: -80
+					return v;
 				}
-			},
+       }),
+			yAxis: new Ext.chart.NumericAxis(yAxisCfg),
+			extraStyle: this.extraStyle,
 			series: this._createSeries()
 		});
 	}
@@ -150,6 +235,20 @@ dbrui.BarChart = Ext.extend(dbrui.Chart, {
 	
 	initComponent: function(){
 		dbrui.BarChart.superclass.initComponent.call(this); 
+		
+		this.extraStyle = this.extraStyle || {
+			legend: {
+				display: 'top',
+				padding: 0,
+      		font:{
+        		size: 10
+				}
+			},
+			xAxis: {
+			labelRotation: 0
+			}
+		};
+		
 	},
 	
 	_createSeries : function(){
@@ -171,28 +270,27 @@ dbrui.BarChart = Ext.extend(dbrui.Chart, {
 	
 	_getNewChart : function(){
 		var store = this.store, keys = this.keys;
-
+		
+		var xLabelFn = this.xAxisLabelFn;
+		var yAxisCfg = Ext.apply({
+			labelRenderer: this.yAxisLabelFn || Ext.util.Format.numberRenderer('0,000')
+		}, this.yAxisCfg);
+		
 		return new Ext.chart.ColumnChart({
 			store: store,
 			xField: keys[0],
 			xAxis: new Ext.chart.CategoryAxis({
-       	displayName: keys[0]
-       }),
-			yAxis: new Ext.chart.NumericAxis({
-				labelRenderer: Ext.util.Format.numberRenderer('0,000')
-			}),
-			extraStyle: {
-				legend: {
-					display: 'top',
-					padding: 0,
-        		font:{
-          		size: 10
+       	displayName: keys[0],
+				hideOverlappingLabels : false,
+				labelRenderer: function(v){
+					if(xLabelFn){
+						return xLabelFn.call(this, v);
 					}
-				},
-				xAxis: {
-				labelRotation: -80
+					return v;
 				}
-			},
+       }),
+			yAxis: new Ext.chart.NumericAxis(yAxisCfg),
+			extraStyle: this.extraStyle,
 			series: this._createSeries()
 		});
 		
