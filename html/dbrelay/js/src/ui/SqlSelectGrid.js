@@ -347,8 +347,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 		this.pageNumber = pageNumber;
 		this.pageSize = pageSize;	   
-		 
-		this.totalPages = Math.floor((this.totalRows / this.pageSize) + 1);
+		this.totalPages = Math.ceil(this.totalRows / this.pageSize);
     Ext.get('totalPages'+this.idpfx).update(this.totalPages);
 		
 	},
