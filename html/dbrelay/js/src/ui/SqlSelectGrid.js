@@ -92,6 +92,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			'-',
 			{ 
 				iconCls:'icon-first',
+				id:'pagefirst' + idpfx,
 				handler:function(){ 
 					this.showPage(1); 
 				},
@@ -99,6 +100,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			}, 
 			{ 
 				iconCls:'icon-back',
+				id:'pageback' + idpfx,
 				handler:function(){
 					var page = this.pageNumberField.getValue();
 					this.showPage(page === 1 ? 1 : page-1); 
@@ -130,6 +132,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			'of <span id="totalPages'+idpfx+'"></span>',
 			{ 
 				iconCls:'icon-next',
+				id:'pagenext' + idpfx,
 				handler:function(){ 
 					var page = this.pageNumberField.getValue(); 
 					this.showPage(page === this.totalPages ? page : page + 1);
@@ -138,6 +141,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 			},
 			{ 
 				iconCls:'icon-last',
+				id:'pagelast' + idpfx,
 				handler:function(){
 					this.showPage( this.totalPages); 
 				},
@@ -303,6 +307,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.tableData = rows;
 		this.totalRows = (data.count || rows.length) || '0';  
 
+
 		Ext.get('total'+this.idpfx).update(this.totalRows);  
     
     this.pageNumberField = Ext.getCmp('page'+this.idpfx);
@@ -310,13 +315,27 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		
 	  this.pageNumberField.setValue(this.pageNumber);    
 	  this.pageSizeField.setValue(this.pageSize);
-		
 		  
 		this.updatePageView();    
 		this.dataSet = data;
  
 	},
 	     
+	/** set the next page result arrow by a boolean 
+	@param {boolean} disabled true to set disabled
+	*/
+	nextPageSetDisabled : function(disabled){
+		Ext.getCmp('pagenext' + this.idpfx).setDisabled(disabled);
+		Ext.getCmp('pagelast' + this.idpfx).setDisabled(disabled);
+	},
+	
+	/** set the previous page result arrow by a boolean 
+	@param {boolean} disabled true to set disabled
+	*/
+	prevPageSetDisabled : function(disabled){
+		Ext.getCmp('pageback' + this.idpfx).setDisabled(disabled);
+		Ext.getCmp('pagefirst' + this.idpfx).setDisabled(disabled);
+	},
 	
 	showPage : function(page){  
 		this.pageNumberField.suspendEvents();
@@ -347,9 +366,12 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 
 		this.pageNumber = pageNumber;
 		this.pageSize = pageSize;	   
-		 
-		this.totalPages = Math.floor((this.totalRows / this.pageSize) + 1);
+		this.totalPages = Math.ceil(this.totalRows / this.pageSize);
     Ext.get('totalPages'+this.idpfx).update(this.totalPages);
+		this.nextPageSetDisabled(this.totalPages === 1);
+		this.prevPageSetDisabled(pageNumber === 1);
+
+			
 		
 	},
 	
