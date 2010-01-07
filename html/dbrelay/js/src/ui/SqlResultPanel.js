@@ -10,7 +10,7 @@ Ext.namespace('dbrui');
 
 dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
   cls:'dbr-sqlresultpanel',
-	iconCls:'icon-sql',
+	//iconCls:'icon-sql',
   layout:'border',  
 	closable:true, 
 	
@@ -300,7 +300,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 					resultName:'Viewing ' + name, 
 					dataSet:data,
 					plugins: this.gridplugins,
-					sqlTitle: this.title,
+					sqlTitle: this.title || '',
 					listeners:{
 						'render':{
 							fn:function(g){    
