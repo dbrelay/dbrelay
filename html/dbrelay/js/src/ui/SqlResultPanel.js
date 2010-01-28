@@ -208,12 +208,13 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 					this.showMsgPanel('<p style="color:red">Error:</p><pre style="color:red">'+resp.log.error+'</pre>');      
 					this.loadMask(false);
 				}
+	
 				else{
 					
 					//are there any data sets to gridify?
 					var gridify = false, datasets = resp.data;
 					for(var i=0; i<datasets.length; i++){
-						if(datasets[i].fields.length > 0){
+						if(datasets[i].rows.length > 0 && datasets[i].fields.length > 0){
 							gridify = true;
 							break;
 						}
@@ -223,7 +224,8 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 						this.showResultGrids(resp.data);
 					}
 					else{
-						this.showMsgPanel('<p style="color:green">Success.</p>');     
+						var msg = (datasets[0] && datasets[0].rows && datasets[0].rows.length === 0) ? '<p style="color:blue">No results returned</p>' : '<p style="color:green">Success</p>';
+						this.showMsgPanel(msg);     
 						this.loadMask(false);
 					}
 				
