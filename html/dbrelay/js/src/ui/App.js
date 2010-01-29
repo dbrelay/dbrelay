@@ -494,6 +494,7 @@ dbrui.App = function(){
 			var p = Ext.getCmp('maintabs').add(new dbrui.SqlResultPanel({
 				sqlDb: this.sqlDb,
 				border: false,
+				iconCls:'icon-sql',
 				title: 'SQL Query ' + (++_numSqls),
 				closable:true,
 				defaultSql : defaultSql || '',
@@ -515,6 +516,7 @@ dbrui.App = function(){
 			if(!editor){
 				editor = new dbrui.SqlTableEditor({
 					tableName: table,
+					iconCls:'icon-table',
 					sqlDb: this.sqlDb,
 					border: false,
 					title: table,
