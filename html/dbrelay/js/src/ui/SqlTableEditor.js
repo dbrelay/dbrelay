@@ -10,7 +10,7 @@ Ext.namespace('dbrui');
 dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
   cls:'dbr-sqltableeditor',
 	layout:'border',
-	iconCls:'icon-table',
+	//iconCls:'icon-table',
 	
 
 	/** {sqlTable} sqlTable object, created by the editor */
@@ -41,7 +41,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	 Ext.QuickTips.init();
 	
 	   
-	  this.title = this.title || 'TABLE: ' +this.tableName;  
+	 // this.title = this.title || 'TABLE: ' +this.tableName;  
  
 		this.tbar =[  
 		{   
