@@ -175,14 +175,20 @@ DbRelay.query(connection,'select * from people', success, failure);
 		@param {string} text the source string
 		@return {string} the return string
 		*/
-		quoteSingles : function( text ) { return text.replace(/'/g,"''"); },
+		quoteSingles : function( text ) { 
+			text += '';
+			return text.replace(/'/g,"''");
+		},
 
 		/**
 		Utility String function that replaces all double quotes (") in a string with two double quotes ("")
 		@param {string} text the source string
 		@return {string} the return string
 		*/
-	  quoteDoubles : function( text ) { return text.replace(/"/g,'""'); },
+	  quoteDoubles : function( text ) {
+			text += '';
+			return text.replace(/"/g,'""');
+		},
 
 		/**
 				A simple HTML template parser

@@ -311,7 +311,7 @@ DbRelay.TableHelper.prototype = {
 	@return {string} string with all single quotes replaced with '' AND also wrapped in single quotes (ex. 'Chicago''s'
 	*/
 	safeSqlString : function(s){
-		return "'" + s.replace(/'/g, "''") + "'";
+		return "'" + (s+'').replace(/'/g, "''") + "'";
 	},      
 	  
 	/** Deletes row(s) from the table

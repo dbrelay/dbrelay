@@ -46,7 +46,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
  
 		this.tbar =[  
 		{   
-			text:'Hide Adv Filter', 
+			text: (this.hideFilterOptions ? 'Show' : 'Hide') + ' Adv Filter', 
 			iconCls:'icon-app',
 			enableToggle:true,  
 			pressed:!this.hideFilterOptions,
