@@ -32,7 +32,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	
 	where:'',
 	orderBy:'',
-	hideOptions:false,
+	hideFilterOptions:false,
 	
 	//EXPERIMENTAL - true to page on server side
 	serverSidePaging:true,
@@ -49,7 +49,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			text:'Hide Adv Filter', 
 			iconCls:'icon-app',
 			enableToggle:true,  
-			pressed:!this.hideOptions,
+			pressed:!this.hideFilterOptions,
 			tooltip:'More options',
 			handler: function(b,e){ 
 				var hidden = this.optionsPanel.hidden;
@@ -236,14 +236,32 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				 resizable:false
 			});
 			
-		
+		var gridConfig = {
+				region:'center',
+				xtype:'editorgrid', 
+				border:false,
+				id:'grid'+idpfx,
+				clicksToEdit: 1,  
+				stripeRows:true,
+				columnLines:true,
+				viewConfig:{
+					//forceFit:true,
+					autoFill:true
+				}, 
+				plugins : [this.deleteBox], 
+				//blank for now, these will change based on db queries
+				store:new Ext.data.Store(),
+				cm: new Ext.grid.ColumnModel([this.deleteBox]) 
+		};
+		var gridConfig = Ext.apply(gridConfig, this.gridConfig || {});
+
 		 this.items=[
 			{
 				region:'north',
 				id:'options'+idpfx,
 				height:100,
 				split:true,
-				hidden: this.hideOptions,
+				hidden: this.hideFilterOptions,
 				layout:'anchor',
 				border:false,   
 				unstyled:true,       
@@ -332,21 +350,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 					
 				]
 			},
-			{
-				region:'center',
-				xtype:'editorgrid', 
-				border:false,
-				id:'grid'+idpfx,
-				clicksToEdit: 1,  
-				viewConfig:{
-					//forceFit:true,
-					autoFill:true
-				}, 
-				plugins : [this.deleteBox], 
-				//blank for now, these will change based on db queries
-				store:new Ext.data.Store(),
-				cm: new Ext.grid.ColumnModel([this.deleteBox]) 
-			}  
+			gridConfig
 		 ];
 			
 		dbrui.SqlTableEditor.superclass.initComponent.call(this);
