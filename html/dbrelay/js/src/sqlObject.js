@@ -24,7 +24,7 @@ var connection = {
 	sql_user:'joe',
 	sql_password:'joepass',
 	//optional param for cross-domain access
-	dbrelay_host:'http://dbrelayserver.com:1433'
+	dbrelay_host:'http://dbrelayservername:1433'
 };
 
 function success(response){
@@ -36,7 +36,7 @@ function error(response){
 
 
 //Query something using {@link #query}
-DbRelay.query(connection, ['echosql'], success, failure);
+DbRelay.query(connection,'select * from people', success, failure);
 
 &lt;/script>
 </pre>
