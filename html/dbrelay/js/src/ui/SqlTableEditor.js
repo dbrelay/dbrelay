@@ -32,6 +32,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	
 	where:'',
 	orderBy:'',
+	hideOptions:false,
 	
 	//EXPERIMENTAL - true to page on server side
 	serverSidePaging:true,
@@ -48,7 +49,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 			text:'Hide Adv Filter', 
 			iconCls:'icon-app',
 			enableToggle:true,  
-			pressed:true,
+			pressed:!this.hideOptions,
 			tooltip:'More options',
 			handler: function(b,e){ 
 				var hidden = this.optionsPanel.hidden;
@@ -242,6 +243,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				id:'options'+idpfx,
 				height:100,
 				split:true,
+				hidden: this.hideOptions,
 				layout:'anchor',
 				border:false,   
 				unstyled:true,       
