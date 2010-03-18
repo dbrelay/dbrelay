@@ -467,7 +467,7 @@ Executes an admin query (i.e. list tables)
 	/**
 		Executes arbitrary sql code
 		@param {string} sql code to execute
-		@param {Array} flags OPTIONAL. Additional one-time flags to append to existing flags
+		@param {Array} flags. Additional one-time flags to append to existing flags. Provide an empty Array if no flags.
 		@param {function} success Success callback function called with the following parameters:<ul class="mdetail-params">
 			     <li><b>this</b> : {@link DbRelay.QueryHelper}<div class="sub-desc">the DbRelay.QueryHelper object</div></li>
 			     <li><b>response</b> : Object<div class="sub-desc">the raw DbRelay response object</div></li>

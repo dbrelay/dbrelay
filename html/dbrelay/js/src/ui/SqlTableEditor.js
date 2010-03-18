@@ -666,7 +666,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				case 'bit':
 					simpleType='int';
 					cellEditor = pkeys.length === 0 ? null : new Ext.form.NumberField({
-	            allowBlank: false,
+	            allowBlank: col.required ? false : true,
 					    allowDecimals:false
 	        });
 					break;
@@ -676,16 +676,19 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				case 'smallmoney':
 					simpleType='float';
 					cellEditor = pkeys.length === 0 ? null : new Ext.form.NumberField({
-	            allowBlank: false
+	            allowBlank: col.required ? false : true
 	        });
 					break;
 				//unhandled types default to text fields
 				default:
 					simpleType = rawtype;
 					cellEditor = pkeys.length === 0 ? null : new Ext.form.TextField({
-	            allowBlank: false
+	            allowBlank: true
 	        });
-			}
+			};
+			if (col.isIdentity) {
+			  cellEditor = null;
+			};
 			//EXT column model definition 
 			cmData[i+1] = {
 				header: name + ' ' + (iskey ? '[KEY]' : '') + '['+ rawtype+']',

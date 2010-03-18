@@ -71,7 +71,7 @@ DbRelay.TableHelper.prototype = {
 		this.queryHelper.adminQuery({cmd:'columns', param1: this.table}, function(resp){  
 			  if(!resp || !resp.data){return;}
 
-				var data = resp.data[0], count = data.count, rows = data.rows, columns = [];
+				var data = resp.data[0], count = data.count, rows = data.rows, columns = [], columnsByName = {};
 
 				//sanitize column data
 				for(var i=0,len=rows.length; i<len; i++){
@@ -79,16 +79,21 @@ DbRelay.TableHelper.prototype = {
 
 				  columns[i] = {
 						name: col.COLUMN_NAME,
-						required: col.IS_NULLABLE === 'NO' ? false : true, 
-
+						required: col.IS_NULLABLE === 'NO',
 						//Data type values: http://www.mssqlcity.com/Articles/General/choose_data_type.htm
-						dataType: col.DATA_TYPE
+						dataType: col.DATA_TYPE,
+						valueQuote: col.NUMERIC_SCALE === null ? "'" : "",
+						isIdentity: col.IS_IDENTITY === 1,
+						noDefault:  col.HAS_DEFAULT === 0
 					};
+
+					columnsByName[ col.COLUMN_NAME ] = columns[i];
 
 				}              
 
 				//cache the column data
 				this.tableColumns = columns;   
+				this.tableColumnsByName = columnsByName;
 				
 				//callback
 				if(callback){
@@ -289,9 +294,24 @@ DbRelay.TableHelper.prototype = {
 		for(var i=0,len=rows.length; i<len; i++){
 			var row = rows[i], values=[], columns=[]; 
 			
-			for(var k in row){ 
-				values.push("'" + row[k].replace(/'/g, "\'") + "'");
-				columns.push(k);
+			for(var k in row){
+			  if (row.hasOwnProperty(k)) {
+			    if (! this.tableColumnsByName[k].isIdentity) {
+			      // The following condition skips a field, if it has empty value, but the is a default.
+			      // It makes it impossible to set a character field to an empty string in a new row.
+			      // As a workaround, edit the field in an update afterwards.
+			      if (row[k] || this.tableColumnsByName[k].noDefault) {
+              var quote = this.tableColumnsByName[k].valueQuote;
+              // The following condition deals with empty numeric (supposingly) fields and sets then to NULL if the value is empty.
+              if (quote || row[k]) {
+                values.push( quote + row[k].replace(/'/g, "\'") + quote );
+              } else {
+                values.push( "NULL" );
+              };
+              columns.push(k);
+			      };
+			    };
+			  };
 			}
 			
       //add to batch 
@@ -310,8 +330,10 @@ DbRelay.TableHelper.prototype = {
 	@param {string} s string to make safe
 	@return {string} string with all single quotes replaced with '' AND also wrapped in single quotes (ex. 'Chicago''s'
 	*/
-	safeSqlString : function(s){
-		return "'" + (s+'').replace(/'/g, "''") + "'";
+	safeSqlString : function(s, f){
+	  var col = this.tableColumnsByName[f];
+		var quote = col ? "'" : col.valueQuote;
+		return quote + (s+'').replace(/'/g, "''") + quote;
 	},      
 	  
 	/** Deletes row(s) from the table
@@ -349,7 +371,7 @@ DbRelay.TableHelper.prototype = {
 			var row = rows[i], wheres=[]; 
 			
 			for(var k in row){ 
-				wheres.push(k + "=" + this.safeSqlString(row[k]) ) 
+				wheres.push(k + "=" + this.safeSqlString(row[k], k) )
 			}
 			
       //add to batch 
@@ -399,8 +421,14 @@ DbRelay.TableHelper.prototype = {
 			var values = set[i], valueparam =[], where=''; 
 			
 			//SETVALUES
-			for(var col in values){ 
-				valueparam.push(col + "=" + this.safeSqlString(values[col]));   
+			for(var col in values){
+			   if (! this.tableColumnsByName[col].isIdentity) {
+			     if (this.tableColumnsByName[col].valueQuote === "'" || values[col]) {
+			       valueparam.push(col + "=" + this.safeSqlString(values[col], col));
+			     } else {
+			       valueparam.push(col + "=NULL");
+			     };
+  			};
 			}  
 			
 			 //WHERE 
@@ -411,7 +439,7 @@ DbRelay.TableHelper.prototype = {
 				else{ 
 					var whereparam=[];
 					for(var k in wherecols){ 
-						whereparam.push(k + "=" + this.safeSqlString(wherecols[k]) ); 
+						whereparam.push(k + "=" + this.safeSqlString(wherecols[k], k) );
 					}
 					where = whereparam.join(' AND '); 
 				} 
@@ -509,7 +537,7 @@ DbRelay.TableHelper.prototype = {
 		}
 		else{ 
 			for(var w in where){  
-				whereparam.push(k + "=" + this.safeSqlString( where[w]));     
+				whereparam.push(k + "=" + this.safeSqlString( where[w], w));
 			}
 			whereparam = whereparam.length === 0 ? '' : 'WHERE ' + whereparam.join('AND')
 		} 
