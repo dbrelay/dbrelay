@@ -304,7 +304,7 @@ DbRelay.TableHelper.prototype = {
               var quote = this.tableColumnsByName[k].valueQuote;
               // The following condition deals with empty numeric (supposingly) fields and sets then to NULL if the value is empty.
               if (quote || row[k]) {
-                values.push( quote + row[k].replace(/'/g, "\'") + quote );
+                values.push( quote + (row[k]+'').replace(/'/g, "''") + quote );
               } else {
                 values.push( "NULL" );
               };
