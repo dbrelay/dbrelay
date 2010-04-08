@@ -10,7 +10,7 @@ Ext.namespace('dbrui');
 dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
   cls:'dbr-sqltableeditor',
 	layout:'border',
-	iconCls:'icon-table',
+	//iconCls:'icon-table',
 	
 
 	/** {sqlTable} sqlTable object, created by the editor */
@@ -32,6 +32,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	
 	where:'',
 	orderBy:'',
+	hideFilterOptions:false,
 	
 	//EXPERIMENTAL - true to page on server side
 	serverSidePaging:true,
@@ -41,14 +42,14 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	 Ext.QuickTips.init();
 	
 	   
-	  this.title = this.title || 'TABLE: ' +this.tableName;  
+	 // this.title = this.title || 'TABLE: ' +this.tableName;  
  
 		this.tbar =[  
 		{   
-			text:'Hide Adv Filter', 
+			text: (this.hideFilterOptions ? 'Show' : 'Hide') + ' Adv Filter', 
 			iconCls:'icon-app',
 			enableToggle:true,  
-			pressed:true,
+			pressed:!this.hideFilterOptions,
 			tooltip:'More options',
 			handler: function(b,e){ 
 				var hidden = this.optionsPanel.hidden;
@@ -235,13 +236,32 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				 resizable:false
 			});
 			
-		
+		var gridConfig = {
+				region:'center',
+				xtype:'editorgrid', 
+				border:false,
+				id:'grid'+idpfx,
+				clicksToEdit: 1,  
+				stripeRows:true,
+				columnLines:true,
+				viewConfig:{
+					//forceFit:true,
+					autoFill:true
+				}, 
+				plugins : [this.deleteBox], 
+				//blank for now, these will change based on db queries
+				store:new Ext.data.Store(),
+				cm: new Ext.grid.ColumnModel([this.deleteBox]) 
+		};
+		var gridConfig = Ext.apply(gridConfig, this.gridConfig || {});
+
 		 this.items=[
 			{
 				region:'north',
 				id:'options'+idpfx,
 				height:100,
 				split:true,
+				hidden: this.hideFilterOptions,
 				layout:'anchor',
 				border:false,   
 				unstyled:true,       
@@ -330,21 +350,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 					
 				]
 			},
-			{
-				region:'center',
-				xtype:'editorgrid', 
-				border:false,
-				id:'grid'+idpfx,
-				clicksToEdit: 1,  
-				viewConfig:{
-					//forceFit:true,
-					autoFill:true
-				}, 
-				plugins : [this.deleteBox], 
-				//blank for now, these will change based on db queries
-				store:new Ext.data.Store(),
-				cm: new Ext.grid.ColumnModel([this.deleteBox]) 
-			}  
+			gridConfig
 		 ];
 			
 		dbrui.SqlTableEditor.superclass.initComponent.call(this);
@@ -660,7 +666,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				case 'bit':
 					simpleType='int';
 					cellEditor = pkeys.length === 0 ? null : new Ext.form.NumberField({
-	            allowBlank: false,
+	            allowBlank: col.required ? false : true,
 					    allowDecimals:false
 	        });
 					break;
@@ -670,16 +676,19 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 				case 'smallmoney':
 					simpleType='float';
 					cellEditor = pkeys.length === 0 ? null : new Ext.form.NumberField({
-	            allowBlank: false
+	            allowBlank: col.required ? false : true
 	        });
 					break;
 				//unhandled types default to text fields
 				default:
 					simpleType = rawtype;
 					cellEditor = pkeys.length === 0 ? null : new Ext.form.TextField({
-	            allowBlank: false
+	            allowBlank: true
 	        });
-			}
+			};
+			if (col.isIdentity) {
+			  cellEditor = null;
+			};
 			//EXT column model definition 
 			cmData[i+1] = {
 				header: name + ' ' + (iskey ? '[KEY]' : '') + '['+ rawtype+']',
