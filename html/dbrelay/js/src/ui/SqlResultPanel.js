@@ -361,6 +361,5 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 
 }); 
 
-Ext.reg('va_sqlresultpanel', dbrui.SqlResultPanel);         
-
+Ext.reg('dbrui.SqlResultPanel', dbrui.SqlResultPanel);
 

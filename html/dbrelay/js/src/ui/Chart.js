@@ -224,8 +224,7 @@ dbrui.LineChart = Ext.extend(dbrui.Chart, {
 	}
 	
 });
-Ext.reg('dbrui_linechart', dbrui.LineChart);
-
+Ext.reg('dbrui.LineChart', dbrui.LineChart);
 
 /**
 Bar Chart
@@ -297,8 +296,7 @@ dbrui.BarChart = Ext.extend(dbrui.Chart, {
 	}
 	
 });
-Ext.reg('dbrui_barchart', dbrui.BarChart);
-
+Ext.reg('dbrui.BarChart', dbrui.BarChart);
 
 /**
 Pie Chart
@@ -331,4 +329,4 @@ dbrui.PieChart = Ext.extend(dbrui.Chart, {
 	}
 	
 });
-Ext.reg('dbrui_piechart', dbrui.PieChart);
+Ext.reg('dbrui.PieChart', dbrui.PieChart);

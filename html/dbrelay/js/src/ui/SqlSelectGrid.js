@@ -205,19 +205,19 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 							title:'Line',
 							id:'line' + this.idpfx,
 							iconCls:'icon-linechart',
-							xtype:'dbrui_linechart'
+							xtype:'dbrui.LineChart'
 						},
 						{
 							title:'Bar',
 							id:'bar' + this.idpfx,
 							iconCls:'icon-barchart',
-							xtype:'dbrui_barchart'
+							xtype:'dbrui.BarChart'
 						},
 						{
 							title:'Pie',
 							id:'pie' + this.idpfx,
 							iconCls:'icon-piechart',
-							xtype:'dbrui_piechart'
+							xtype:'dbrui.PieChart'
 						}
 					],
 					
