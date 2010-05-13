@@ -885,7 +885,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	}
 
 });
-Ext.reg('va_sqltableeditor', dbrui.SqlTableEditor);           
+Ext.reg('dbrui.SqlTableEditor', dbrui.SqlTableEditor);
 
 
 
