@@ -1,0 +1,72 @@
+#!/bin/bash
+
+##############################################################
+#
+#    This is a template for a monitoring script to be run in
+#    crontab or Nagios to monitor a dbrelay instance.
+#    Requires curl utility, 
+
+# set -x
+
+MY_HOST=$(hostname)
+DBRELAY_HOST=${MY_HOST}
+DBRELAY_PORT=1433
+SQL_PORT=1433
+SQL_DB=master
+SQL_USER=sa
+TIMEOUT=5
+QUERYTAG=$(date +%Y%m%d%H%M%S)
+
+while getopts ":H:P:s:p:d:u:w:t:" opt; do
+  case $opt in
+    H)
+      DBRELAY_HOST=$OPTARG
+      ;;
+    P)
+      DBRELAY_PORT=$OPTARG
+      ;;
+    s)
+      SQL_HOST=$OPTARG
+      ;;
+    p)
+      SQL_PORT=$OPTARG
+      ;;
+    d)
+      SQL_DB=$OPTARG
+      ;;
+    u)
+      SQL_USER=$OPTARG
+      ;;
+    w)
+      SQL_PWD=$OPTARG
+      ;;
+    t)
+      TIMEOUT=$OPTARG
+      ;;
+    \?)
+      echo "
+Paramaters are:
+  -H <dbrelay hostname>
+  -P <dbrelay port>
+  -s <sql hostname>
+  -p <sql port>
+  -d <sql database>
+  -u <sql user>
+  -w <sql user password>
+  -t <timeout (seconds)>
+" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+curl -s -f --max-time ${TIMEOUT} http://${DBRELAY_HOST}:${DBRELAY_PORT}/sql?sql_server=${SQL_HOST}\&sql_port=${SQL_PORT}\&sql_database=${SQL_DB}\&sql_user=${SQL_USER}\&sql_password=${SQL_PWD}\&connection_name=monitor\&query_tag=${QUERYTAG}\&connection_timeout=70\&sql=select%201%20as%20one >/dev/null ||
+{
+  # Replace the following line with you failure handling code
+  curl http://incidents_host/post_event?object=DB%20RELAY\&subobject=${DBRELAY_HOST}%3A${DBRELAY_PORT}\&event=TIMEOUT\&description=Request%20timed%20out%20after%20${TIMEOUT}%20seconds%20or%20failed%20from%20${MY_HOST}%20to%20${SQL_HOST}%3A${SQL_PORT}.${SQL_DB}%20as%20user%20${SQL_USER}.%20Query%20tag%20was%20${QUERYTAG}.\&category=Infrastructure\&impact=Medium >/dev/null 2>&1
+  exit 1
+}

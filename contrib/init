@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# Init file for the production DB Relay copy
+#
+# chkconfig: 345 55 25
+# description: DB Relay DB access server
+#
+# config: /home/dbrelay/conf/nginx.conf
+# pidfile: /home/dbrelay/logs/nginx.pid
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+RETVAL=0
+DBRELAY="dbrelay"
+HOMEDIR="/home"
+DBR_DIR=${HOMEDIR}/${DBRELAY}
+
+start()
+{
+  echo -n $"Starting DB Relay: "
+  su -l ${DBRELAY} -c "cd ${DBR_DIR}; ./sbin/nginx --clean && ./sbin/nginx"
+  RETVAL=$?
+  [ "$RETVAL" = 0 ] && touch /var/lock/subsys/${DBRELAY}
+  pushd ${DBR_DIR} >/dev/null
+    [ -d logs_archive ] &&
+    cd logs_archive &&
+    nohup /bin/bash -c '
+      shopt -s extglob
+      for log in !(*.tbz|nohup.out)
+      do
+        tar cjf ${log}.tbz ${log} && rm -rf ${log}
+      done
+    ' &
+  popd >/dev/null
+  echo
+}
+
+stop()
+{
+  echo -n $"Stopping DB Relay: "
+  PROC_PID=$(cat ${DBR_DIR}/logs/nginx.pid)
+  kill ${PROC_PID} &&
+  sleep 1 &&
+  [ "$(ps p ${PROC_PID} --ppid ${PROC_PID} h o pid,args | wc -l)" -gt 0 ] && sleep 5
+  pushd ${DBR_DIR} >/dev/null
+    [ -d logs_archive ] || ( mkdir logs_archive && chown ${DBRELAY}:dbrelay logs_archive )
+    mv logs logs_archive/$(date +%y%m%d%H%M%S)
+    mkdir logs
+    chmod ug=rwx,o=rx logs
+    chown ${DBRELAY}:dbrelay logs
+  popd >/dev/null
+  su -l ${DBRELAY} -c "cd ${DBR_DIR}; ./sbin/nginx --clean"
+  RETVAL=$?
+  [ "$RETVAL" = 0 ] && rm -f /var/lock/subsys/${DBRELAY}
+  echo
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart}"
+    RETVAL=1
+esac
+exit $RETVAL
