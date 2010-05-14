@@ -27,9 +27,11 @@ start()
     cd logs_archive &&
     nohup /bin/bash -c '
       shopt -s extglob
-      for log in !(*.tbz|nohup.out)
+      for log in *.tmp
       do
-        tar cjf ${log}.tbz ${log} && rm -rf ${log}
+        Log2zip=${log%.tmp}
+        mv ${log} {Log2zip}
+        tar cjf ${Log2zip}.tbz ${Log2zip} && rm -rf ${Log2zip}
       done
     ' &
   popd >/dev/null
@@ -42,10 +44,10 @@ stop()
   PROC_PID=$(cat ${DBR_DIR}/logs/nginx.pid)
   kill ${PROC_PID} &&
   sleep 1 &&
-  [ "$(ps p ${PROC_PID} --ppid ${PROC_PID} h o pid,args | wc -l)" -gt 0 ] && sleep 5
+  [ "$(ps p ${PROC_PID} --ppid ${PROC_PID} h o pid,args | wc -l)" -gt 0 ] && sleep 5 &&
   pushd ${DBR_DIR} >/dev/null
     [ -d logs_archive ] || ( mkdir logs_archive && chown ${DBRELAY}:dbrelay logs_archive )
-    mv logs logs_archive/$(date +%y%m%d%H%M%S)
+    mv logs logs_archive/$(date +%y%m%d%H%M%S).tmp
     mkdir logs
     chmod ug=rwx,o=rx logs
     chown ${DBRELAY}:dbrelay logs
