@@ -46,7 +46,9 @@ var myTable = new DbRelay.TableHelper('people', qh);
 */
 DbRelay.TableHelper = function(table, queryHelper){
 	this.queryHelper = queryHelper.connection ? queryHelper : new DbRelay.QueryHelper(queryHelper);
-	this.table = table;
+	var t = table.split('.');
+	this.table = (t.length === 2 ? t[1] : table);
+	this.tableSchema = (t.length === 2 ? t[0] : null);
 	return this;
 }
 
@@ -125,6 +127,9 @@ DbRelay.TableHelper.prototype = {
 	},
 	
 
+	getFullTableName : function(){
+		return (this.tableSchema ? this.tableSchema + '.' : '') + this.table;
+	},
 	/**
 		Fetches all columns for all rows, no conditions or filters.
 		@param {Object} cfg parameters: 
@@ -146,7 +151,7 @@ DbRelay.TableHelper.prototype = {
 		cfg = cfg || {};
 		
 		this.queryHelper.run('fetch_rows',{
-				table:this.table,
+				table: this.getFullTableName(),
 				columns: cfg.columns || '*',
 				where: cfg.where ? ('WHERE ' + cfg.where) : '',
 				orderBy: cfg.orderBy ? 'ORDER BY ' + cfg.orderBy : ''
@@ -234,7 +239,7 @@ DbRelay.TableHelper.prototype = {
 				columns: cfg.columns,
 				where: cfg.where ? 'WHERE ' + cfg.where : '',
 				orderBy : cfg.orderBy,
-				table: this.table,        
+				table: this.getFullTableName(),       
 				minRow: cfg.recordStart + '',
 				maxRow : cfg.recordStart + cfg.pagingSize
 			},  
@@ -316,7 +321,7 @@ DbRelay.TableHelper.prototype = {
 			
       //add to batch 
     	 this.queryHelper.addToBatch('row_add',{
-				 table:this.table,
+				 table:this.getFullTableName(),
 				 columns : '(' + columns.join(',') + ')', 
 				 values : '(' + values.join(',') +')'
 			}, batch );
@@ -376,7 +381,7 @@ DbRelay.TableHelper.prototype = {
 			
       //add to batch 
     	 this.queryHelper.addToBatch('delete_row',{
-				 table:this.table,
+				 table:this.getFullTableName(),
 				 where : '(' + wheres.join(' AND ') +')'
 			}, batch );
     }
@@ -446,7 +451,7 @@ DbRelay.TableHelper.prototype = {
 			
       //use the batch functionality to compile the queries
     	 this.queryHelper.addToBatch('update_row', {
-				 table:this.table,
+				 table:this.getFullTableName(),
 				 setvalues : valueparam.join(','),
 				 where : where
 			}, batch ); 
@@ -482,6 +487,7 @@ DbRelay.TableHelper.prototype = {
 			  var rows = resp.data[0].rows, keys=[];
 
 				 for(var i=0; i<rows.length; i++){
+				 	
 					 keys[i] = rows[i].COLUMN_NAME;
 				 }            
 
@@ -543,7 +549,7 @@ DbRelay.TableHelper.prototype = {
 		} 
 		
     this.queryHelper.run('get_count',{
-				table:this.table,
+				table: this.getFullTableName(),
 				columns: cfg.pkeys || '*',
 				where : whereparam
 			},     

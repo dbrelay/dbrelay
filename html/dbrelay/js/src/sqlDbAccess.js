@@ -335,8 +335,7 @@ Clears/resets the query log
 
 						for(var i=0; i<rows.length; i++){  
 							var row = rows[i];
-
-						 	cellCounts[row.TABLE_NAME] = rowcounts[row.TABLE_NAME] * row.columns;
+						 	cellCounts[row.TABLE_SCHEMA + '.' + row.TABLE_NAME] = rowcounts[row.TABLE_NAME] * row.columns;
 					 	}
             //final success
 					 	if(callback){
