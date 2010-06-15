@@ -273,7 +273,7 @@ DbRelay.query(connection,'select * from people', success, failure);
 					+"WHERE  i.index_id in (0,1) "
 					+"group by t.name "
 					+"ORDER BY SUM(P.ROWS) DESC",
-			get_columncounts:"SELECT TABLE_NAME, COUNT(COLUMN_NAME) as 'columns' FROM INFORMATION_SCHEMA.COLUMNS GROUP BY TABLE_NAME ",
+			get_columncounts:"SELECT TABLE_NAME,TABLE_SCHEMA, COUNT(COLUMN_NAME) as 'columns' FROM INFORMATION_SCHEMA.COLUMNS GROUP BY TABLE_NAME,TABLE_SCHEMA ",
 			/* generic Table specific actions */
 		  fetch_all_rows: "select * from {{{table}}}",
 			fetch_rows: "select {{{columns}}} from {{{table}}}\n {{{where}}} \n{{{orderBy}}}",

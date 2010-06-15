@@ -14,7 +14,8 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 	
 
 	/** {sqlTable} sqlTable object, created by the editor */
-  sqlTable: null,            
+  	sqlTable: null,            
+	
 	//primary key columns
 	pkeyColumns:[], 
 	pkeyStyle:'color:#00761c;font-weight:bold;',   
@@ -583,7 +584,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 		}
 		//query for columns.  When results are ready, populate the column model for the grid
 		this.sqlTable.queryColumns(function(sqlt, resp, cols){ 
-			      
+
 			  this.displayMask('Querying primary keys...');  
 			
 				//query primary keys
@@ -639,8 +640,7 @@ dbrui.SqlTableEditor = Ext.extend(Ext.Panel,{
 		//ghetto
 		var pkeystr = '~' + pkeys.join('~') + '~';     
 	  this.pkeyColumns = pkeys;
- 	 
-	
+
 	  //first column is checkbox selection
 		cmData[0] = this.deleteBox;
 		storeFields[0] = {name:this.DELETE_INDEX};
