@@ -684,7 +684,11 @@ dbrui.App = function(){
 						 for(var name in cellcounts){   
 							 var cells = cellcounts[name];
 
-							 var label = '<span '+(cells >= _NUMCELLS_THRESHOLD ? 'class="dbr-largetable"' : '')+'>' + name + ' ('+ cells + ')</span>';
+							 var label = '<span '+
+							    (cells >= _NUMCELLS_THRESHOLD ? 'class="dbr-largetable"' : '')
+							    + '>' + name +
+							    (isNaN(cells) ? '' : ' ('+ cells + ')')
+							    + '</span>';
 							 
 
 						 	 _tablesMenuOpen.addMenuItem(	{
