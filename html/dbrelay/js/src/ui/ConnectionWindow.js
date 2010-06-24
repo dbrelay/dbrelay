@@ -280,10 +280,11 @@ dbrui.ConnectionWindow = Ext.extend(Ext.Window,{
 	refreshDatabaseList : function(){
 		var sql_server = this.fields['sql_server'].getValue();
 		var sql_user = this.fields['sql_user'].getValue();
+		var sql_password = this.fields['sql_password'].getValue();
 		
 		if(sql_server === '' || sql_user === ''){return;}
 		
-		var testDb = new sqlDbAccess({sql_server:sql_server,sql_user:sql_user});
+		var testDb = new sqlDbAccess({sql_server:sql_server,sql_user:sql_user,sql_password:sql_password});
 		
 		testDb.getDatabases(
 			//success
