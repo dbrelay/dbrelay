@@ -19,19 +19,37 @@ DBR_DIR=${HOMEDIR}/${DBRELAY}
 start()
 {
   echo -n $"Starting DB Relay: "
+
+  # The following line to be used when listening on an unprivileded port (above 1024)
   su -l ${DBRELAY} -c "cd ${DBR_DIR}; ./sbin/nginx --clean && ./sbin/nginx"
+
+  # Uncomment the following line to be used when listening on a privileded port (below 1024)
+  # ( cd ${DBR_DIR}; ./sbin/nginx --clean && ./sbin/nginx ) # must run as root to get port 80
+
+  # Only one of the two startup lines above should be used at a time. Also, make sure to set
+  # the appropriate "username" and "listen" directives in nginx.conf if listening
+  # on privileged ports.
+
   RETVAL=$?
   [ "$RETVAL" = 0 ] && touch /var/lock/subsys/${DBRELAY}
   pushd ${DBR_DIR} >/dev/null
     [ -d logs_archive ] &&
     cd logs_archive &&
     nohup /bin/bash -c '
-      shopt -s extglob
       for log in *.tmp
       do
+        [ ${log} == "*.tmp" ] && break
         Log2zip=${log%.tmp}
         mv ${log} ${Log2zip}
-        tar cjf ${Log2zip}.tbz ${Log2zip} && rm -rf ${Log2zip}
+        tar czf ${Log2zip}.tgz ${Log2zip} && rm -rf ${Log2zip}
+      done
+      CUTOFF=$(date -d "20 days ago" +%y%m%d000000)
+      for file in [1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].t?z
+      do
+        DATE=${file%.t?z};
+        if [ ${DATE} -le ${CUTOFF} ]; then
+          rm -f ${file};
+        fi
       done
     ' &
   popd >/dev/null
