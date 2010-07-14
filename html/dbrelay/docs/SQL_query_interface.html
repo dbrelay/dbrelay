@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
   	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  	<title>JavaScript SQL Query interface to DBRelay server</title>
+  	<title>JavaScript SQL Query interface to DB Relay server</title>
   	<style type="text/css" media="print">
   	  body {
   	    font-size: 95%;
@@ -249,27 +249,27 @@
         </ol>
       </div>
       <div id="title" class="chapter">
-        <h1>JavaScript SQL Query interface to DBRelay server</h1>
+        <h1>JavaScript SQL Query interface to DB Relay server</h1>
         <p class="copyright">&copy; 2009 GETCO LLC. All Rights Reserved.</p>
       </div>
       <div id="overview" class="chapter">
         <h2>Overview</h2>
-        <p>While the DBRelay server provides a server side of a request-response protocol for working with SQL databases, the <code>sqlQuery</code> JavaScript function provides the client side. It is a factory for creating custom objects, handling asynchronious read and write tasks.</p>
+        <p>While the DB Relay server provides a server side of a request-response protocol for working with SQL databases, the <code>sqlQuery</code> JavaScript function provides the client side. It is a factory for creating custom objects, handling asynchronious read and write tasks.</p>
         <p>In a basic form, user provides to the factory the names of methods the resulting object will have as well as SQL statements, which will go into the methods. SQL statements may be parametrized.</p>
         <p>In advanced forms, methods with corresponding SQL queries may be added or replaced in the object post-factum, or arbitrary code may be added or replaced as for every JavaScript object. Yet another form allows queries to be batched over a span of code and executed at once. Transactions should be coded directly in SQL in this version, if nesessary.</p>
         <p>It depends on jQuery core library for AJAX communication. However, only a single call needs to be replaced to use another library, if  needed.</p>
         <p style="color: tomato;">Query parameters are not sanitized before sending to database. SQL injection and other security risks are not mitigated.</p>
-        <p style="color: tomato;">This is not a final release of the code. Please, make a copy of it, as the API is very likely to change in the future in an incompatible way. For one, the API will be adjusted to take advantage of the SQL query parameters feature offered by DBRelay server. Another possibility is to eliminate the need for quotes around {{{&nbsp;}}} parameters in query templates.</p>
+        <p style="color: tomato;">This is not a final release of the code. Please, make a copy of it, as the API is very likely to change in the future in an incompatible way. For one, the API will be adjusted to take advantage of the SQL query parameters feature offered by DB Relay server. Another possibility is to eliminate the need for quotes around {{{&nbsp;}}} parameters in query templates.</p>
       </div>
       <div id="basic" class="chapter">
         <h2>Basic use</h2>
         <div id="creation" class="chapter">
           <h3>Creating the object</h3>
-          <p>The JavaScript library needs to be loaded from a DBRelay server first:</p>
+          <p>The JavaScript library needs to be loaded from a DB Relay server first:</p>
           <pre>&lt;script src=&quot;/js/sqlObject.js&quot; type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;</pre>
           <p>The sqlObject factory call to create the <code>log</code> object looks like this:</p>
           <pre>var log_store = sqlObject( connection, log_queries);</pre>
-          <p>As the first parameter, the <code>sqlObject</code> factory takes an object used for DBRelay connectivity. The content of the connection object described in the &laquo;HTTP request&raquo; chapter of DBRelay specifications. It should not, however, have the &laquo;<code>sql</code>&raquo; or &laquo;<code>paramX</code>&raquo; parameters set. Here is an example of the first parameter construction:</p>
+          <p>As the first parameter, the <code>sqlObject</code> factory takes an object used for DB Relay connectivity. The content of the connection object described in the &laquo;HTTP request&raquo; chapter of DB Relay specifications. It should not, however, have the &laquo;<code>sql</code>&raquo; or &laquo;<code>paramX</code>&raquo; parameters set. Here is an example of the first parameter construction:</p>
           <pre>var connection = {
   &#x27;sql_server&#x27;      : &#x27;192.168.1.1&#x27;,
   &#x27;sql_database&#x27;    : &#x27;SOMEDB&#x27;,
@@ -319,7 +319,7 @@ log_store.drop( gui_logger );</pre>
         </div>
         <div id="callbacks" class="chapter">
           <h3>Callbacks</h3>
-          <p>Verbs accept callback functions as their second paramenter. Callback function will be called at the end of AJAX calls to the DBRelay server regardless of the query success or failure. As a parameter, callback functions will receive the DBRelay server's response as a JavaScript object. If the verb was called with an optional tag parameter, it will will be passed back intact in the DBRelay response as the <code>query_tag</code> field. That will allow for a single callback to process multiple purpose queries. For example, if the passed tag is a CSS selector, then the callback function may automatically update matching HTML elements with the query results.</p>
+          <p>Verbs accept callback functions as their second paramenter. Callback function will be called at the end of AJAX calls to the DB Relay server regardless of the query success or failure. As a parameter, callback functions will receive the DB Relay server's response as a JavaScript object. If the verb was called with an optional tag parameter, it will will be passed back intact in the DB Relay response as the <code>query_tag</code> field. That will allow for a single callback to process multiple purpose queries. For example, if the passed tag is a CSS selector, then the callback function may automatically update matching HTML elements with the query results.</p>
         </div>
       </div>
       <div id="advanced" class="chapter">
@@ -338,14 +338,14 @@ log_store.enter({
 }, &quot;replace&quot; );
 log_store.run_batch( &quot;replace&quot;, update_list );
 </pre>
-          <p>Batch name is returned ad the <code>query_tag</code> field of the DBRelay response for use in the callback function. Tags are meaningless in combination with batches.</p>
+          <p>Batch name is returned ad the <code>query_tag</code> field of the DB Relay response for use in the callback function. Tags are meaningless in combination with batches.</p>
           <p>To get rid of a batch and, if needed, start a new batch under the same name, use:</p>
           <pre>log_store.empty_batch( batch_name );</pre>
           <p>Method <code>empty_batch</code> will continue silently without doing anything if there is no batch with a specified name. The <code>run_batch</code> method will throw an exception if it is provided a non-existent batch name.</p>
         </div>
         <div id="default_callbacks" class="chapter">
           <h3>Default callbacks</h3>
-          <p>You may configure the same callback to run by default every time you call a certain verb. To do that, specify a two-element array instead of the query string in the second (queries) parameter to <code>sqlQuery</code>. The first element of the array should be the same query string. The second element should be the function which will become the callback. For example, if after every <code>log_store.recent</code> call you want to update a table on the page with the results returned from the DBRelay server, you should use a similar the query definition (assuming that the <code>make_table</code> function creates a table):</p>
+          <p>You may configure the same callback to run by default every time you call a certain verb. To do that, specify a two-element array instead of the query string in the second (queries) parameter to <code>sqlQuery</code>. The first element of the array should be the same query string. The second element should be the function which will become the callback. For example, if after every <code>log_store.recent</code> call you want to update a table on the page with the results returned from the DB Relay server, you should use a similar the query definition (assuming that the <code>make_table</code> function creates a table):</p>
           <pre>var log_queries = {
   .....
   recent: [ &quot;select top {{{limit}}} * from log order by tds desc&quot;, make_table ],
