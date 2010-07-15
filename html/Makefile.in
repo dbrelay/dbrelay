@@ -187,9 +187,10 @@ dbrelay/docs/interfaces.html \
 dbrelay/docs/nav.html \
 dbrelay/docs/overview.html \
 dbrelay/docs/SQL_query_interface.html \
-dbrelay/docs/img/architecture_legend.svg \
-dbrelay/docs/img/architecture_freetds.svg \
-dbrelay/docs/img/architecture_odbc.svg \
+dbrelay/docs/img/architecture_legend.png \
+dbrelay/docs/img/architecture_freetds.png \
+dbrelay/docs/img/architecture_odbc.png \
+dbrelay/docs/img/dbrelay_with_text.png \
 dbrelay/docs/viaduct_specification.html \
 dbrelay/docs/jsapi/index.html \
 dbrelay/docs/jsapi/welcome.html \
