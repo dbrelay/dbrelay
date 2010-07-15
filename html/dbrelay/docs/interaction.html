@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>DBRelay JavaScript Documentation</title>
+  <title>DB Relay JavaScript Documentation</title>
 
 	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
 
@@ -29,7 +29,7 @@
     </p>
     <br />
   </li>
-  <li>After receiving the client request, the DBRelay applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.
+  <li>After receiving the client request, the DB Relay applcation should check the connection management parameters and assign either (a) established or (b) newly created connection to the request.
     </p>
   </li>
   <li>When the request gets a connection assigned, it should queue it's SQL query for execution on that connection. Every query should run in a fresh context, meaning, that <span class="em">no</span> temporary objects or other context information from previous queries on the same connection should be visible and impacting the new query.
@@ -40,7 +40,7 @@
   </li>
   <li>There should be a connection &quot;garbage collector&quot; regularly destroying idle database connections. Even if a connection was not yet destroyed, but already past it's &quot;living conditions&quot;, it should not be queueing any new queries, but must finish the pending ones before it will be destroyed.
     </p>
-    <p>As it is implemented now, a connection &laquo;garbage collector&raquo; only runs when there is an incoming DBRelay request. In future releases, there may be an independant agent or thread running for administration/cleanup.</p>
+    <p>As it is implemented now, a connection &laquo;garbage collector&raquo; only runs when there is an incoming DB Relay request. In future releases, there may be an independant agent or thread running for administration/cleanup.</p>
   </li>
   </ol>
 <h2>Persistense considerations</h2>
@@ -56,7 +56,7 @@
   <tr>
     <th>Signal</th>
     <th>Nginx behavior</th>
-    <th>DBRelay behavior</th>
+    <th>DB Relay behavior</th>
   </tr>
   <tr>
     <td class="doc-name">2(INT),15(TERM)</td>

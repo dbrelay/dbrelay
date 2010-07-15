@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>DbRelay Documentation</title>
+  <title>DB Relay Documentation</title>
 
 	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
 
@@ -21,11 +21,11 @@
 	
 <body>
 		<div id="page"> 
-			<h1>DBRelay Overview</h1>
-		  <p>The DBRelay application is a protocol bridge allowing HTTP clients to access to Microsoft&reg; SQL Server databases. The primary goal is to make Microsoft&reg; SQL Server access easy for other (unrelated to this project) software, including Python, JavaScript, and Ruby scripts. That includes simple standards-bases request and data formats as well as the ease of installing, maintaining (log files, configuration, etc.) and managing (starting, stopping, inventorying, etc.) the application.</p>
+			<h1>DB Relay Overview</h1>
+		  <p>The DB Relay application is a protocol bridge allowing HTTP clients to access to Microsoft&reg; SQL Server databases. The primary goal is to make Microsoft&reg; SQL Server access easy for other (unrelated to this project) software, including Python, JavaScript, and Ruby scripts. That includes simple standards-bases request and data formats as well as the ease of installing, maintaining (log files, configuration, etc.) and managing (starting, stopping, inventorying, etc.) the application.</p>
 <p>The essense of the proposed solution is to have the application to accept HTTP requests containing SQL queries, relay them to specified database server, and return the server's reply back to HTTP client in JSON format.</p>
 <p>The DbRelay application will be built from the existing and newly-developed code. Existing code includes, but not limited to, FreeTDS libraries, Nginx web server, unspecified JSON libraries, and other third-party software components necessary for the application. Code to be newly-developed includes a Nginx module and and Nginx server modifications, needed to &quot;glue&quot; the software components into a monolithic, statically linked application.</p>
-<p>As the DBRelay application planned to be released under an open-source license, all existing code need to have a compatible license as reviewed and decided by GETCO LLC before any work to be done with such existing code.</p>
+<p>As the DB Relay application planned to be released under an open-source license, all existing code need to have a compatible license as reviewed and decided by GETCO LLC before any work to be done with such existing code.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 </div>

@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>DBRelay JavaScript Documentation</title>
+  <title>DB Relay JavaScript Documentation</title>
 
 	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
 
@@ -104,7 +104,7 @@ td > dl > dt {
   <tbody>
     <tr>
       <td class="doc-name done">sql_dbtype</td>
-      <td>Database driver name in DBRelay. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; . The &laquo;mssql&raquo;  value is default, if the field is missing.</td>
+      <td>Database driver name in DB Relay. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; . The &laquo;mssql&raquo;  value is default, if the field is missing.</td>
     </tr>
     <tr>
       <td class="doc-name done">sql_server</td>
@@ -148,7 +148,7 @@ td > dl > dt {
     </tr>
     <tr>
       <td class="doc-name done">http_keepalive</td>
-      <td>Optional flag to support broken HTTP clients.  When set to <span>0</span> DBRelay will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></td>
+      <td>Optional flag to support broken HTTP clients.  When set to <span>0</span> DB Relay will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></td>
     </tr>
     <tr>
       <td class="doc-name done">query_tag</td>
@@ -229,7 +229,7 @@ td > dl > dt {
   </tbody>
 </table>
 <h2>HTTP Response (JSON)</h2>
-<p>The DBRelay application will return the results as &quot;<code>application/json</code>&quot; ContentType.</p>
+<p>The DB Relay application will return the results as &quot;<code>application/json</code>&quot; ContentType.</p>
 <p>An HTTP response is described as a JSON object below. Regular text is for literals, <span class="ab">italic caps</span> are for the terms defined later in the specification, and <span class="json_term">underlined</span> words are for <a href="http://json.org/">JSON-defined terms</a>. Object members may appear in any order inside the object. Members marked with &laquo;?&raquo; are optional. Array elements or object members, marked with &quot;&middot; &middot; &middot;&quot; after them, occur <span class="em">zero</span> or more times.<br />
 </p>
 <table class="doc-table">
@@ -332,7 +332,7 @@ td > dl > dt {
     </tr>
     <tr>
       <td class="doc-name">warning</td>
-      <td><p>Events, which may indicate misconfiguration or remote error condition, but do not threaten the DBRelay server integrity. Most events, which are likely to impact multiple clients. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
+      <td><p>Events, which may indicate misconfiguration or remote error condition, but do not threaten the DB Relay server integrity. Most events, which are likely to impact multiple clients. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
         <ul class="dense">
           <li>Timeouts on database server queries.</li>
           <li>Malformed requests.</li>
@@ -350,7 +350,7 @@ td > dl > dt {
     </tr>
     <tr>
       <td class="doc-name">critical</td>
-      <td><p>Log only when DBRelay server can not continue and will shutdown. the following data is reported:</p>
+      <td><p>Log only when DB Relay server can not continue and will shutdown. the following data is reported:</p>
         <ul class="dense2">
           <li>List of open connections with all their parameters, excluding passwords. Include connection remote IP addresses, time established, requests per hour, data in and data out.</li>
           <li>Active and pending requests per each connection, with all the requests' parameters and client data: ip address, http headers, excluding passwords.</li>
@@ -380,13 +380,13 @@ td > dl > dt {
       <td class="doc-codefont">--port</td>
       <td>integer</td>
       <td>80</td>
-      <td>A TCP port number for the DBRelay's HTTP server to listen on.</td>
+      <td>A TCP port number for the DB Relay's HTTP server to listen on.</td>
     </tr>
     <tr>
       <td class="doc-codefont">--root</td>
       <td>directory</td>
       <td>hardcoded per build target in header files</td>
-      <td>A directory for the DBRelay's HTTP server to serve the static files from.</td>
+      <td>A directory for the DB Relay's HTTP server to serve the static files from.</td>
     </tr>
     <tr>
       <td class="doc-codefont">--config</td>

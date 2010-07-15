@@ -53,7 +53,7 @@ DbRelay.query(connection, ['echosql'], success, failure);
 	*/
 	DbRelay = {
 		adapters : {},
-		<div id="prop-DbRelay-DBRELAY_HOST"></div>/** global var to hold default DBRelay host (default to "" for same domain).  This can be overridden by individual queries   */
+		<div id="prop-DbRelay-DBRELAY_HOST"></div>/** global var to hold default DB Relay host (default to "" for same domain).  This can be overridden by individual queries   */
 		DBRELAY_HOST : null,
 
 		<div id="method-DbRelay-query"></div>/**
@@ -249,7 +249,7 @@ DbRelay.query(connection, ['echosql'], success, failure);
 	@class DbRelay.adapters.SqlServer
 	@extends DbRelay.adapters.BaseAdapter
 	@singleton
-	Query Adapter class for Sql Server. Contains SQL Server specific query syntax required for the DBRelay UI
+	Query Adapter class for Sql Server. Contains SQL Server specific query syntax required for the DB Relay UI
 	*/
 	DbRelay.adapters.SqlServer = new DbRelay.adapters.BaseAdapter('SqlServer', {
 			list_databases:"USE MASTER;SELECT NAME FROM sys.sysdatabases ORDER BY NAME ASC",
