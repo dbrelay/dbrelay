@@ -9,16 +9,19 @@
         display: block;
         margin: auto;
       }
+      p.legend {
+        border-top: 1px dotted dimgray;
+        margin-top: 1em;
+        padding-top: 1em;
+        text-align: center;
+      }
     </style>
     </head>
 	<body>
 		<div id="page"> 
-			<h1>The Legend</h1>
-  	  <p><img class="drawing" src="img/architecture_legend.png" /></p>
-			<h1>The FreeTDS Build</h1>
+			<h1>When built using "--with-freetds"</h1>
 			<p><img class="drawing" src="img/architecture_freetds.png" /></p>
-			<h1>The UnixODBC Build</h1>
-			<p><img class="drawing" src="img/architecture_odbc.png" /></p>
+  	  <p class="legend">The legend:<br /><img class="drawing" src="img/architecture_legend.png" /></p>
     </div>
   </body>
 </html>           

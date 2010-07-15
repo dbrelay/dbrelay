@@ -177,7 +177,6 @@ FILES = dbrelay/index.html \
 dbrelay/plugins/README.txt \
 dbrelay/css/dbrelay.css \
 dbrelay/docs/doc.css \
-dbrelay/docs/architecture.html \
 dbrelay/docs/environment.html \
 dbrelay/docs/example.html \
 dbrelay/docs/features.html \
@@ -186,10 +185,15 @@ dbrelay/docs/interaction.html \
 dbrelay/docs/interfaces.html \
 dbrelay/docs/nav.html \
 dbrelay/docs/overview.html \
+dbrelay/docs/architecture_overview.html \
+dbrelay/docs/architecture_freetds.html \
+dbrelay/docs/architecture_odbc.html \
 dbrelay/docs/SQL_query_interface.html \
 dbrelay/docs/img/architecture_legend.png \
 dbrelay/docs/img/architecture_freetds.png \
 dbrelay/docs/img/architecture_odbc.png \
+dbrelay/docs/img/architecture_overview_simple.png \
+dbrelay/docs/img/architecture_overview_connections.png \
 dbrelay/docs/img/dbrelay_with_text.png \
 dbrelay/docs/viaduct_specification.html \
 dbrelay/docs/jsapi/index.html \
