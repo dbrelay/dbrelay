@@ -11,7 +11,7 @@
 	
 	Example Usage:
 <pre>
-&lt;script src="/dbrelay/js/jquery/jquery-1.3.2.min.js" type="text/javascript">&lt;/script>
+&lt;script src="/dbrelay/js/jquery/jquery-1.4.2.min.js" type="text/javascript">&lt;/script>
 
 &lt;!-- DbRelay Javascript Core API -->
 &lt;script src="/dbrelay/js/dbrelay-core-min.js" type="text/javascript">&lt;/script>

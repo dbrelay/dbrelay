@@ -79,7 +79,7 @@ dbrui.App = function(){
 		init: function(){
 			
 			var loadedFiles = 0, me = this;
-			Ext.chart.Chart.CHART_URL = window.DBRELAYUI_EXTCHART_URL || 'js/ext-3.0.0/resources/charts.swf?nocache=' + Math.floor(Math.random()*10000);
+			Ext.chart.Chart.CHART_URL = window.DBRELAYUI_EXTCHART_URL || 'js/ext-3.2.1/resources/charts.swf?nocache=' + Math.floor(Math.random()*10000);
 			
 
 			//dynamically load plugin files from plugins directory
