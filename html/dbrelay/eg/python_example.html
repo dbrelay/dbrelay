@@ -2,9 +2,9 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Python access to Viaduct</title>
-    
-    <link rel="stylesheet" href="../doc/doc.css" type="text/css"/>       
+    <title>Python access to DB Relay</title>
+
+    <link rel="stylesheet" href="../doc/doc.css" type="text/css"/>
 
   </head>
   <body>
@@ -31,7 +31,7 @@ params = {
   'sql_user':       'dbuser',
   'sql':            """select top 3 * from testtable""" }
 
-url = 'http://viaducthost:1433/sql'
+url = 'http://dbrelay-host:1433/sql'
 
 response = urllib2.urlopen( url=url, data=urllib.urlencode(params) )
 result = simplejson.load( response )

@@ -189,7 +189,7 @@ dbrelay/docs/license.html \
 dbrelay/docs/architecture_overview.html \
 dbrelay/docs/architecture_freetds.html \
 dbrelay/docs/architecture_odbc.html \
-dbrelay/docs/SQL_query_interface.html \
+dbrelay/docs/sql_query.html \
 dbrelay/docs/img/architecture_legend.png \
 dbrelay/docs/img/architecture_freetds.png \
 dbrelay/docs/img/architecture_odbc.png \

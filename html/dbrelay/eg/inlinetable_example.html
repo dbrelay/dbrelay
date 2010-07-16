@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Viaduct Table Editor Example</title>
+    <title>DB Relay Table Editor Example</title>
     <link rel="stylesheet" href="../doc/doc.css" type="text/css"/>        
 
 	  <link rel="stylesheet" href="/js/ext-3.2.1/resources/css/ext-all-notheme.css" type="text/css">   
@@ -46,7 +46,7 @@
 		  var sqlDb = sqlDbAccess({
 				sql_server : '172.16.115.128', 
 				sql_port : '', 
-				sql_database : 'viaducttest',
+				sql_database : 'dbrelay_test',
 				sql_user : 'sa',
 				sql_password : '',  
 				connection_name : 'tabledemo',
@@ -110,7 +110,7 @@ var sqlDb = sqlDbAccess({
 	<span class="comment">//Optional port number, on which the SQL server is listening. 1433 is the default.</span>
 	sql_port : '',  
 	<span class="comment">//Optional name of the primary database for the connection. User's default database is used, if not specified.</span>
-	sql_database : 'viaducttest', 
+	sql_database : 'dbrelay_test', 
 	
 	<span class="comment">//Username string recognised by the SQL server.</span>   
 	sql_user : 'sa',                

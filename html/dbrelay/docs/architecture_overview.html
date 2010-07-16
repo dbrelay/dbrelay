@@ -42,7 +42,7 @@
         <li>DB Relay checks if there is a connector process matching the requested name and other parameters.</li>
         <li>If there is not, then the worker process creates an appropriate connector.</li>
         <li>Either preexisting on the new connector then receive the request data via shared memory and do the database request.</li>
-        <li>Unlike in the first scenation above, the database connection is not immediately destroyed, but stays alive with the connector process.</li>
+        <li>Unlike in the first scenario above, the database connection is not immediately destroyed, but stays alive with the connector process.</li>
         <li>The connector process then waits for a new request.</li>
         <li>If a configured of default timeout reached while waiting, the connector quits.</li>
       </ol>
