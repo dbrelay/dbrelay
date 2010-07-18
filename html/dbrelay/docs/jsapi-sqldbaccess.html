@@ -2,215 +2,204 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <!--
+      DB Relay is an HTTP module built on the NGiNX webserver platform which
+      communicates with a variety of database servers and returns JSON formatted
+      data.
+
+      Copyright (C) 2008-2010 Getco LLC
+
+      This program is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published by the Free
+      Software Foundation, either version 3 of the License, or (at your option)
+      any later version. In addition, redistributions in source code and in binary
+      form must include the above copyright notices, and each of the following
+      disclaimers.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+      GNU General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT OWNERS AND CONTRIBUTORS “AS IS”
+      AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+      IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+      ARE DISCLAIMED.  IN NO EVENT SHALL ANY COPYRIGHT OWNERS OR CONTRIBUTORS BE
+      LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+      CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+      SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+      INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+      CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+      POSSIBILITY OF SUCH DAMAGE.
+    -->
     <title>DB Relay JavaScript Documentation</title>
+    <link rel="stylesheet" href="doc.css" type="text/css"/>
+  </head>
+  <body>
+    <div id="page">
+      <h1>sqlDbAccess</h1>
+      <p>sqlDbAccess is an abstraction of sqlObject that contains more high level methods to manipulate the database.</p>
+      <h2>Example Usage</h2>
+      <pre class="codeblock">
+<span class="comment">/* Create a new sqlDbAccess instance for our database connection information */</span>
+var sqlDb = sqlDbAccess({
 
-	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
+  <span class="comment">//Hostname on which the SQL server is running. </span>
+  sql_server : '99.99.99.99.99',
 
-	  
-	</head>
-	
-	
-	<body>
-		<div id="page"> 
-			<h1>sqlDbAccess</h1>   
-      <p>sqlDbAccess is an abstraction of sqlObject that contains more high level methods to manipulate the database.</p>  
-      
-			<h2>Example Usage</h2>    
-			<pre class="codeblock">
-<span class="comment">/* Create a new sqlDbAccess instance for our database connection information */</span> 
-var sqlDb = sqlDbAccess({   
+  <span class="comment">//Optional port number, on which the SQL server is listening. 1433 is the default.</span>
+  sql_port : '',
+  <span class="comment">//Optional name of the primary database for the connection. User's default database is used, if not specified.</span>
+  sql_database : 'mydatabase',
 
-	<span class="comment">//Hostname on which the SQL server is running. </span>
-	sql_server : '99.99.99.99.99', 
+  <span class="comment">//Username string recognised by the SQL server.</span>
+  sql_user : 'myuser',
 
-	<span class="comment">//Optional port number, on which the SQL server is listening. 1433 is the default.</span>
-	sql_port : '',  
-	<span class="comment">//Optional name of the primary database for the connection. User's default database is used, if not specified.</span>
-	sql_database : 'mydatabase', 
+  <span class="comment">//password for the sql_user.</span>
+  sql_password : 'mypass',
 
-	<span class="comment">//Username string recognised by the SQL server.</span>   
-	sql_user : 'myuser',                
+  <span class="comment">//Optional name to persist this connection under.</span>
+  connection_name : 'example2',
 
-	<span class="comment">//password for the sql_user.</span>   
-	sql_password : 'mypass',              
+  <span class="comment">/*Optional number of seconds from the response to the last query before the connection will be considered idle</span>
+  <span class="comment">and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours). */</span>
+  connection_timeout : 60,
 
-	<span class="comment">//Optional name to persist this connection under.</span>   
-	connection_name : 'example2',  
-
-	<span class="comment">/*Optional number of seconds from the response to the last query before the connection will be considered idle</span> 
-	<span class="comment">and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours). */</span>   
-	connection_timeout : 60,
-	
-	
-	<span class="comment">/*Optional parameter for xss scripting.  Leave out for same-domain scripts  */</span>   
-	dbrelay_host : 'http://dbrelay_host' 
-});	  	
-			</pre>
-			
-			<h2>Configuration Options</h2> 
-			<p>See above example.  This will be the connection object which is passed directly to the sqlObject instance.</p>
-			
-
-			<h2>Public Properties</h2>  
-			<table class="doc-table">                 
-				<thead>
-					<tr>
-						<th>Name</th> 
-						<th>{dataType} Description</th> 
-					</tr>
-				</thead>
-				<tbody>   
-					<tr>
-						<td class="doc-name">connection</td>
-						<td>{Object} connection config object that is passed to sqlObject.  The same as the config object used to instantiate this sqlDbAccess</td>
-					</tr> 
-					<tr>
-						<td class="doc-name">so</td>
-						<td>{sqlObject} the sqlObject instance used by this sqlDbAccess instance</td>
-					</tr>
-			</tbody>
-			</table>
-			
-			
-			<h2>Public Methods</h2>  
-			<table class="doc-table">                 
-				<thead>
-					<tr>
-						<th>Name</th> 
-						<th>{dataType} Description</th> 
-					</tr>
-				</thead>
-				<tbody>   
-					<tr>
-						<td class="doc-name">run</td>
-						<td>Function wrapper for sqlObject verb calls, with the ability to define a callback function in an optional scope     
-             <pre>
-run : function(verb, cfg, callback, scope)
+  <span class="comment">/*Optional parameter for xss scripting.  Leave out for same-domain scripts  */</span>
+  dbrelay_host : 'http://dbrelay_host'
+});</pre>
+      <h2>Configuration Options</h2>
+      <p>See above example.  This will be the connection object which is passed directly to the sqlObject instance.</p>
+      <h2>Public Properties</h2>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>{dataType} Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name">connection</td>
+            <td>{Object} connection config object that is passed to sqlObject.  The same as the config object used to instantiate this sqlDbAccess</td>
+          </tr>
+          <tr>
+            <td class="doc-name">so</td>
+            <td>{sqlObject} the sqlObject instance used by this sqlDbAccess instance</td>
+          </tr>
+        </tbody>
+      </table>
+      <h2>Public Methods</h2>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>{dataType} Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name">run</td>
+            <td>Function wrapper for sqlObject verb calls, with the ability to define a callback function in an optional scope
+              <pre>run : function(verb, cfg, callback, scope)
 
 @param {string} verb: sqlObject verb to call
 @param {Object} cfg : name/value pairs for template vars
 @param {function} callback: optional sqlObject callback function, will override default callback
- 	 @cbparam {sqlDbAccess} this
-	 @cbparam {Object} raw json response from server  
-	 @cbparam {bool} true if call succeeded w/o errors.
-@param {Object} scope: scope of callback (defaults to global)       
-						</pre>
-						</td>
-					</tr> 
-					
-					<tr>
-						<td class="doc-name">getLog</td>
-						<td>Each SQL call that is invoked by the 'run' function, is pushed to a log array.  This method returns the log array.    
-             <pre>
-getLog : function()
+    @cbparam {sqlDbAccess} this
+   @cbparam {Object} raw json response from server
+   @cbparam {bool} true if call succeeded w/o errors.
+@param {Object} scope: scope of callback (defaults to global)</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name">getLog</td>
+            <td>Each SQL call that is invoked by the 'run' function, is pushed to a log array.  This method returns the log array.
+              <pre>getLog : function()
 
-@return {array} log array, where each item is a SQL query string 
-						</pre>
-						</td>
-					</tr> 
-					
-					<tr>
-						<td class="doc-name">clearLog</td>
-						<td>Empties the log.  
-             <pre>
-clearLog : function()
-
-						</pre>
-						</td>
-					</tr> 
-					
-					<tr>
-						<td class="doc-name">testConnection</td>
-						<td>Tests the db connection  
-             <pre>
-testConnection : function(callback, scope)
+@return {array} log array, where each item is a SQL query string</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name">clearLog</td>
+            <td>Empties the log.
+              <pre>clearLog : function()</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name">testConnection</td>
+            <td>Tests the db connection
+              <pre>testConnection : function(callback, scope)
 
 Tests the db connection
 @param {function} callback :  callback function.
-		@cbparam {sqlDbAccess} this
-		@cbparam {bool} true if succeeded, false if failed    
-		
-@param {Object} scope of callback 
-						</pre>
-						</td>
-					</tr> 
-					
-					<tr>
-						<td class="doc-name">executeSql</td>
-						<td>Executes arbitrary sql code    
-             <pre>
+    @cbparam {sqlDbAccess} this
+    @cbparam {bool} true if succeeded, false if failed
+
+@param {Object} scope of callback</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name">executeSql</td>
+            <td>Executes arbitrary sql code
+              <pre>
  executeSql: function(sql, callback, scope)
 
 @param {string} sql : code to execute
 @param {function} callback : optional callback function.
-		@cbparam {sqlDbAccess} this
-		@cbparam {Object} raw json response from server
-@param {Object} scope of callback 
-
-						</pre>
-						</td>
-					</tr>
-					
-					<tr>
-						<td class="doc-name">getTables</td>
-						<td>Queries for a list of tables in this database.  
-             <pre>
-getTables : function(callback, scope)
+    @cbparam {sqlDbAccess} this
+    @cbparam {Object} raw json response from server
+@param {Object} scope of callback</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name">getTables</td>
+            <td>Queries for a list of tables in this database.
+              <pre>getTables : function(callback, scope)
 
 @param {function} callback : optional callback function.
-		@cbparam {sqlDbAccess} this
-		@cbparam {Object} raw json response from server 
-		@cbparam {Array} array of table names
-		
-@param {Object} scope of callback
-						</pre>
-						</td>
-					</tr> 
-					
-					<tr>
-						<td class="doc-name">createTable</td>
-						<td>Creates a new table on this database      
-             <pre>
-createTable: function(table, columns, callback, scope)
+    @cbparam {sqlDbAccess} this
+    @cbparam {Object} raw json response from server
+    @cbparam {Array} array of table names
+
+@param {Objectt} scope of callback</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name">createTable</td>
+            <td>Creates a new table on this database
+              <pre>createTable: function(table, columns, callback, scope)
 
 @param {String} table : name of table to create
 @param {string} columns : raw column string definition
 @param {function} callback : optional callback function.
-		@cbparam {sqlDbAccess} this
-		@cbparam {Object} raw json response from server 
-		@cbparam {Array} array of table names
-		
-@param {Object} scope of callback
+    @cbparam {sqlDbAccess} this
+    @cbparam {Object} raw json response from server
+    @cbparam {Array} array of table names
 
-						</pre>
-						</td>
-					</tr> 
-					
-					<tr>
-						<td class="doc-name">dropTable</td>
-						<td>Drops a table from the database       
-             <pre>
-dropTable: function(table, callback, scope)
+@param {Object} scope of callback</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name">dropTable</td>
+            <td>Drops a table from the database
+              <pre>dropTable: function(table, callback, scope)
 
 @param {String} table : name of table to drop
 @param {function} callback : optional callback function.
-		@cbparam {sqlDbAccess} this
-		@cbparam {Object} raw json response from server 
-		@cbparam {Array} array of table names
+    @cbparam {sqlDbAccess} this
+    @cbparam {Object} raw json response from server
+    @cbparam {Array} array of table names
 
-@param {Object} scope of callback
-						</pre>
-						</td>
-					</tr>
-			</tbody>
-			</table>
-		</div>
-		
-		
-		
+@param {Object} scope of callback</pre>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </body>
-</html>           
-
-
-
-
+</html>

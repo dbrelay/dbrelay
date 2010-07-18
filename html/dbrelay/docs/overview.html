@@ -1,40 +1,58 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>DB Relay Documentation</title>
+  <head>
+    <!--
+      DB Relay is an HTTP module built on the NGiNX webserver platform which
+      communicates with a variety of database servers and returns JSON formatted
+      data.
 
-	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
+      Copyright (C) 2008-2010 Getco LLC
 
-	  
-  <style type="text/css">
-<!--
-.em {        font-variant: small-caps;
-        font-weight: bold;
-}
-.todo {        border: 1px solid #F9DB58;
-}
--->
-  </style>
+      This program is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published by the Free
+      Software Foundation, either version 3 of the License, or (at your option)
+      any later version. In addition, redistributions in source code and in binary
+      form must include the above copyright notices, and each of the following
+      disclaimers.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+      GNU General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT OWNERS AND CONTRIBUTORS “AS IS”
+      AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+      IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+      ARE DISCLAIMED.  IN NO EVENT SHALL ANY COPYRIGHT OWNERS OR CONTRIBUTORS BE
+      LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+      CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+      SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+      INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+      CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+      POSSIBILITY OF SUCH DAMAGE.
+    -->
+    <title>DB Relay Documentation</title>
+    <link rel="stylesheet" href="doc.css" type="text/css"/>
+    <style type="text/css">
+      .em {        font-variant: small-caps;
+              font-weight: bold;
+      }
+      .todo {        border: 1px solid #F9DB58;
+      }
+    </style>
   </head>
-	
-	
-<body>
-		<div id="page"> 
-			<h1>DB Relay Overview</h1>
-		  <p>The DB Relay application is a protocol bridge allowing HTTP clients to access to Microsoft&reg; SQL Server databases. The primary goal is to make Microsoft&reg; SQL Server access easy for other (unrelated to this project) software, including Python, JavaScript, and Ruby scripts. That includes simple standards-bases request and data formats as well as the ease of installing, maintaining (log files, configuration, etc.) and managing (starting, stopping, inventorying, etc.) the application.</p>
-<p>The essense of the proposed solution is to have the application to accept HTTP requests containing SQL queries, relay them to specified database server, and return the server's reply back to HTTP client in JSON format.</p>
-<p>The DbRelay application will be built from the existing and newly-developed code. Existing code includes, but not limited to, FreeTDS libraries, Nginx web server, unspecified JSON libraries, and other third-party software components necessary for the application. Code to be newly-developed includes a Nginx module and and Nginx server modifications, needed to &quot;glue&quot; the software components into a monolithic, statically linked application.</p>
-<p>As the DB Relay application planned to be released under an open-source license, all existing code need to have a compatible license as reviewed and decided by GETCO LLC before any work to be done with such existing code.</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-</div>
-		
-		
-		
-</body>
-</html>           
-
-
-
-
+  <body>
+    <div id="page">
+      <h1>DB Relay Overview</h1>
+      <p>The DB Relay application is a protocol bridge allowing HTTP clients to access to Microsoft&reg; SQL Server databases. The primary goal is to make Microsoft&reg; SQL Server access easy for other (unrelated to this project) software, including Python, JavaScript, and Ruby scripts. That includes simple standards-bases request and data formats as well as the ease of installing, maintaining (log files, configuration, etc.) and managing (starting, stopping, inventorying, etc.) the application.</p>
+      <p>The essense of the proposed solution is to have the application to accept HTTP requests containing SQL queries, relay them to specified database server, and return the server's reply back to HTTP client in JSON format.</p>
+      <p>The DbRelay application will be built from the existing and newly-developed code. Existing code includes, but not limited to, FreeTDS libraries, Nginx web server, unspecified JSON libraries, and other third-party software components necessary for the application. Code to be newly-developed includes a Nginx module and and Nginx server modifications, needed to &quot;glue&quot; the software components into a monolithic, statically linked application.</p>
+      <p>As the DB Relay application planned to be released under an open-source license, all existing code need to have a compatible license as reviewed and decided by GETCO LLC before any work to be done with such existing code.</p>
+    </div>
+  </body>
+</html>
