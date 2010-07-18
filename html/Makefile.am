@@ -43,7 +43,6 @@ dbrelay/docs/img/architecture_odbc.png \
 dbrelay/docs/img/architecture_overview_simple.png \
 dbrelay/docs/img/architecture_overview_connections.png \
 dbrelay/docs/img/dbrelay_with_text.png \
-dbrelay/docs/dbrelay_specification.html \
 dbrelay/docs/jsapi/index.html \
 dbrelay/docs/jsapi/welcome.html \
 dbrelay/docs/jsapi/output/DbRelay.QueryHelper.html \
