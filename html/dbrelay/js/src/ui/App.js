@@ -272,7 +272,13 @@ dbrui.App = function(){
 										}
 											
 										]
-									}   
+									},
+									{
+									    xtype: 'button',
+									    iconCls:'icon-dbrelay',
+									    scale: 'large',
+									    handler: function(){window.open('http://dbrelay.com/');}
+									}
 								]
 							}
 						]
