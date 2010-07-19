@@ -2,61 +2,95 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+  <!--
+    DB Relay is an HTTP module built on the NGiNX webserver platform which
+    communicates with a variety of database servers and returns JSON formatted
+    data.
+
+    Copyright (C) 2008-2010 Getco LLC
+
+    This program is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation, either version 3 of the License, or (at your option)
+    any later version. In addition, redistributions in source code and in binary
+    form must include the above copyright notices, and each of the following
+    disclaimers.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT OWNERS AND CONTRIBUTORS “AS IS”
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED.  IN NO EVENT SHALL ANY COPYRIGHT OWNERS OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+  -->
   <title>DB Relay JavaScript Documentation</title>
 
-	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
+  <link rel="stylesheet" href="doc.css" type="text/css"/>
 
-	  
   <style type="text/css">
-<!--
-.em {        font-variant: small-caps;
-        font-weight: bold;
-}
-.todo {        border: 1px solid #F9DB58;
-}
-.ab {        font-style: italic;
-        font-variant: small-caps;
-}
-.json_term {        text-decoration: underline;
-}
-.indent {        padding: 0em 1.5em;
-        display: block;
-}
-.spec {        font-family: monospaced;
-        margin-left: 10em;
-}
-ul.dense {        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-}
-ul.dense1 {        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-}
-ul.dense2 {        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-}
--->
+    .em {
+            font-variant: small-caps;
+            font-weight: bold;
+    }
+    .todo {
+            border: 1px solid #F9DB58;
+    }
+    .ab {
+            font-style: italic;
+            font-variant: small-caps;
+    }
+    .json_term {
+            text-decoration: underline;
+    }
+    .indent {
+            padding: 0em 1.5em;
+            display: block;
+    }
+    .spec {
+            font-family: monospaced;
+            margin-left: 10em;
+    }
+    ul.dense {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+    }
+    ul.dense1 {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+    }
+    ul.dense2 {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+    }
   </style>
   </head>
-	
-	
-	<body>
-		<div id="page"> 
-			<h1>Environment</h1>
-			<p>The DB Relay application must run on plain installs of Linux distribution CentOS versions between 5.2 and 6.0, both 32 and 64 bit, and Mac OS X versions between 10.5.4 and 10.6, without development packages installed. It should compile on the same platforms with only their vendor-provided development environments installed. The HTTP capabilities on the DB Relay application should be compatible with those of Firefox version 2 and later on Mac OS X 10.5 and Windows XP and Internet Explorer version 7 or later on Windows XP.</p>
-		  <p>&nbsp;</p>
-<p>&nbsp;</p>
-        </div>
-		
-		
-		
+
+  <body>
+    <div id="page">
+      <h1>Environment</h1>
+      <p>The DB Relay application should run on plain installs of Linux distribution CentOS versions between 5.2 and 6.0, both 32 and 64 bit, and Mac OS X versions 10.6 and later, without development packages installed. It should compile on the same platforms with only their vendor-provided development environments installed. The HTTP capabilities on the DB Relay application should be compatible with those of Firefox version 3 and later on Mac OS X 10.5 and Windows XP and Internet Explorer version 8 or later on Windows XP.</p>
+    </div>
   </body>
-</html>           
+</html>
 
 
 

@@ -37,14 +37,12 @@ dbrelay/docs/license.html \
 dbrelay/docs/architecture_overview.html \
 dbrelay/docs/architecture_freetds.html \
 dbrelay/docs/architecture_odbc.html \
-dbrelay/docs/SQL_query_interface.html \
 dbrelay/docs/img/architecture_legend.png \
 dbrelay/docs/img/architecture_freetds.png \
 dbrelay/docs/img/architecture_odbc.png \
 dbrelay/docs/img/architecture_overview_simple.png \
 dbrelay/docs/img/architecture_overview_connections.png \
 dbrelay/docs/img/dbrelay_with_text.png \
-dbrelay/docs/dbrelay_specification.html \
 dbrelay/docs/jsapi/index.html \
 dbrelay/docs/jsapi/welcome.html \
 dbrelay/docs/jsapi/output/DbRelay.QueryHelper.html \
@@ -327,6 +325,7 @@ dbrelay/images/control-skip-180.png \
 dbrelay/images/control-skip.png \
 dbrelay/images/control.png \
 dbrelay/images/cross-circle.png \
+dbrelay/images/dbrelay.png \
 dbrelay/images/disk.png \
 dbrelay/images/document-attribute-l.png \
 dbrelay/images/document-globe.png \

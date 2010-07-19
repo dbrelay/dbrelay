@@ -2,12 +2,46 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <!--
+      DB Relay is an HTTP module built on the NGiNX webserver platform which
+      communicates with a variety of database servers and returns JSON formatted
+      data.
+
+      Copyright (C) 2008-2010 Getco LLC
+
+      This program is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published by the Free
+      Software Foundation, either version 3 of the License, or (at your option)
+      any later version. In addition, redistributions in source code and in binary
+      form must include the above copyright notices, and each of the following
+      disclaimers.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+      GNU General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT OWNERS AND CONTRIBUTORS “AS IS”
+      AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+      IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+      ARE DISCLAIMED.  IN NO EVENT SHALL ANY COPYRIGHT OWNERS OR CONTRIBUTORS BE
+      LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+      CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+      SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+      INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+      CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+      POSSIBILITY OF SUCH DAMAGE.
+    -->
     <title>DB Relay Architecture drawings</title>
     <link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
     <style type="text/css">
       img.drawing {
         display: block;
-        margin: auto;
+        margin: 2em auto;
       }
       p.legend {
         border-top: 1px dotted dimgray;
@@ -26,7 +60,7 @@
   <body>
     <div id="page"> 
       <h1>Overview</h1>
-      <p><img class="drawing" style="float: right;" src="img/architecture_overview_simple.png" />Technically, the database-facing part of DB Relay is an NGiNX module. It runs as a statically linked code in each of the NGiNX workers and uses FreeTDS or UnixODBC to connect to the RDBMS of choice. This is what happens when DB Relay module receives a simple client request from NGiNX (see the first drawing):</p>
+      <p><img class="drawing" style="float: right; margin: 2em 2em 2em 2em;" src="img/architecture_overview_simple.png" />Technically, the database-facing part of DB Relay is an NGiNX module. It runs as a statically linked code in each of the NGiNX workers and uses FreeTDS or UnixODBC to connect to the RDBMS of choice. This is what happens when DB Relay module receives a simple client request from NGiNX (see the first drawing):</p>
       <ol>
         <li>database connection established</li>
         <li>query executed</li>
@@ -34,7 +68,6 @@
         <li>database connection torn down</li>
         <li>results returned to NGiNX</li>
       </ol>
-      <p class="break"></p>
       <p>A simple client request means, that no "connection_name" parameter was specified in the request. Notice, that in that case the database connection is established and destroyed for each request. While acceptable for a one-off database query, it is not the right behaviour for a chatty client. It puts unnecessary stress on the database as creating and destroying connections are relatively expensive operations. In this scenarion it is also impossible for a client to maintain a state in their database activity, like cursor or temporary table, between the requests.</p>
       <p>To address that, a client application may send the "connection_name" HTTP parameter. While details ofthe connection name scope and lifespan are discussed in the <a href="interaction.html#persistence" target="_self">interaction logic documentation</a>, here we will show the general concept.</p>
       <p>When a "connection_name" is provided, then DB Relay code in NGiNX worker process does not make the database request. Instead, here is what happens:</p>
@@ -42,7 +75,7 @@
         <li>DB Relay checks if there is a connector process matching the requested name and other parameters.</li>
         <li>If there is not, then the worker process creates an appropriate connector.</li>
         <li>Either preexisting on the new connector then receive the request data via shared memory and do the database request.</li>
-        <li>Unlike in the first scenation above, the database connection is not immediately destroyed, but stays alive with the connector process.</li>
+        <li>Unlike in the first scenario above, the database connection is not immediately destroyed, but stays alive with the connector process.</li>
         <li>The connector process then waits for a new request.</li>
         <li>If a configured of default timeout reached while waiting, the connector quits.</li>
       </ol>

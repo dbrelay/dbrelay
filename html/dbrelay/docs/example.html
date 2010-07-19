@@ -2,109 +2,141 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+  <!--
+    DB Relay is an HTTP module built on the NGiNX webserver platform which
+    communicates with a variety of database servers and returns JSON formatted
+    data.
+
+    Copyright (C) 2008-2010 Getco LLC
+
+    This program is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation, either version 3 of the License, or (at your option)
+    any later version. In addition, redistributions in source code and in binary
+    form must include the above copyright notices, and each of the following
+    disclaimers.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT OWNERS AND CONTRIBUTORS “AS IS”
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED.  IN NO EVENT SHALL ANY COPYRIGHT OWNERS OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+  -->
   <title>DB Relay JavaScript Documentation</title>
-
-	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
-
-	  
+  <link rel="stylesheet" href="doc.css" type="text/css"/>
   <style type="text/css">
-<!--
-.em {        font-variant: small-caps;
-        font-weight: bold;
-}
-.todo {        border: 1px solid #F9DB58;
-}
-.ab {        font-style: italic;
-        font-variant: small-caps;
-}
-.json_term {        text-decoration: underline;
-}
-.indent {        padding: 0em 1.5em;
-        display: block;
-}
-.spec {        font-family: monospaced;
-        margin-left: 10em;
-}
-ul.dense {        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-}
-ul.dense1 {        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-}
-ul.dense2 {        padding-top: 0;
-        padding-bottom: 0;
-        margin-top: 0;
-        margin-bottom: 0;
-}
--->
+    .em {
+            font-variant: small-caps;
+            font-weight: bold;
+    }
+    .todo {
+            border: 1px solid #F9DB58;
+    }
+    .ab {
+            font-style: italic;
+            font-variant: small-caps;
+    }
+    .json_term {
+            text-decoration: underline;
+    }
+    .indent {
+            padding: 0em 1.5em;
+            display: block;
+    }
+    .spec {
+            font-family: monospaced;
+            margin-left: 10em;
+    }
+    ul.dense {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+    }
+    ul.dense1 {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+    }
+    ul.dense2 {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+    }
   </style>
   </head>
-	
-	
-	<body>
-		<div id="page"> 
-			<h1>JavaScript Example (requires only jQuery)</h1>
-			<p>The following is a simple DB Relay query example from client-side JavaScript, which can be used cross-site as well. It executes 2 asynchronous data retrievals at the end of the script. Queries&#x27; tags simply pop up on completion with an <code>alert()</code>
-				 function.</p><pre class="codeblock">&lt;script type="text/javascript" src="jquery-1.4.2.min.js">&lt;/script>
-&lt;script type="text/javascript" charset="utf-8">
+  <body>
+    <div id="page">
+      <h1>JavaScript Example (requires only jQuery)</h1>
+      <p>The following is a simple DB Relay query example from client-side JavaScript, which can be used cross-site as well. It executes 2 asynchronous data retrievals at the end of the script. Queries&#x27; tags simply pop up on completion with an <code>alert()</code>
+         function.</p><pre class="codeblock">&lt;script type=&quot;text/javascript&quot; src=&quot;jquery-1.4.2.min.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;
 
   // query function - will be included in external library
-	function dbrelayQuery( connection, sql, callback, query_tag) {
-	  //copy connection info into params
-		var params = {
-			sql: sql,
-			query_tag: query_tag || null
-		};
+  function dbrelayQuery( connection, sql, callback, query_tag) {
+    //copy connection info into params
+    var params = {
+      sql: sql,
+      query_tag: query_tag || null
+    };
 
-		for(var k in connection){
-			if(k !== 'dbrelay_host'){
-				params[k] = connection[k];       
-			}
-		}
+    for(var k in connection){
+      if(k !== &#x27;dbrelay_host&#x27;){
+        params[k] = connection[k];
+      }
+    }
 
-		if(connection.dbrelay_host){           
-			jQuery.getJSON( connection.dbrelay_host + '/sql?js_callback=?', params , callback);   
-		} 
-		else{
-			$.post( '/sql', params, callback, "json" );    
-		}  
-	};
+    if(connection.dbrelay_host){
+      jQuery.getJSON( connection.dbrelay_host + &#x27;/sql?js_callback=?&#x27;, params , callback);
+    }
+    else{
+      $.post( &#x27;/sql&#x27;, params, callback, &quot;json&quot; );
+    }
+  };
 
   // connectivity setup
-	var connection = {
-		sql_server : '99.99.99.99', 
-		sql_database : 'mydatabase',
-		sql_user : 'myusername',
-		sql_password : 'mypassword',  
-		connection_name : 'example1',  
-		
-		//optional parameter for XSS (no trailing slash)
-		dbrelay_host: 'http://remote_dbrelay'
-	};
+  var connection = {
+    sql_server : &#x27;99.99.99.99&#x27;,
+    sql_database : &#x27;mydatabase&#x27;,
+    sql_user : &#x27;myusername&#x27;,
+    sql_password : &#x27;mypassword&#x27;,
+    connection_name : &#x27;example1&#x27;,
+
+    //optional parameter for XSS (no trailing slash)
+    dbrelay_host: &#x27;http://remote_dbrelay&#x27;
+  };
 
   // callback function
   function gotResponse( response ) {
-    alert( 'The "' + response.request.query_tag + '" query has just returned.' );
+    alert( &#x27;The &quot;&#x27; + response.request.query_tag + &#x27;&quot; query has just returned.&#x27; );
   };
 
-	//example calls:
-	dbrelayQuery(connection, 'select * from mytable2', gotResponse, "First");
-	dbrelayQuery(connection, 'select * from mytable3', gotResponse, "Second");
-	
+  //example calls:
+  dbrelayQuery(connection, &#x27;select * from mytable2&#x27;, gotResponse, &quot;First&quot;);
+  dbrelayQuery(connection, &#x27;select * from mytable3&#x27;, gotResponse, &quot;Second&quot;);
 
-&lt;/script></pre></p>
-		  <p>&nbsp;</p>
-<p>For more examples, please see the Javascript API section.</p>
-        </div>
-		
-		
-		
+
+&lt;/script&gt;</pre></p>
+      <p>For more examples, please see the Javascript API section.</p>
+    </div>
   </body>
-</html>           
+</html>
 
 
 

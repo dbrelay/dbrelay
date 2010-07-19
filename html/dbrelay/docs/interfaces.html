@@ -1,422 +1,448 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>DB Relay JavaScript Documentation</title>
+  <head>
+    <!--
+      DB Relay is an HTTP module built on the NGiNX webserver platform which
+      communicates with a variety of database servers and returns JSON formatted
+      data.
 
-	<link rel="stylesheet" href="doc.css" type="text/css"/>                                                                                                                             
+      Copyright (C) 2008-2010 Getco LLC
 
-	  
-  <style type="text/css">
-<!--
-.em {        font-variant: small-caps;
-        font-weight: bold;
-}
-.todo {        border: 1px solid #F9DB58;
-}
-.ab {        font-style: italic;
+      This program is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published by the Free
+      Software Foundation, either version 3 of the License, or (at your option)
+      any later version. In addition, redistributions in source code and in binary
+      form must include the above copyright notices, and each of the following
+      disclaimers.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+      GNU General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT OWNERS AND CONTRIBUTORS “AS IS”
+      AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+      IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+      ARE DISCLAIMED.  IN NO EVENT SHALL ANY COPYRIGHT OWNERS OR CONTRIBUTORS BE
+      LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+      CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+      SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+      INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+      CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+      ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+      POSSIBILITY OF SUCH DAMAGE.
+    -->
+    <title>DB Relay JavaScript Documentation</title>
+    <link rel="stylesheet" href="doc.css" type="text/css"/>
+    <style type="text/css">
+      .em {
         font-variant: small-caps;
-}
-.json_term {        text-decoration: underline;
-}
-.indent {        padding: 0em 1.5em;
+        font-weight: bold;
+      }
+      .todo {
+        border: 1px solid #F9DB58;
+      }
+      .ab {
+        font-style: italic;
+        font-variant: small-caps;
+      }
+      .json_term {
+        text-decoration: underline;
+      }
+      .indent {
+        padding: 0em 1.5em;
         display: block;
-}
-.spec {        font-family: monospaced;
+      }
+      .spec {
+        font-family: monospaced;
         margin-left: 10em;
-}
-ul.dense {        padding-top: 0;
+      }
+      ul.dense {
+        padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
         margin-bottom: 0;
-}
-ul.dense1 {        padding-top: 0;
+      }
+      ul.dense1 {
+        padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
         margin-bottom: 0;
-}
-ul.dense2 {        padding-top: 0;
+      }
+      ul.dense2 {
+        padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
         margin-bottom: 0;
-}
-td > p {
-  margin: 0;
-}
-td > p + p {
-  margin-top: 1em;
-}
-td > dl {
-  margin: 0;
-}
-td > dl > dd {
-  margin: 0;
-  margin-top: 0.5em;
-}
-td > dl > dt {
-  margin-left: 1em;
-}
-
-
-
--->
-  </style>
+      }
+      td > p {
+        margin: 0;
+      }
+      td > p + p {
+        margin-top: 1em;
+      }
+      td > dl {
+        margin: 0;
+      }
+      td > dl > dd {
+        margin: 0;
+        margin-top: 0.5em;
+      }
+      td > dl > dt {
+        margin-left: 1em;
+      }
+    </style>
   </head>
-	
-	
-	<body>
-		<div id="page"> 
-			<h1>Interfaces</h1>
-	      <h2>HTTP request</h2>
-<p>The SQL Bridge module should be configurable to be invoked on one or many URIs. By default it must respond to get and post requests at the <code>/sql</code> path.</p>
-<p>HTTP request carries information in the HTTP header and parameter <code>key=value</code> pairs. The application <span class="em">must not</span> expect request information in HTTP headers. Only request parameters must be used. All defaults are configured in the build header files. The parameters below are grouped for the clarity:</p>
-<table cellspacing="3">
-	<thead>
-    <tr>
-      <th colspan="2">Color Key/ Legend</th>
-    </tr>
-  </thead>
-<tbody>
-	<tr>
-		<td class="doc-name done">Green</td>
-		<td>Implemented/Done</td>
-	</tr>
-	<tr>
-		<td class="doc-name todo">Yellow</td>
-		<td>In progress/planned</td>
-	</tr>
-	<tr>
-		<td class="doc-name">None</td>
-		<td>Not implemented</td>
-	</tr>
-</tbody>
-</table>
-
-
-<h3><strong>Database Server:</strong></h3>
-<table class="doc-table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="doc-name done">sql_dbtype</td>
-      <td>Database driver name in DB Relay. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; . The &laquo;mssql&raquo;  value is default, if the field is missing.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">sql_server</td>
-      <td>Hostname on which the SQL server is running.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">sql_port</td>
-      <td>Optional port number, on which the SQL server is listening. 1433 is the default.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">sql_database</td>
-      <td>Optional name of the primary database for the connection. User's default database is used, if not specified.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">sql_user</td>
-      <td>Username string recognised by the SQL server.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">sql_password</td>
-      <td>Optional password for the sql_user.</td>
-    </tr>
-  </tbody>
-</table>
-<h3>&nbsp;</h3>
-<h3><strong>Connection Lifecycle:</strong></h3>
-<table class="doc-table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="doc-name done">connection_name</td>
-      <td>Optional name to persist this connection under.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">connection_timeout</td>
-      <td>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">http_keepalive</td>
-      <td>Optional flag to support broken HTTP clients.  When set to <span>0</span> DB Relay will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></td>
-    </tr>
-    <tr>
-      <td class="doc-name done">query_tag</td>
-      <td>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</td>
-    </tr>
-    <tr>
-      <td class="doc-name todo">log_level</td>
-      <td>Optional log level setting for the whole application, connection or the specific query.</td>
-    </tr>
-    <tr>
-      <td class="doc-name todo">log_level_scope</td>
-      <td>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</td>
-    </tr>
-  </tbody>
-</table>
-<h3>&nbsp;</h3>
-<h3><strong>SQL query:</strong></h3>
-<table class="doc-table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="doc-name done">sql</td>
-      <td>Optional TSQL statement batch conformant with MS SQL Server 2005 TSQL. &quot;Sql&quot; and &quot;param[]&quot; parameters may be omitted when, for example, setting the new application log level.</td>
-    </tr>
-    <tr id="sql_param done">
-      <td class="doc-name">paramX</td>
-      <td>
-        <p>Optional postfix-numbered set of colon-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional SQL parameters to be bound into the SQL query. Output parameters are not supported. Parameters should come as an integer-indexed zero-based sequence. <span class="todo">Gaps in parameter indexes should cause notice-level errors</span>. SQL parameter values are expected to be URL-encoded. The accepted &laquo;<code>type</code>&raquo; values are <code>int</code>, <code>smallint</code>, <code>tinyint</code>, <code>numeric</code>, <code>float</code>, <code>real</code>, <code>char</code>, <code>varchar</code>, <code>datetime</code>, <code>smalldatetime</code>.</p>
-        <p>The &laquo;paramX&raquo; POST parameters may also be used by some <a href="#server_command">server commands</a>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td class="doc-name todo">error_style</td>
-      <td>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">js_callback</td>
-      <td>If present, the HTML parameter specifies a javascript callback, which will receive the json response as a parameter. Assuming the <code>js_callback</code> was set to <code>jsc</code>, the returned JavaScript would look something like &laquo;<code>jsc({'data':...});</code>&raquo;, where the original JSON response is the text in curly parenthesis.</td>
-    </tr>
-    <tr>
-      <td class="doc-name done">js_error</td>
-      <td>This parameter only has effect if <code>js_callback</code> is present. If that is the case, then the value of <code>js_error</code> parameter is used as a javascript callback function whenever there is an error condition and the <code>error</code> entry present in JSON return. If <code>js_error</code> is not specified, then <code>js_callback</code> used for any response regardless of an error.</td>
-    </tr>
-  </tbody>
-</table>
-<h3>&nbsp;</h3>
-<h3>Administrative Requests:</h3>
-<table class="doc-table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="doc-name todo">admin</td>
-      <td>A keyword to get to the set of administrative commands. When specified, only administrative request&#x27;s parameters are taken in consideration. A specific administrative parameter is expected in the same http request.</td>
-    </tr>
-    <tr>
-      <td class="doc-name todo">status</td>
-      <td>Request the server status as a part of the administrative http request.</td>
-    </tr>
-    <tr id="server_command">
-      <td class="doc-name todo">cmd</td>
-      <td>Execute a command on the sever. <span class="todo">The following are currently planned commands:</span>
-        <dl>
-          <dd><code>kill</code></dd>
-          <dt>The &laquo;<code>kill</code>&raquo; command kills a specific worker process on the server in case it is misbehaving or running a long query which needs to be stopped. It takes one <a href="#sql_param">parameter</a> which is a socket path of the worker process. The socket path can be found via the &laquo;<code>status</code>&raquo; administrative request.</dt>
-        </dl>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<h2>HTTP Response (JSON)</h2>
-<p>The DB Relay application will return the results as &quot;<code>application/json</code>&quot; ContentType.</p>
-<p>An HTTP response is described as a JSON object below. Regular text is for literals, <span class="ab">italic caps</span> are for the terms defined later in the specification, and <span class="json_term">underlined</span> words are for <a href="http://json.org/">JSON-defined terms</a>. Object members may appear in any order inside the object. Members marked with &laquo;?&raquo; are optional. Array elements or object members, marked with &quot;&middot; &middot; &middot;&quot; after them, occur <span class="em">zero</span> or more times.<br />
-</p>
-<table class="doc-table">
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td width="130" class="done">RESPONSE</td>
-      <td class="doc-codefont"><pre>{
-  request : REQUEST_OBJECT ,
-  data :    ROWSETS_ARRAY , 
-  log :     LOG_OBJECT 
+  <body>
+    <div id="page">
+      <h1>Interfaces</h1>
+      <h2>HTTP request</h2>
+      <p>The BD Relay module can be configured to be invoked on any URIs via the NGiNX configuration. By default it responds to GET and POST requests at the <code>/sql</code> path.</p>
+      <p>HTTP request carries information in the HTTP header and parameter <code>key=value</code> pairs. The only HTTP headers whih currently affect the response behavior are Accept and Accept-Encoding. The Accept header will determine if the response delivered as the default "text/plain" or the optional "application/json" - this behavior is coded in the DB Relay module. The Accept-Encoding header acts as a hint for the Gzip module which is a part of the default NGiNX configuration delivered with DB Relay.</p>
+      <p>The parameters below are grouped for the clarity:</p>
+      <table cellspacing="3">
+        <thead>
+          <tr>
+            <th colspan="2">Color Key/ Legend</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name done">Green</td>
+            <td>Implemented/Done</td>
+          </tr>
+          <tr>
+            <td class="doc-name todo">Yellow</td>
+            <td>In progress/planned</td>
+          </tr>
+          <tr>
+            <td class="doc-name">None</td>
+            <td>Not implemented</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3><strong>Database Server:</strong></h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name done">sql_dbtype</td>
+            <td>Database driver name in DB Relay. Currently, &laquo;mssql&raquo;  or &laquo;mysql&raquo; supported, with other databases available later. If the field is missing then the dbtype is determined from the <code>--with-freetds</code>, <code>--with-odbc</code>, or similar configuration options. Note, that even though originally this parameter seemed like a good idea, in practice it is easy asn ofter cleaner to run DB Relay compiled for a specific type of database and this parameter is rarely used.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">sql_server</td>
+            <td>Hostname on which the database server is running, or a DSN name in case of generic ODBC build.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">sql_port</td>
+            <td>Optional port number, on which the SQL server is listening. 1433 is the default for SQL Server, or as appropriate for the back-end database type.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">sql_database</td>
+            <td>Optional name of the primary database for the connection. User's default database is used, if not specified.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">sql_user</td>
+            <td>Username string recognised by the SQL server. Use &laquo;DOMAIN&raquo;/&laquo;USER&raquo; for SQL Server domain logins.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">sql_password</td>
+            <td>Optional password for the sql_user account.</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>&nbsp;</h3>
+      <h3><strong>Connection Lifecycle:</strong></h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name done">connection_name</td>
+            <td>Optional name to persist this connection under.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">connection_timeout</td>
+            <td>Optional number of seconds from the response to the last query before the connection will be considered idle and marked for destroying. The default is 60. The silently enforced maximum connection lifespan is 28800 (8 hours).</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">http_keepalive</td>
+            <td>Optional flag to support broken HTTP clients.  When set to <span>0</span> DB Relay will close an HTTP 1.1 connection after returning the response.  Has no effect on HTTP 1.0 connections.</span></td>
+          </tr>
+          <tr>
+            <td class="doc-name done">query_tag</td>
+            <td>Optional tag which will be returned verbatim with the response. Used to help client to identify responses to asynchronous requests.</td>
+          </tr>
+          <tr>
+            <td class="doc-name todo">log_level</td>
+            <td>Optional log level setting for the whole application, connection or the specific query.</td>
+          </tr>
+          <tr>
+            <td class="doc-name todo">log_level_scope</td>
+            <td>Optional value of either &laquo;<code>server</code>&raquo;, &laquo;<code>connection</code>&raquo;, or &laquo;<code>query</code>&raquo; value which designated the scope of applying the specified scope_level. By default it is assumed to be &laquo;query&raquo;. When the scope is set to &laquo;<code>connection</code>&raquo;, then all connections, matching the &laquo;sql_server&raquo;, &laquo;sql_port&raquo;, &laquo;sql_database&raquo;, and &laquo;sql_user&raquo; request parameters, <em>current or new</em>, log according to the specified level. An absent optional parameter acts as a wildcard. Setting the &laquo;server&raquo; scope resets all the &laquo;connection&raquo;-specific log levels.</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>&nbsp;</h3>
+      <h3><strong>SQL query:</strong></h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name done">sql</td>
+            <td>Optional SQL statement batch conformant with target back-end database type. &quot;sql&quot; and &quot;paramX&quot; parameters are not necessary when, for example, setting the new application log level or connection timeout.</td>
+          </tr>
+          <tr id="sql_param done">
+            <td class="doc-name">paramX</td>
+            <td>
+              <p>Optional postfix-numbered set of colon-separated pairs &laquo;<code>type</code>&raquo;:&laquo;<code>value</code>&raquo; of positional SQL parameters to be bound into the SQL query. Output parameters are not supported. Parameters should come as an integer-indexed zero-based sequence. <span class="todo">Gaps in parameter indexes should cause notice-level errors</span>. SQL parameter values are expected to be URL-encoded. The accepted &laquo;<code>type</code>&raquo; values are <code>int</code>, <code>smallint</code>, <code>tinyint</code>, <code>numeric</code>, <code>float</code>, <code>real</code>, <code>char</code>, <code>varchar</code>, <code>datetime</code>, <code>smalldatetime</code>.</p>
+              <p>The &laquo;paramX&raquo; POST parameters may also be used by some <a href="#server_command">server commands</a>.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name todo">error_style</td>
+            <td>Optionally either &quot;http&quot; or &quot;json&quot;, specifying either to return HTTP 5xx reply, or JSON response with error in the &quot;log&quot; JSON object. The default is &quot;json&quot;.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">js_callback</td>
+            <td>If present, the HTML parameter specifies a javascript callback, which will receive the json response as a parameter. Assuming the <code>js_callback</code> was set to <code>jsc</code>, the returned JavaScript would look something like &laquo;<code>jsc({'data':...});</code>&raquo;, where the original JSON response is the text in curly parenthesis.</td>
+          </tr>
+          <tr>
+            <td class="doc-name done">js_error</td>
+            <td>This parameter only has effect if <code>js_callback</code> is present. If that is the case, then the value of <code>js_error</code> parameter is used as a javascript callback function whenever there is an error condition and the <code>error</code> entry present in JSON return. If <code>js_error</code> is not specified, then <code>js_callback</code> used for any response regardless of an error.</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>&nbsp;</h3>
+      <h3>Administrative Requests:</h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name todo">admin</td>
+            <td>A keyword to get to the set of administrative commands. When specified, only administrative request&#x27;s parameters are taken in consideration. A specific administrative parameter is expected in the same http request.</td>
+          </tr>
+          <tr>
+            <td class="doc-name todo">status</td>
+            <td>Request the server status as a part of the administrative http request.</td>
+          </tr>
+          <tr id="server_command">
+            <td class="doc-name todo">cmd</td>
+            <td>Execute a command on the sever. <span class="todo">The following are currently planned commands:</span>
+              <dl>
+                <dd><code>kill</code></dd>
+                <dt>The &laquo;<code>kill</code>&raquo; command kills a specific worker process on the server in case it is misbehaving or running a long query which needs to be stopped. It takes one <a href="#sql_param">parameter</a> which is a socket path of the worker process. The socket path can be found via the &laquo;<code>status</code>&raquo; administrative request.</dt>
+              </dl>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <h2>HTTP Response (JSON)</h2>
+      <p>The DB Relay application will return the results as &laquo;<code>application/json</code>&raquo; ContentType if that type is presnt in the Accept header. Otherwise the ContentType of &laquo;text/plain&raquo; is used.</p>
+      <p>An HTTP response is described as a JSON object below. Regular text is for literals, <span class="ab">italic caps</span> are for the terms defined later in the specification, and <span class="json_term">underlined</span> words are for <a href="http://json.org/">JSON-defined terms</a>. Object members may appear in any order inside the object. Members marked with &laquo;?&raquo; are optional. Array elements or object members, marked with &quot;&middot; &middot; &middot;&quot; after them, occur <span class="em">zero</span> or more times.<br />
+      </p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td width="130" class="done">RESPONSE</td>
+            <td class="doc-codefont"><pre>{
+  request : <span class="ab">REQUEST_OBJECT</span> ,
+  data :    <span class="ab">ROWSETS_ARRAY</span> ,
+  log :     <span class="ab">LOG_OBJECT</span>
 }</pre></td>
-    </tr>
-    <tr>
-      <td class="done">REQUEST_OBJECT</td>
-      <td class="doc-codefont"><pre>{
-  query_tag :       string , 
-  sql_server :      string ,
-  sql_port :        int , 
-  sql_database :    string , 
-  sql_user :        string ,
-  connection_name : string 
+          </tr>
+          <tr>
+            <td class="done">REQUEST_OBJECT</td>
+            <td class="doc-codefont"><pre>{
+  query_tag :       <span class="json_term">string</span> ,
+  sql_server :      <span class="json_term">string</span> ,
+  sql_port :        <span class="json_term">int</span> ,
+  sql_database :    <span class="json_term">string</span> ,
+  sql_user :        <span class="json_term">string</span> ,
+  connection_name : <span class="json_term">string</span>
 }</pre></td>
-    </tr>
-    <tr>
-      <td class="done">ROWSETS_ARRAY</td>
-      <td class="doc-codefont"><pre>[ ROWSET , ...] </pre></td>
-    </tr>
-    <tr>
-      <td>ROWSET</td>
-      <td class="doc-codefont"><pre>{
-  fields : FIELD_LIST , 
-  count :  int ,
-  rows :   ROWS_ARRRAY 
+          </tr>
+          <tr>
+            <td class="done">ROWSETS_ARRAY</td>
+            <td class="doc-codefont"><pre>[ <span class="ab">ROWSET</span> , ...] </pre></td>
+          </tr>
+          <tr>
+            <td>ROWSET</td>
+            <td class="doc-codefont"><pre>{
+  fields : <span class="ab">FIELD_LIST</span> ,
+  count :  <span class="json_term">int</span> ,
+  rows :   <span class="ab">ROWS_ARRRAY</span>
 } </pre></td>
-    </tr>
-    <tr>
-      <td class="done">FIELD_LIST</td>
-      <td class="doc-codefont"><pre>[ FIELD, ...] </pre></td>
-    </tr>
-    <tr>
-      <td>FIELD</td>
-      <td class="doc-codefont"><pre>{
-  name:      FIELD_NAME ,
-  sql_type:  FIELD_TYPE ,
-  length:    int ,
-  precision: int ,
-  scale:     int
+          </tr>
+          <tr>
+            <td class="done">FIELD_LIST</td>
+            <td class="doc-codefont"><pre>[ <span class="ab">FIELD</span>, ...] </pre></td>
+          </tr>
+          <tr>
+            <td>FIELD</td>
+            <td class="doc-codefont"><pre>{
+  name:      <span class="ab">FIELD_NAME</span> ,
+  sql_type:  <span class="ab">FIELD_TYPE</span> ,
+  length:    <span class="json_term">int</span> ,
+  precision: <span class="json_term">int</span> ,
+  scale:     <span class="json_term">int</span>
 } </pre></td>
-    </tr>
-    <tr>
-      <td class="done">ROWS_ARRAY</td>
-      <td class="doc-codefont"><pre>[ ROW , ...]</pre></td>
-    </tr>
-    <tr>
-      <td class="done">ROW</td>
-      <td class="doc-codefont"><pre>{ FIELD_NAME : value , ...} </pre></td>
-    </tr>
-    <tr>
-      <td class="done">FIELD_NAME</td>
-      <td class="doc-codefont">string</td>
-    </tr>
-    <tr>
-      <td>FIELD_TYPE</td>
-      <td class="doc-codefont">string</td>
-    </tr>
-    <tr>
-      <td>LOG_OBJECT</td>
-      <td class="doc-codefont">Content and format of the log object will be defined later in the project.&nbsp;</td>
-    </tr>
-  </tbody>
-</table>
-<h2>Log and PID Files</h2>
-<p>If no directories specified, logs and PID files are created in system-vendor recommended directory as defined in the application source header files. File names, if configurable in Nginx, should include the executable name, listening HTTP port, date and time stamp and, appropriately, have .log or .pid extension. The PID file should only contain a numeric PID of the application process. Content of the log files at appropriate levels will be decided later in the project. If using the system-vendor recommended directories fails, then log and PID files should go into a temporary directory together with <a href="#runtime_files">run time files</a>.</p>
-<p>Log files are written according to the &laquo;log_level&raquo; setting in the <code>syslog</code> format as per &sect;4.1 of <a href="http://tools.ietf.org/rfc/rfc3164.txt">RFC 3164</a>. The messages are assigned to &laquo;user-level messages&raquo; facility (value <code>1</code>). The following are the meanings for the &laquo;log_level&raquo; values, mapped to the <code>syslog</code> &laquo;severity&raquo; levels:</p>
-<table class="doc-table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="doc-name">debug</td>
-      <td>The complete http connection, request and database server lifecycle information, including full set of timings on both client and database sides.</td>
-    </tr>
-    <tr>
-      <td class="doc-name">informational</td>
-      <td>Live configuration changes. For now, this is only &laquo;<code>log_level</code>&raquo; for &laquo;<code>server</code>&raquo; and &laquo;<code>connection</code>&raquo; scopes.</td>
-    </tr>
-    <tr>
-      <td class="doc-name">notice</td>
-      <td>All query errors together with related requests' data, parameters, and client's data: ip address, http headers, excluding passwords.</td>
-    </tr>
-    <tr>
-      <td class="doc-name">warning</td>
-      <td><p>Events, which may indicate misconfiguration or remote error condition, but do not threaten the DB Relay server integrity. Most events, which are likely to impact multiple clients. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
-        <ul class="dense">
-          <li>Timeouts on database server queries.</li>
-          <li>Malformed requests.</li>
-          <li>Errors establishing connections.</li>
-          <li>Connections re-established more often than once every three seconds.</li>
-        </ul></td>
-    </tr>
-    <tr>
-      <td class="doc-name">error</td>
-      <td><p>Unsolicited database server side disconnects. Provides:</p>
-        <ul class="dense1">
-          <li>The affected connection data with all its parameters, excluding password. Include connection remote IP address, time established, requests per hour, data in and data out.</li>
-          <li>Active and pending requests per each connection, with all the requests' parameters and client's data: ip address, http headers, excluding passwords.</li>
-        </ul></td>
-    </tr>
-    <tr>
-      <td class="doc-name">critical</td>
-      <td><p>Log only when DB Relay server can not continue and will shutdown. the following data is reported:</p>
-        <ul class="dense2">
-          <li>List of open connections with all their parameters, excluding passwords. Include connection remote IP addresses, time established, requests per hour, data in and data out.</li>
-          <li>Active and pending requests per each connection, with all the requests' parameters and client data: ip address, http headers, excluding passwords.</li>
-          <li>Server process stats - PID, UID, GID, memory sizes, configs, whatever else developer deems reasonable.</li>
-        </ul></td>
-    </tr>
-  </tbody>
-</table>
-<h2>Static Files</h2>
-<p>Examples of static files are HTML, JavaScript, CSS, SWF, Image and other files, which are sent to HTTP clients straight from the server's filesystem without modifications.</p>
-<p>If no --root directory specified, static files are searched for in system-vendor recommended directory as defined in the application source header files.</p>
-<h2>Run time files</h2>
-<p>The web server needs a place for temporary files, currently residing in the <code>client_body_temp</code>, <code>fastcgi_temp</code>, and <code>proxy_temp</code> subdirectories of the build&#x27;s <code>PREFIX</code> directory. If those do not exist per the build-time configuration, the server will create them in a single temporary directory. The directory should be removed during the graceful process shutdown. No cleanup attempted in the case of abnormal shutdown. Name of the temporary directory should be available via <span class="todo">a management web page</span>.</p>
-<h2>Command line Parameters</h2>
-<p>The application must have defaults for everything, so all command line parameters are optional.</p>
-<table class="doc-table">
-  <thead>
-    <tr>
-      <th>Param</th>
-      <th>Value</th>
-      <th>Default</th>
-      <th>Description </th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="doc-codefont">--port</td>
-      <td>integer</td>
-      <td>80</td>
-      <td>A TCP port number for the DB Relay's HTTP server to listen on.</td>
-    </tr>
-    <tr>
-      <td class="doc-codefont">--root</td>
-      <td>directory</td>
-      <td>hardcoded per build target in header files</td>
-      <td>A directory for the DB Relay's HTTP server to serve the static files from.</td>
-    </tr>
-    <tr>
-      <td class="doc-codefont">--config</td>
-      <td>file name</td>
-      <td>hardcoded per build target in header files</td>
-      <td>A file name for run-time configuration to load.</td>
-    </tr>
-    <tr>
-      <td class="doc-codefont">--log-dir</td>
-      <td>directory name</td>
-      <td>hardcoded per build target in header files</td>
-      <td>A directory name where the log files should go.</td>
-    </tr>
-    <tr>
-      <td class="doc-codefont">--pid-file</td>
-      <td>file name</td>
-      <td>hardcoded per build target in header files</td>
-      <td>A file name for the PID file.</td>
-    </tr>
-  </tbody>
-</table>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-        </div>
-		
-		
-		
+          </tr>
+          <tr>
+            <td class="done">ROWS_ARRAY</td>
+            <td class="doc-codefont"><pre>[ <span class="ab">ROW</span> , ...]</pre></td>
+          </tr>
+          <tr>
+            <td class="done">ROW</td>
+            <td class="doc-codefont"><pre>{ <span class="ab">FIELD_NAME</span> : value , ...} </pre></td>
+          </tr>
+          <tr>
+            <td class="done">FIELD_NAME</td>
+            <td class="doc-codefont"><span class="json_term">string</span></td>
+          </tr>
+          <tr>
+            <td>FIELD_TYPE</td>
+            <td class="doc-codefont"><span class="json_term">string</span></td>
+          </tr>
+          <tr>
+            <td>LOG_OBJECT</td>
+            <td class="doc-codefont"><span class="todo">Content and format of the log object need to be documented.</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <h2>Log and PID Files</h2>
+      <p>If no directories specified, logs and PID files are created in the default NGiNX directory as defined in the configuration file. The PID file contains a numeric PID of the master process of the application. Content of the log files at appropriate levels is controlled by the log definition in the configuration file.</p>
+      <p>Log files are written according to the &laquo;log_level&raquo; setting in the <code>syslog</code> format as per &sect;4.1 of <a href="http://tools.ietf.org/rfc/rfc3164.txt">RFC 3164</a>. The messages are assigned to &laquo;user-level messages&raquo; facility (value <code>1</code>). The following are the meanings for the &laquo;log_level&raquo; values, mapped to the <code>syslog</code> &laquo;severity&raquo; levels:</p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name">debug</td>
+            <td>The complete http connection, request and database server lifecycle information, including full set of timings on both client and database sides.</td>
+          </tr>
+          <tr>
+            <td class="doc-name">informational</td>
+            <td>Live configuration changes. For now, this is only &laquo;<code>log_level</code>&raquo; for &laquo;<code>server</code>&raquo; and &laquo;<code>connection</code>&raquo; scopes.</td>
+          </tr>
+          <tr>
+            <td class="doc-name">notice</td>
+            <td>All query errors together with related requests' data, parameters, and client's data: ip address, http headers, excluding passwords.</td>
+          </tr>
+          <tr>
+            <td class="doc-name">warning</td>
+            <td><p>Events, which may indicate misconfiguration or remote error condition, but do not threaten the DB Relay server integrity. Most events, which are likely to impact multiple clients. Connection and request records should include relevant data mentioned above. Passwords should not be logged. Example events:</p>
+              <ul class="dense">
+                <li>Timeouts on database server queries.</li>
+                <li>Malformed requests.</li>
+                <li>Errors establishing connections.</li>
+                <li>Connections re-established more often than once every three seconds.</li>
+              </ul></td>
+          </tr>
+          <tr>
+            <td class="doc-name">error</td>
+            <td><p>Unsolicited database server side disconnects. Provides:</p>
+              <ul class="dense1">
+                <li>The affected connection data with all its parameters, excluding password. Include connection remote IP address, time established, requests per hour, data in and data out.</li>
+                <li>Active and pending requests per each connection, with all the requests' parameters and client's data: ip address, http headers, excluding passwords.</li>
+              </ul></td>
+          </tr>
+          <tr>
+            <td class="doc-name">critical</td>
+            <td><p>Log only when DB Relay server can not continue and will shutdown. the following data is reported:</p>
+              <ul class="dense2">
+                <li>List of open connections with all their parameters, excluding passwords. Include connection remote IP addresses, time established, requests per hour, data in and data out.</li>
+                <li>Active and pending requests per each connection, with all the requests' parameters and client data: ip address, http headers, excluding passwords.</li>
+                <li>Server process stats - PID, UID, GID, memory sizes, configs, whatever else developer deems reasonable.</li>
+              </ul></td>
+          </tr>
+        </tbody>
+      </table>
+      <h2>Static Files</h2>
+      <p>Examples of static files are HTML, JavaScript, CSS, SWF, Image and other files, which are sent to HTTP clients straight from the server's filesystem without modifications.</p>
+      <p>NGiNX configuration has the complete control over where static files are served from.</p>
+      <h2>Run time files</h2>
+      <p>The web server needs a place for temporary files, currently residing in the <code>client_body_temp</code>, <code>fastcgi_temp</code>, and <code>proxy_temp</code> subdirectories of the build&#x27;s <code>PREFIX</code> directory. If those do not exist per the build-time configuration, the server will create them in a single temporary directory.</p>
+      <h2>Command line Parameters</h2>
+      <p>The application has defaults for everything, so all command line parameters will be optional <span class="todo">when implemented</span>.</p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Param</th>
+            <th>Value</th>
+            <th>Default</th>
+            <th>Description </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-codefont">--port</td>
+            <td>integer</td>
+            <td>80</td>
+            <td>A TCP port number for the DB Relay's HTTP server to listen on.</td>
+          </tr>
+          <tr>
+            <td class="doc-codefont">--root</td>
+            <td>directory</td>
+            <td>hardcoded per build target in header files</td>
+            <td>A directory for the DB Relay's HTTP server to serve the static files from.</td>
+          </tr>
+          <tr>
+            <td class="doc-codefont">--config</td>
+            <td>file name</td>
+            <td>hardcoded per build target in header files</td>
+            <td>A file name for run-time configuration to load.</td>
+          </tr>
+          <tr>
+            <td class="doc-codefont">--log-dir</td>
+            <td>directory name</td>
+            <td>hardcoded per build target in header files</td>
+            <td>A directory name where the log files should go.</td>
+          </tr>
+          <tr>
+            <td class="doc-codefont">--pid-file</td>
+            <td>file name</td>
+            <td>hardcoded per build target in header files</td>
+            <td>A file name for the PID file.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </body>
-</html>           
+</html>
 
 
 
