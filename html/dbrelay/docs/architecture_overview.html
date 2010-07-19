@@ -41,7 +41,7 @@
     <style type="text/css">
       img.drawing {
         display: block;
-        margin: auto;
+        margin: 2em auto;
       }
       p.legend {
         border-top: 1px dotted dimgray;
@@ -60,7 +60,7 @@
   <body>
     <div id="page"> 
       <h1>Overview</h1>
-      <p><img class="drawing" style="float: right;" src="img/architecture_overview_simple.png" />Technically, the database-facing part of DB Relay is an NGiNX module. It runs as a statically linked code in each of the NGiNX workers and uses FreeTDS or UnixODBC to connect to the RDBMS of choice. This is what happens when DB Relay module receives a simple client request from NGiNX (see the first drawing):</p>
+      <p><img class="drawing" style="float: right; margin: 2em 2em 2em 2em;" src="img/architecture_overview_simple.png" />Technically, the database-facing part of DB Relay is an NGiNX module. It runs as a statically linked code in each of the NGiNX workers and uses FreeTDS or UnixODBC to connect to the RDBMS of choice. This is what happens when DB Relay module receives a simple client request from NGiNX (see the first drawing):</p>
       <ol>
         <li>database connection established</li>
         <li>query executed</li>
@@ -68,7 +68,6 @@
         <li>database connection torn down</li>
         <li>results returned to NGiNX</li>
       </ol>
-      <p class="break"></p>
       <p>A simple client request means, that no "connection_name" parameter was specified in the request. Notice, that in that case the database connection is established and destroyed for each request. While acceptable for a one-off database query, it is not the right behaviour for a chatty client. It puts unnecessary stress on the database as creating and destroying connections are relatively expensive operations. In this scenarion it is also impossible for a client to maintain a state in their database activity, like cursor or temporary table, between the requests.</p>
       <p>To address that, a client application may send the "connection_name" HTTP parameter. While details ofthe connection name scope and lifespan are discussed in the <a href="interaction.html#persistence" target="_self">interaction logic documentation</a>, here we will show the general concept.</p>
       <p>When a "connection_name" is provided, then DB Relay code in NGiNX worker process does not make the database request. Instead, here is what happens:</p>
