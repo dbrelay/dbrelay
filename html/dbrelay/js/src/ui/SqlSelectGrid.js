@@ -52,7 +52,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		var idpfx = Ext.id();
 
 		this.tbar = [
-			'<span id="name'+idpfx+'" style="font-weight:bold;color:green">Viewing '+(this.resultName || '') +'</span>',
+			'<span id="name'+idpfx+'" style="font-weight:bold;color:green"> '+(this.resultName || '') +'</span>',
 			{
 				xtype:'tbfill',
 			},
@@ -98,7 +98,11 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 				]
 			},                   
 			'-',
-			'<span id="total'+idpfx+'"></span> total',               
+			{
+				text:'sdfsd',
+				id:'total'+idpfx
+			},
+			'total',               
 			'-',
 			{
 				xtype:'numberfield',
@@ -162,7 +166,11 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 					}
 				}
 			},
-			'of <span id="totalPages'+idpfx+'"></span>',
+			' of',
+			{
+				text:'',
+				id:'totalPages'+idpfx
+			},
 			{ 
 				iconCls:'icon-next',
 				id:'pagenext' + idpfx,
@@ -341,13 +349,13 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.totalRows = (data.count || rows.length) || '0';  
 
 
-		Ext.get('total'+this.idpfx).update(this.totalRows);  
+			Ext.getCmp('total'+this.idpfx).setText(this.totalRows);  
     
-    this.pageNumberField = Ext.getCmp('page'+this.idpfx);
-		this.pageSizeField = Ext.getCmp('pagesize'+this.idpfx);   
-		
-	  this.pageNumberField.setValue(this.pageNumber);    
+    	this.pageNumberField = Ext.getCmp('page'+this.idpfx);
+			this.pageSizeField = Ext.getCmp('pagesize'+this.idpfx);  
+			this.pageNumberField.setValue(this.pageNumber);    
 	  this.pageSizeField.setValue(this.pageSize);
+
 		  
 		this.updatePageView();    
 		this.dataSet = data;
@@ -400,7 +408,7 @@ dbrui.SqlSelectGrid = Ext.extend( Ext.grid.GridPanel,{
 		this.pageNumber = pageNumber;
 		this.pageSize = pageSize;	   
 		this.totalPages = Math.ceil(this.totalRows / this.pageSize);
-    Ext.get('totalPages'+this.idpfx).update(this.totalPages);
+    Ext.getCmp('totalPages'+this.idpfx).setText(this.totalPages);
 		this.nextPageSetDisabled(this.totalPages === 1);
 		this.prevPageSetDisabled(pageNumber === 1);
 
