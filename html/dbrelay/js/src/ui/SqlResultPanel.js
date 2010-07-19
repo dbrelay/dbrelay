@@ -337,7 +337,7 @@ dbrui.SqlResultPanel = Ext.extend(Ext.Panel,{
 					plugins: this.gridplugins,
 					sqlTitle: this.title || '',
 					listeners:{
-						'render':{
+						'afterrender':{
 							fn:function(g){    
 								this.doLayout();
 								 
