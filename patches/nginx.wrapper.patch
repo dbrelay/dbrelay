@@ -22,7 +22,7 @@
 +#include <nginx.h>
 +#include <getopt.h>
 +#include <sys/ipc.h>
-+#include "../../../../dbrelay/src/dbrelay.h"
++#include "../../../../ngx_dbrelay/src/dbrelay.h"
 +
 +int ngx_cdecl ngx_main(int argc, char *const *argv);
 +void ngx_http_dbrelay_exit_master(ngx_cycle_t *cycle);

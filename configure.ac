@@ -118,7 +118,7 @@ echo
 echo Now configuring DB Relay
 echo
 cd $BUILD
-cd src/dbrelay
+cd src/ngx_dbrelay
 
 if test "x$freetds" = "xtrue"; then
    ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
@@ -142,7 +142,7 @@ patch -N -p0 < ../../patches/nginx.conf.patch
 patch -N -p0 < ../../patches/nginx.makefile.patch
 cp ../../html/index.html html/index.html
 
-./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/dbrelay/src
+./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_dbrelay/src
 
 cd ../..
 echo $prefix
