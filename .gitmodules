@@ -1,0 +1,6 @@
+[submodule "src/ngx_dbrelay"]
+	path = src/ngx_dbrelay
+	url = /Users/brian/git/ngx_dbrelay
+[submodule "src/freetds"]
+	path = src/freetds
+	url = /Users/brian/git/freetds
