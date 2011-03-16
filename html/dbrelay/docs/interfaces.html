@@ -88,11 +88,11 @@
       td > dl {
         margin: 0;
       }
-      td > dl > dd {
+      td > dl > dt {
         margin: 0;
         margin-top: 0.5em;
       }
-      td > dl > dt {
+      td > dl > dd {
         margin-left: 1em;
       }
     </style>
@@ -232,6 +232,39 @@
         </tbody>
       </table>
       <h3>&nbsp;</h3>
+      <h3>Output and miscellaneous options:</h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="doc-name todo">out</td>
+            <td>
+              <p>This parameter determines the output format. The default format is <code>json-dict</code>.</p>
+              <dl>
+                <dt><code>json-dict</code></dt><dd>Described below in <a href="#json-dict-def">the HTTP Response section.</a></dd>
+                <dt><code>json-array</code></dt><dd>This format is similar to json-dict, except for each row is represented as an array, instead of a object (a.k.a. dictionary).</dd>
+                <dt><code>csv</code></dt><dd>This format omits all meta-data and only returns row sets in comma-separated format. Each row set has a header row with column names. Row sets are separated by a single blank line. This format is ambiguous for single-column row sets with null values.</dd>
+              </dl>
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-name todo">flags</td>
+            <td>
+              <dl>
+                <dt><code>echosql</code></dt><dd>Echo the passed SQL in the "log" section of the result JSON. Default: <b>off</b>.</dd>
+                <dt><code>xact</code></dt><dd>Wrap the SQL batch in a begin tran/commit tran pair, or rollback on failure. Default: <b>off</b>.</dd>
+                <dt><code>nomagic</code></dt><dd>Disables (for this query only) the text prepended to the query defined by the build's <code>--with-magic</code> flag.</dd>
+              </dl>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>&nbsp;</h3>
       <h3>Administrative Requests:</h3>
       <table class="doc-table">
         <thead>
@@ -253,8 +286,8 @@
             <td class="doc-name todo">cmd</td>
             <td>Execute a command on the sever. <span class="todo">The following are currently planned commands:</span>
               <dl>
-                <dd><code>kill</code></dd>
-                <dt>The &laquo;<code>kill</code>&raquo; command kills a specific worker process on the server in case it is misbehaving or running a long query which needs to be stopped. It takes one <a href="#sql_param">parameter</a> which is a socket path of the worker process. The socket path can be found via the &laquo;<code>status</code>&raquo; administrative request.</dt>
+                <dt><code>kill</code></dt>
+                <dd>The &laquo;<code>kill</code>&raquo; command kills a specific worker process on the server in case it is misbehaving or running a long query which needs to be stopped. It takes one <a href="#sql_param">parameter</a> which is a socket path of the worker process. The socket path can be found via the &laquo;<code>status</code>&raquo; administrative request.</dd>
               </dl>
             </td>
           </tr>
@@ -264,7 +297,7 @@
       <p>The DB Relay application will return the results as &laquo;<code>application/json</code>&raquo; ContentType if that type is presnt in the Accept header. Otherwise the ContentType of &laquo;text/plain&raquo; is used.</p>
       <p>An HTTP response is described as a JSON object below. Regular text is for literals, <span class="ab">italic caps</span> are for the terms defined later in the specification, and <span class="json_term">underlined</span> words are for <a href="http://json.org/">JSON-defined terms</a>. Object members may appear in any order inside the object. Members marked with &laquo;?&raquo; are optional. Array elements or object members, marked with &quot;&middot; &middot; &middot;&quot; after them, occur <span class="em">zero</span> or more times.<br />
       </p>
-      <table class="doc-table">
+      <table class="doc-table" name="json-dict-def">
         <thead>
           <tr>
             <th>Type</th>
