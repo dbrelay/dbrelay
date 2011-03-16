@@ -597,7 +597,8 @@ dbrelay/tablesorter/asc.png \
 dbrelay/tablesorter/bg.png \
 dbrelay/tablesorter/desc.png \
 dbrelay/tablesorter/jquery.tablesorter.min.js \
-dbrelay/tablesorter/style.css
+dbrelay/tablesorter/style.css \
+version.json
 
 install-data-local:
 	for f in $(FILES) ; do \
