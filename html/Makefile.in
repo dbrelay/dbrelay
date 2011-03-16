@@ -173,6 +173,7 @@ top_srcdir = @top_srcdir@
 JSMIN = ../util/jsmin
 JSSRC = dbrelay/js/src
 FILES = dbrelay/index.html \
+./version.json \
 ./50x.html \
 dbrelay/plugins/README.txt \
 dbrelay/css/dbrelay.css \
@@ -749,8 +750,7 @@ dbrelay/tablesorter/asc.png \
 dbrelay/tablesorter/bg.png \
 dbrelay/tablesorter/desc.png \
 dbrelay/tablesorter/jquery.tablesorter.min.js \
-dbrelay/tablesorter/style.css \
-version.json
+dbrelay/tablesorter/style.css 
 
 all: all-am
 

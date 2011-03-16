@@ -21,6 +21,7 @@ dbrelay/js/dbrelay-ui-charts-min.js: $(JSSRC)/ui/Util.js $(JSSRC)/ui/Chart.js
 	cat $+ | $(JSMIN) > $@
 
 FILES = dbrelay/index.html \
+./version.json \
 ./50x.html \
 dbrelay/plugins/README.txt \
 dbrelay/css/dbrelay.css \
@@ -597,8 +598,7 @@ dbrelay/tablesorter/asc.png \
 dbrelay/tablesorter/bg.png \
 dbrelay/tablesorter/desc.png \
 dbrelay/tablesorter/jquery.tablesorter.min.js \
-dbrelay/tablesorter/style.css \
-version.json
+dbrelay/tablesorter/style.css 
 
 install-data-local:
 	for f in $(FILES) ; do \
