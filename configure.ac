@@ -52,6 +52,9 @@ AC_CONFIG_FILES( Makefile \
         html/Makefile \
 )
 
+AC_ARG_WITH(nginx-options,
+AS_HELP_STRING([--with-nginx-options=OPTIONS], [pass additional OPTIONS to NGiNX]))
+
 AC_ARG_WITH(freetds,
 AS_HELP_STRING([--with-freetds=DIR], [build with support for FreeTDS in DIR]))
 if test "$with_freetds"; then
@@ -142,7 +145,8 @@ patch -N -p0 < ../../patches/nginx.conf.patch
 patch -N -p0 < ../../patches/nginx.makefile.patch
 cp ../../html/index.html html/index.html
 
-./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_dbrelay/src
+echo ./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_dbrelay/src $with_nginx_options
+./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_dbrelay/src $with_nginx_options
 
 cd ../..
 echo $prefix

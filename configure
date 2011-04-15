@@ -686,6 +686,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_dependency_tracking
+with_nginx_options
 with_freetds
 with_mysql
 with_odbc
@@ -1331,6 +1332,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-nginx-options=OPTIONS
+                          pass additional OPTIONS to NGiNX
   --with-freetds=DIR      build with support for FreeTDS in DIR
   --with-mysql=DIR        build with support for MySQL in DIR
   --with-odbc=DIR         build with support for ODBC in DIR
@@ -3384,6 +3387,13 @@ ac_config_files="$ac_config_files Makefile src/Makefile util/Makefile html/Makef
 
 
 
+# Check whether --with-nginx-options was given.
+if test "${with_nginx_options+set}" = set; then
+  withval=$with_nginx_options;
+fi
+
+
+
 # Check whether --with-freetds was given.
 if test "${with_freetds+set}" = set; then
   withval=$with_freetds;
@@ -3516,7 +3526,8 @@ patch -N -p0 < ../../patches/nginx.conf.patch
 patch -N -p0 < ../../patches/nginx.makefile.patch
 cp ../../html/index.html html/index.html
 
-./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_dbrelay/src
+echo ./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_dbrelay/src $with_nginx_options
+./configure --prefix=$prefix --with-pcre=$BUILD/src/$PCREDIR/ --add-module=$BUILD/src/ngx_dbrelay/src $with_nginx_options
 
 cd ../..
 echo $prefix
