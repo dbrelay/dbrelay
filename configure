@@ -691,6 +691,7 @@ with_freetds
 with_mysql
 with_odbc
 with_magic
+with_maxmem
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1338,6 +1339,7 @@ Optional Packages:
   --with-mysql=DIR        build with support for MySQL in DIR
   --with-odbc=DIR         build with support for ODBC in DIR
   --with-magic=MAGIC      prepend MAGIC to beginning of each query.
+  --with-maxmem=BLOCKS    Max memory usage in 4K blocks 0
 
 Some influential environment variables:
   CC          C compiler command
@@ -3470,6 +3472,13 @@ if test "${with_magic+set}" = set; then
 fi
 
 
+
+# Check whether --with-maxmem was given.
+if test "${with_maxmem+set}" = set; then
+  withval=$with_maxmem;
+fi
+
+
 TDSDIR=freetds-0.82
 PCREDIR=pcre-7.8
 NGXDIR=nginx-0.7.64
@@ -3505,13 +3514,13 @@ cd $BUILD
 cd src/ngx_dbrelay
 
 if test "x$freetds" = "xtrue"; then
-   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR --with-maxmem="$with_maxmem"
    cd include; make
 elif test "x$odbc" = "xtrue"; then
-   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-odbc=$with_odbc --with-magic="$with_magic"
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-odbc=$with_odbc --with-magic="$with_magic" --with-maxmem="$with_maxmem"
    cd include; make
 else
-   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql --with-maxmem="$with_maxmem"
    cd include; make
 fi
 

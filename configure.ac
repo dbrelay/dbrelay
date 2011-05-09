@@ -89,6 +89,9 @@ AM_CONDITIONAL(ODBC, test "$odbc" = "true")
 AC_ARG_WITH(magic,
 AS_HELP_STRING([--with-magic=MAGIC], [prepend MAGIC to beginning of each query.]))
 
+AC_ARG_WITH(maxmem,
+AS_HELP_STRING([--with-maxmem=BLOCKS], [Max memory usage in 4K blocks [0]]))
+
 TDSDIR=freetds-0.82
 PCREDIR=pcre-7.8
 NGXDIR=nginx-0.7.64
@@ -124,13 +127,13 @@ cd $BUILD
 cd src/ngx_dbrelay
 
 if test "x$freetds" = "xtrue"; then
-   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-freetds=$BUILD/src/$TDSDIR --with-maxmem="$with_maxmem"
    cd include; make
 elif test "x$odbc" = "xtrue"; then
-   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-odbc=$with_odbc --with-magic="$with_magic"
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-odbc=$with_odbc --with-magic="$with_magic" --with-maxmem="$with_maxmem"
    cd include; make
 else
-   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql
+   ./configure --prefix=$prefix --with-nginx=$BUILD/src/$NGXDIR --with-mysql=/usr/local/mysql --with-maxmem="$with_maxmem"
    cd include; make
 fi
 
