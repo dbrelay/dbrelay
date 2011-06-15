@@ -360,8 +360,8 @@ dbrui.App = function(){
 			
 			
 			//check browser
-			if(!Ext.isIE8 && !Ext.isGecko3 && !Ext.isSafari4 && !Ext.isChrome){
-				Ext.Msg.alert('WARNING','You are not using a supported browser.\nThis interface supports FF3+, IE8+, Chrome, and Safari 4+.  Using any other browsers may result in problems.',
+			if(Ext.isAir || Ext.isGecko2 || Ext.isIE6 || Ext.isOpera || Ext.isSafari2 || Ext.isSafari3){
+				Ext.Msg.alert('WARNING','You are using an unknown or outdated browser.\nThis interface supports FF3+, IE8+, Chrome, and Safari 4+. Please, switch to one of those broswers any problems occur.',
 					function(){
 							this.showConnectionWindow(true);  
 					}, this);
