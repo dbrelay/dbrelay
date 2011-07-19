@@ -4,7 +4,7 @@ set -e
 
 [ "${1}" ] || {
   echo "Syntax: ${0} <path>"
-  echo "        The result will be written out to <path>/${PREFIX}_<COMMIT_DATE>.tgz"
+  echo "        The result will be written out to <path>/${PREFIX}_<COMMIT_DATE>_<SHA7>.tgz"
   exit 1
 }
 
@@ -21,7 +21,8 @@ pushd $(dirname ${0})/.. > /dev/null
   COMMIT_DATE=$(git log -n 1 --pretty=format:"%ci" | sed -e 's/ .*//' -e 's/-//g' -e 's/^20//')
 
   GIT_TAG=$(git rev-parse HEAD)
-  BUILD_FILE="${PREFIX}_${COMMIT_DATE}"
+  GIT_TAG_SHORT=$(git rev-parse --short HEAD)
+  BUILD_FILE="${PREFIX}_${COMMIT_DATE}_${GIT_TAG_SHORT}"
   BUILD_DIR="${PKG_PATH}/${BUILD_FILE}"
 
   mkdir ${BUILD_DIR} || {
@@ -38,7 +39,7 @@ pushd $(dirname ${0})/.. > /dev/null
     git archive --format=tar ${SUBMODULE_SHA} . | (cd ${BUILD_DIR}/${SUBMODULE_PATH}; tar xfp -)
   popd > /dev/null
 
-  git log -n 1 ${GIT_TAG} --pretty=format:"{ 'committer': '%an', 'sha': '${GIT_TAG}', 'revision': '%H', 'date_rfc': '%cD', 'date_epoc': '%ct' }" > ${VER_FILE}
+  git log -n 1 ${GIT_TAG} --pretty=format:"{ 'committer': '%an', 'sha7': '${GIT_TAG_SHORT}', 'sha': '${GIT_TAG}', 'revision': '%H', 'date_rfc': '%cD', 'date_epoc': '%ct' }" > ${VER_FILE}
 
   pushd ${PKG_PATH} > /dev/null
     tar -czf ${BUILD_TGZ} --numeric-owner ./${BUILD_FILE}
@@ -46,4 +47,4 @@ pushd $(dirname ${0})/.. > /dev/null
   popd > /dev/null
 popd > /dev/null
 
-echo "Check the ${PKG_PATH}/${BUILD_TGZ} file"
+echo "Check the ${BUILD_TGZ} file"
