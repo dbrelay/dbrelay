@@ -8,6 +8,8 @@ set -e
   exit 1
 }
 
+[ $(uname -s) = "Darwin" ] && tar=gnutar || tar=tar
+
 pushd ${1} > /dev/null
   PKG_PATH=${PWD}
 popd > /dev/null
@@ -33,16 +35,16 @@ pushd $(dirname ${0})/.. > /dev/null
   BUILD_TGZ="${BUILD_DIR}.tgz"
   VER_FILE="${BUILD_DIR}/html/version.json"
 
-  git archive --format=tar ${GIT_TAG} . | (cd ${BUILD_DIR}; tar xfp -)
+  git archive --format=tar ${GIT_TAG} . | (cd ${BUILD_DIR}; ${tar} xfp -)
 
   pushd ${SUBMODULE_PATH} > /dev/null
-    git archive --format=tar ${SUBMODULE_SHA} . | (cd ${BUILD_DIR}/${SUBMODULE_PATH}; tar xfp -)
+    git archive --format=tar ${SUBMODULE_SHA} . | (cd ${BUILD_DIR}/${SUBMODULE_PATH}; ${tar} xfp -)
   popd > /dev/null
 
   git log -n 1 ${GIT_TAG} --pretty=format:"{ 'committer': '%an', 'sha7': '${GIT_TAG_SHORT}', 'sha': '${GIT_TAG}', 'revision': '%H', 'date_rfc': '%cD', 'date_epoc': '%ct' }" > ${VER_FILE}
 
   pushd ${PKG_PATH} > /dev/null
-    tar -czf ${BUILD_TGZ} --numeric-owner ./${BUILD_FILE}
+    ${tar} -czf ${BUILD_TGZ} --numeric-owner ./${BUILD_FILE}
     rm -rf ./${BUILD_FILE}
   popd > /dev/null
 popd > /dev/null
