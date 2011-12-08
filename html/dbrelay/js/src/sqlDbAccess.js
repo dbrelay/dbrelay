@@ -258,9 +258,9 @@ Clears/resets the query log
 		this.run('list_databases', {}, 
 		//success
 		function(qh, resp){
-			//should be 2 sets of data, one for use master & other for actual data
-			if(resp.data.length === 2){
-				var dbs = [], rows = resp.data[1].rows;
+			// Should be 1 set of data for list of databases
+			if(resp.data.length === 1){
+				var dbs = [], rows = resp.data[0].rows;
 				
 				for(var i=0,len=rows.length; i<len; i++){
 					dbs.push(rows[i].NAME);
